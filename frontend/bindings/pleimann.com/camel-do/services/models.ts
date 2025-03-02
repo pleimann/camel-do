@@ -9,6 +9,36 @@ import {Create as $Create} from "@wailsio/runtime";
 // @ts-ignore: Unused imports
 import * as time$0 from "../../../time/models.js";
 
+export enum Color {
+    /**
+     * The Go zero value for the underlying type of the enum.
+     */
+    $zero = 0,
+
+    ColorRed = 0,
+    ColorOrange = 1,
+    ColorAmber = 2,
+    ColorYellow = 3,
+    ColorLime = 4,
+    ColorGreen = 5,
+    ColorEmerald = 6,
+    ColorTeal = 7,
+    ColorCyan = 8,
+    ColorSky = 9,
+    ColorBlue = 10,
+    ColorIndigo = 11,
+    ColorViolet = 12,
+    ColorPurple = 13,
+    ColorFuchsia = 14,
+    ColorPink = 15,
+    ColorRose = 16,
+    ColorSlate = 17,
+    ColorGray = 18,
+    ColorZinc = 19,
+    ColorNeutral = 20,
+    ColorStone = 21,
+};
+
 /**
  * Task represents a task in the task tracking application.
  */
@@ -17,6 +47,11 @@ export class Task {
      * Unique identifier for the task
      */
     "id": number;
+
+    /**
+     * Color of the task
+     */
+    "color": Color;
 
     /**
      * Title of the task
@@ -57,6 +92,9 @@ export class Task {
     constructor($$source: Partial<Task> = {}) {
         if (!("id" in $$source)) {
             this["id"] = 0;
+        }
+        if (!("color" in $$source)) {
+            this["color"] = (0 as Color);
         }
         if (!("title" in $$source)) {
             this["title"] = "";

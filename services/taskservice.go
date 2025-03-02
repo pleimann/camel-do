@@ -45,6 +45,8 @@ func (t *TaskService) generateRandomTask(id int) Task {
 	// Seed the random number generator.
 	rand.New(rand.NewSource(time.Now().UnixNano()))
 
+	color := Color(rand.Intn(len(colorName)))
+
 	// Generate random title.
 	titles := []string{
 		"Write code",
@@ -94,6 +96,7 @@ func (t *TaskService) generateRandomTask(id int) Task {
 
 	return Task{
 		ID:          id,
+		Color:       color,
 		Title:       title,
 		Description: description,
 		StartTime:   startTime,

@@ -41,21 +41,15 @@ func main() {
 		},
 	})
 
-	// Create a new window with the necessary options.
-	// 'Title' is the title of the window.
-	// 'Mac' options tailor the window when running on macOS.
-	// 'BackgroundColour' is the background colour of the window.
-	// 'URL' is the URL that will be loaded into the webview.
 	app.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
-		Title: "Window 1",
+		Title:          "Camel Do",
+		BackgroundType: application.BackgroundTypeTranslucent,
+		URL:            "/",
 		Mac: application.MacWindow{
-			InvisibleTitleBarHeight: 40,
-			Backdrop:                application.MacBackdropTranslucent,
-			TitleBar:                application.MacTitleBarHiddenInset,
+			InvisibleTitleBarHeight: 64,
+			Backdrop:                application.MacBackdropNormal,
+			TitleBar:                application.MacTitleBarHiddenInsetUnified,
 		},
-		BackgroundColour: application.NewRGB(27, 38, 54),
-		BackgroundType:   application.BackgroundTypeTranslucent,
-		URL:              "/",
 	})
 
 	// Run the application. This blocks until the application has been exited.
