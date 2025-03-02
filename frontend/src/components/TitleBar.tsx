@@ -8,14 +8,13 @@ export default function TitleBar() {
       <div class="navbar-center">
         <a class="btn btn-ghost text-xl">Camel Do</a>
       </div>
-      <div class="navbar-end">
+      <div class="navbar-end flex flex-row gap-2">
         <button class="btn btn-ghost btn-circle">
           <SearchIcon class="size-6" />
         </button>
         <button class="btn btn-ghost btn-circle">
           <div class="indicator">
             <BellIcon class="size-6" />
-            <span class="badge badge-xs badge-primary indicator-item"></span>
           </div>
         </button>
         <button class="btn btn-ghost btn-circle">

@@ -1,4 +1,4 @@
-import { createSignal } from "solid-js";
+import { createSignal, mergeProps } from "solid-js";
 import { BsCheck2Circle as CheckCircleIcon } from 'solid-icons/bs';
 import { TbMenu as MenuIcon } from 'solid-icons/tb'
 import { RiArrowsArrowDownSLine as ChevronDownIcon, RiArrowsArrowUpSLine as ChevronUpIcon } from 'solid-icons/ri'
@@ -6,10 +6,7 @@ import { AiOutlineSchedule as ScheduleIcon } from 'solid-icons/ai'
 import { TbTrashX as TrashIcon } from 'solid-icons/tb'
 
 import { Task } from "@bindings/pleimann.com/camel-do/services";
-
-interface Props {
-  task: Task;
-}
+import { type TaskAction } from "@/components/Backlog";
 
 const backgroundColors = [
   "bg-red-100",
@@ -61,8 +58,17 @@ const textColors = [
   "text-stone-900",
 ]
 
+interface Props {
+  task: Task;
+  onTaskAction: (task: Task, action: TaskAction) => void
+}
+
+const defaults: Partial<Props> = {
+  onTaskAction: (task, action) => {}
+}
+
 export default function TaskView(props: Props) {
-  const p = props;
+  const p = mergeProps(defaults, props);
 
   const [show, toggleShow] = createSignal(false);
 
@@ -71,20 +77,13 @@ export default function TaskView(props: Props) {
   
   let actionsMenu!: HTMLDivElement;
 
-  const completeTask = () => {
-    console.log("complete")
-    actionsMenu.removeAttribute("open");
+  const taskAction = (action: TaskAction) => {
+    p.onTaskAction(p.task, action);
+    
+    close();
   };
 
-  const scheduleTask = () => {
-    console.log("schedule")
-    actionsMenu.removeAttribute("open");
-  };
-
-  const deleteTask = () => {
-    console.log("delete")
-    actionsMenu.removeAttribute("open");
-  };
+  const close = () => (document.activeElement as HTMLElement)?.blur();
 
   return (
     <div class="card card-side card-sm bg-base-100 shadow-sm select-none">
@@ -95,14 +94,14 @@ export default function TaskView(props: Props) {
         <p class="card-title">{p.task.title}</p>
         <p class="text-sm">{p.task.duration}</p>
       </div>
-      <div class="card-actions rounded-e-box p-2 bg-base-200">
-        <div class="flex flex-col">
-          <div class="dropdown dropdown-hover dropdown-left dropdown-center" ref={actionsMenu}>
-            <button tabindex="0" class="btn btn-circle btn-ghost"><MenuIcon class="size-6" /></button>
-            <ul tabindex="0" class="dropdown-content pr-4 z-1 gap-2 flex flex-row-reverse">
-              <li><button class="btn btn-circle tooltip tooltip-bottom shadow-sm" data-tip="Complete" onClick={completeTask}><CheckCircleIcon class="size-6" /></button></li>
-              <li><button class="btn btn-circle tooltip tooltip-bottom shadow-sm" data-tip="Schedule" onClick={scheduleTask}><ScheduleIcon class="size-6" /></button></li>
-              <li><button class="btn btn-circle tooltip tooltip-bottom shadow-sm" data-tip="Delete" onClick={deleteTask}><TrashIcon class="size-6" /></button></li>
+      <div class="card-actions rounded-e-box bg-base-200 p-2">
+        <div class="flex flex-col gap-2">
+          <div class="dropdown dropdown-hover dropdown-left dropdown-center rounded-2xl" ref={actionsMenu}>
+            <button class="btn btn-circle btn-ghost" role="button" tabIndex={0}><MenuIcon class="size-6" /></button>
+            <ul class="dropdown-content p-2 z-1 gap-2 flex flex-row-reverse rounded-s-full bg-base-200/90 bg-blend-overlay" tabIndex={0}>
+              <li><button class="btn btn-circle tooltip tooltip-bottom shadow-sm" data-tip="Complete" onClick={(e) => taskAction('complete')}><CheckCircleIcon class="size-6" /></button></li>
+              <li><button class="btn btn-circle tooltip tooltip-bottom shadow-sm" data-tip="Schedule" onClick={(e) => taskAction('schedule')}><ScheduleIcon class="size-6" /></button></li>
+              <li><button class="btn btn-circle tooltip tooltip-bottom shadow-sm" data-tip="Delete" onClick={(e) => taskAction('delete')}><TrashIcon class="size-6" /></button></li>
             </ul>
           </div>
           <button class="btn btn-circle btn-ghost" onClick={() => toggleShow(!show())}>

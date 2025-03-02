@@ -1,14 +1,12 @@
 import { TaskService } from '@bindings/pleimann.com/camel-do/services'
 
-import { createResource, ErrorBoundary } from 'solid-js';
+import { createResource, ErrorBoundary, Suspense } from 'solid-js';
 
 import TitleBar from '@/components/TitleBar';
 import Backlog from '@/components/Backlog';
 
 const App = () => {
-  const [tasks] = createResource(async () => {
-    return await TaskService.GetTasks();
-  });
+  const [tasks] = createResource(async () => await TaskService.GetTasks());
 
   return (
     <div class="mt-[64px]">
@@ -16,7 +14,9 @@ const App = () => {
 
       <main class="h-[calc(100dvh-64px)] w-full overflow-hidden">
         <ErrorBoundary fallback={(err) => <div>Error: {err.message}</div>}>
-          <Backlog tasks={tasks()} />
+          <Suspense ref={tasks()}>
+            <Backlog tasks={tasks() || []} />
+          </Suspense>
         </ErrorBoundary>
       </main>
     </div>
