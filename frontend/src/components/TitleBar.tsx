@@ -1,4 +1,4 @@
-import { TbSearch as SearchIcon, TbBell as BellIcon, TbMoon as MoonIcon, TbSun as SunIcon } from 'solid-icons/tb'
+import { SearchIcon, BellIcon, MoonIcon, SunIcon } from '@/components/Icons';
 
 export default function TitleBar() {
   return (

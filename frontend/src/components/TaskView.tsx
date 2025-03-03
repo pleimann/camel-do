@@ -1,9 +1,13 @@
 import { createSignal, mergeProps } from "solid-js";
-import { BsCheck2Circle as CheckCircleIcon } from 'solid-icons/bs';
-import { TbMenu as MenuIcon } from 'solid-icons/tb'
-import { RiArrowsArrowDownSLine as ChevronDownIcon, RiArrowsArrowUpSLine as ChevronUpIcon } from 'solid-icons/ri'
-import { AiOutlineSchedule as ScheduleIcon } from 'solid-icons/ai'
-import { TbTrashX as TrashIcon } from 'solid-icons/tb'
+
+import { 
+  ChevronDownIcon, 
+  ChevronUpIcon, 
+  ScheduleIcon, 
+  TrashIcon,
+  MenuIcon,
+  CheckCircleIcon,
+} from '@/components/Icons';
 
 import { Task } from "@bindings/pleimann.com/camel-do/services";
 import { type TaskAction } from "@/components/Backlog";
