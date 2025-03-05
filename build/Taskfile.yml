@@ -38,7 +38,6 @@ tasks:
     vars:
       BUILD_COMMAND: '{{if eq .PRODUCTION "true"}}build{{else}}build:dev{{end}}'
 
-
   generate:bindings:
     summary: Generates bindings for the frontend
     deps:
@@ -63,6 +62,14 @@ tasks:
     cmds:
       - wails3 generate icons -input appicon.png -macfilename darwin/icons.icns -windowsfilename windows/icons.ico
 
+  generate:enums:
+    summary: Uses go-enum (https://github.com/abice/go-enum) utility to generate enums
+    dir: .
+    sources:
+      - "**/*.go"
+    cmds:
+      - go generate
+
   dev:frontend:
     summary: Runs the frontend in development mode
     dir: frontend
@@ -70,6 +77,12 @@ tasks:
       - task: install:frontend:deps
     cmds:
       - npm run dev -- --port {{.VITE_PORT}} --strictPort
+
+  dev:backend:
+    summary: Runs go generate
+    dir: .
+    cmds:
+      - go generate
 
   update:build-assets:
     summary: Updates the build assets

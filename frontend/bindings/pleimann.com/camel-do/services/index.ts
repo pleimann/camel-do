@@ -7,5 +7,3 @@ export {
     GreetService,
     TaskService
 };
-
-export * from "./models.js";

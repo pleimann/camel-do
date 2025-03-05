@@ -1,4 +1,4 @@
-import { SearchIcon, BellIcon, MoonIcon, SunIcon, RefreshIcon } from '@/components/Icons';
+import Icon from "@/components/Icon";
 
 export type TitleBarAction = "refresh" | "search";
 
@@ -26,18 +26,18 @@ export default function TitleBar(props: Props) {
       </div>
       <div class="navbar-end flex flex-row gap-2">
         <button class="btn btn-ghost btn-circle" onClick={search}>
-          <SearchIcon class="size-6" />
+          <Icon.Search class="size-6" />
         </button>
         <button class="btn btn-ghost btn-circle">
-          <BellIcon class="size-6" />
+          <Icon.Bell class="size-6" />
         </button>
         <button class="btn btn-ghost btn-circle" onClick={refresh}>
-          <RefreshIcon class="size-6" />
+          <Icon.Refresh class="size-6" />
         </button>
         <label class="btn btn-ghost btn-circle swap swap-rotate">
           <input type="checkbox" value="dark" class="theme-controller" />
-          <SunIcon class="size-6 swap-on" />
-          <MoonIcon class="size-6 swap-off" />
+          <Icon.Sun class="size-6 swap-on" />
+          <Icon.Moon class="size-6 swap-off" />
         </label>
       </div>
     </div>

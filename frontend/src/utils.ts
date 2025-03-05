@@ -1,6 +1,6 @@
 import { createEffect } from "solid-js";
-import { createStore } from "solid-js/store";
 import type { SetStoreFunction, Store } from "solid-js/store";
+import { createStore } from "solid-js/store";
 
 export function createLocalStore<T extends object>(
   name: string,

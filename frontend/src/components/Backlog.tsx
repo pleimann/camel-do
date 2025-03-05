@@ -1,4 +1,4 @@
-import { Task } from "@bindings/pleimann.com/camel-do/services";
+import { Task } from "@bindings/pleimann.com/camel-do/model";
 import { For, mergeProps } from "solid-js";
 import TaskView from "./TaskView";
 

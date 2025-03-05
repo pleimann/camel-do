@@ -7,6 +7,6 @@ export default defineConfig({
   plugins: [
     tailwindcss(),
     solid(),
-    tsconfigPaths({ root: './' })
+    tsconfigPaths({ root: './' }),
   ]
 })

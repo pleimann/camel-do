@@ -1,18 +1,11 @@
-import { createSignal, mergeProps } from "solid-js";
+import { mergeProps } from "solid-js";
 
-import { 
-  ChevronDownIcon, 
-  ChevronUpIcon, 
-  ScheduleIcon, 
-  TrashIcon,
-  MenuIcon,
-  CheckCircleIcon,
-} from '@/components/Icons';
+import Icon from '@/components/Icon';
 
-import { Task } from "@bindings/pleimann.com/camel-do/services";
+import { Task } from "@bindings/pleimann.com/camel-do/model";
 import { type TaskAction } from "@/components/Backlog";
 
-const backgroundColors = [
+[
   "bg-red-100",
   "bg-orange-100",
   "bg-amber-100",
@@ -28,9 +21,9 @@ const backgroundColors = [
   "bg-fuchsia-100",
   "bg-pink-100",
   "bg-rose-100",
-]
+];
 
-const textColors = [
+[
   "text-red-900",
   "text-orange-900",
   "text-amber-900",
@@ -46,7 +39,7 @@ const textColors = [
   "text-fuchsia-900",
   "text-pink-900",
   "text-rose-900",
-]
+];
 
 interface Props {
   task: Task;
@@ -60,42 +53,36 @@ const defaults: Partial<Props> = {
 export default function TaskView(props: Props) {
   const p = mergeProps(defaults, props);
 
-  const [show, toggleShow] = createSignal(false);
-
-  const backgroundClass = backgroundColors[p.task.color];
-  const textClass = textColors[p.task.color];
+  const backgroundClass = `bg-${p.task.color.toLowerCase()}-100`;
+  const textClass = `text-${p.task.color.toLowerCase()}-900`;
   
   let actionsMenu!: HTMLDivElement;
 
   const taskAction = (action: TaskAction) => {
     p.onTaskAction(p.task, action);
-    
-    close();
   };
 
-  const close = () => (document.activeElement as HTMLElement)?.blur();
-
   return (
-    <div class="card card-side card-sm bg-base-100 shadow-sm select-none">
+    <div class="card card-side card-sm bg-base-100 shadow-md select-none">
       <figure class={`w-20 max-w-20 min-w-20 ${backgroundClass} ${textClass}`}>
-        <CheckCircleIcon class="size-10" />
+        <Icon name={p.task.icon} class="size-8" />
       </figure>
       <div class="card-body flex-col justify-start items-start">
-        <p class="card-title">{p.task.title}</p>
-        <p class="text-sm">{p.task.duration}</p>
+        <p class="text-lg font-bold line-clamp-1">{p.task.title}</p>
+        <time class="text-sm italic">{p.task.duration}</time>
       </div>
       <div class="card-actions rounded-e-box bg-base-200 p-2">
         <div class="flex flex-col gap-2">
           <div class="dropdown dropdown-hover dropdown-left dropdown-center rounded-2xl" ref={actionsMenu}>
-            <button class="btn btn-circle btn-ghost" role="button" tabIndex={0}><MenuIcon class="size-6" /></button>
+            <button class="btn btn-circle btn-ghost" role="button" tabIndex={0}><Icon.Menu class="size-6" /></button>
             <ul class="dropdown-content p-2 z-1 gap-2 flex flex-row-reverse rounded-s-full bg-base-200/90 bg-blend-overlay" tabIndex={0}>
-              <li><button class="btn btn-circle tooltip tooltip-bottom shadow-sm" data-tip="Complete" onClick={(e) => taskAction('complete')}><CheckCircleIcon class="size-6" /></button></li>
-              <li><button class="btn btn-circle tooltip tooltip-bottom shadow-sm" data-tip="Schedule" onClick={(e) => taskAction('schedule')}><ScheduleIcon class="size-6" /></button></li>
-              <li><button class="btn btn-circle tooltip tooltip-bottom shadow-sm" data-tip="Delete" onClick={(e) => taskAction('delete')}><TrashIcon class="size-6" /></button></li>
+              <li><button class="btn btn-circle tooltip tooltip-bottom shadow-sm" data-tip="Complete" onClick={(e) => taskAction('complete')}><Icon.ChevronDown class="size-6" /></button></li>
+              <li><button class="btn btn-circle tooltip tooltip-bottom shadow-sm" data-tip="Schedule" onClick={(e) => taskAction('schedule')}><Icon.Schedule class="size-6" /></button></li>
+              <li><button class="btn btn-circle tooltip tooltip-bottom shadow-sm" data-tip="Delete" onClick={(e) => taskAction('delete')}><Icon.Trash class="size-6" /></button></li>
             </ul>
           </div>
-          <button class="btn btn-circle btn-ghost" onClick={() => toggleShow(!show())}>
-            {show() ? (<ChevronUpIcon class="size-6" />) : (<ChevronDownIcon class="size-6" />)}
+          <button class="btn btn-circle btn-ghost" data-tip={p.task.completed ? "Uncomplete" : "Complete"} onClick={(e) => taskAction('complete')}>
+            {p.task.completed ? (<Icon.CircleChecked class="size-6" />) : (<Icon.Circle class="size-6" />)}
           </button>
         </div>
       </div>

@@ -24,7 +24,7 @@ const App = () => {
               <div class="py-4 pl-4 bg-primary-content h-full shadow-xl">
                 <Backlog tasks={tasks() || []} />
               </div>
-              <div class="grow place-items-center h-full overflow-y-auto">
+              <div class="grow place-items-center h-full overflow-y-auto p-8">
                 <Timeline tasks={tasks() || []} />
               </div>
             </div>

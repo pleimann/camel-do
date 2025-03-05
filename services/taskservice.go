@@ -4,20 +4,24 @@ import (
 	"fmt"
 	"math/rand"
 	"time"
+
+	lorem "github.com/derektata/lorem/ipsum"
+	"pleimann.com/camel-do/model"
+	"pleimann.com/camel-do/utils"
 )
 
 // TaskService is a service for managing tasks.
 type TaskService struct {
 	// Tasks is a slice of Task.
-	Tasks []Task
+	Tasks []model.Task
 }
 
-func (t *TaskService) GetTasks() []Task {
+func (t *TaskService) GetTasks() []model.Task {
 	if t.Tasks == nil {
 		tasks, err := t.generateRandomTasks(rand.Intn(50) + 1)
 
 		if err != nil {
-			return []Task{}
+			return []model.Task{}
 		}
 
 		t.Tasks = tasks
@@ -27,12 +31,12 @@ func (t *TaskService) GetTasks() []Task {
 }
 
 // GenerateRandomTasks generates a slice of Task with random data.
-func (t *TaskService) generateRandomTasks(count int) ([]Task, error) {
+func (t *TaskService) generateRandomTasks(count int) ([]model.Task, error) {
 	if count < 1 || count > 50 {
 		return nil, fmt.Errorf("task count must be between 1 and 50, got %d", count)
 	}
 
-	tasks := make([]Task, count)
+	tasks := make([]model.Task, count)
 	for i := 0; i < count; i++ {
 		tasks[i] = t.generateRandomTask(i)
 	}
@@ -40,12 +44,15 @@ func (t *TaskService) generateRandomTasks(count int) ([]Task, error) {
 	return tasks, nil
 }
 
+var loremGen = lorem.NewGenerator()
+
 // generateRandomTask generates a single task with random data.
-func (t *TaskService) generateRandomTask(id int) Task {
+func (t *TaskService) generateRandomTask(id int) model.Task {
 	// Seed the random number generator.
 	rand.New(rand.NewSource(time.Now().UnixNano()))
 
-	color := Color(rand.Intn(len(colorName)))
+	color := model.Color(model.ColorNames()[rand.Intn(len(model.ColorNames()))])
+	icon := model.Icon(model.IconNames()[rand.Intn(len(model.IconNames()))])
 
 	// Generate random title.
 	titles := []string{
@@ -64,26 +71,13 @@ func (t *TaskService) generateRandomTask(id int) Task {
 	title := titles[rand.Intn(len(titles))]
 
 	// Generate random description.
-	descriptions := []string{
-		"Implement feature X",
-		"Fix issue Y in module Z",
-		"Write tests for the new functionality",
-		"Update documentation",
-		"Discuss requirements with team",
-		"Prepare presentation",
-		"Optimize performance",
-		"Refactor for better readability",
-		"Investigate unexpected behavior",
-		"Setup new environment",
-		"Research possible solutions",
-	}
-	description := descriptions[rand.Intn(len(descriptions))]
+	description := loremGen.Generate(rand.Intn(20) + 5)
 
 	// Generate random start time within the past week.
 	startTime := time.Now().Add(time.Duration(-rand.Intn(7*24)) * time.Hour)
 
 	// Generate random duration between 15 minutes and 4 hours.
-	duration := time.Duration(rand.Intn(4*60-15)+15) * time.Minute
+	duration := utils.Duration{Duration: time.Duration(rand.Intn(4*60-15)+15) * time.Minute}
 
 	// Generate random completed status.
 	completed := rand.Intn(2) == 1
@@ -94,15 +88,5 @@ func (t *TaskService) generateRandomTask(id int) Task {
 		updatedAt = time.Now()
 	}
 
-	return Task{
-		ID:          id,
-		Color:       color,
-		Title:       title,
-		Description: description,
-		StartTime:   startTime,
-		Duration:    duration,
-		Completed:   completed,
-		CreatedAt:   createdAt,
-		UpdatedAt:   updatedAt,
-	}
+	return model.NewTask(id, title, description, color, icon, startTime, duration, completed, createdAt, updatedAt)
 }
