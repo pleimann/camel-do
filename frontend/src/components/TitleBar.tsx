@@ -34,10 +34,11 @@ export default function TitleBar(props: Props) {
         <button class="btn btn-ghost btn-circle" onClick={refresh}>
           <RefreshIcon class="size-6" />
         </button>
-        <button class="btn btn-ghost btn-circle swap swap-rotate">
+        <label class="btn btn-ghost btn-circle swap swap-rotate">
+          <input type="checkbox" value="dark" class="theme-controller" />
           <SunIcon class="size-6 swap-on" />
           <MoonIcon class="size-6 swap-off" />
-        </button>
+        </label>
       </div>
     </div>
   )
