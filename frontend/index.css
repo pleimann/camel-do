@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@plugin "tailwind-scrollbar";
 @plugin "daisyui" {
   themes: light --default, dark --prefersdark, night;
 }
@@ -13,4 +14,23 @@
 html {
   height: 100%;
   overflow: hidden;
+}
+
+::-webkit-scrollbar {
+  width: calc(var(--spacing) * 2);
+  height: calc(var(--spacing) * 2);
+}
+
+::-webkit-scrollbar-track {
+  background-color: transparent;
+  border-radius: 50%;
+}
+
+::-webkit-scrollbar-corner {
+  background-color: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: var(--color-gray-300);
+  border-radius: 1000px; /* can't use 50% cause it will produce an oval */
 }

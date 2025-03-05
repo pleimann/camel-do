@@ -16,7 +16,7 @@ export default function Backlog(props: Props) {
   }
 
   return (
-    <div class="mb-4 pr-4 flex flex-col gap-2 h-full overflow-y-auto">
+    <div class="w-96 min-w-96 mb-4 mr-1 pr-1 flex flex-col gap-2 h-full overflow-y-auto">
       <For each={p.tasks} fallback={<div>Loading...</div>}>
         {(task) => <TaskView task={task} onTaskAction={onTaskAction} />}
       </For>

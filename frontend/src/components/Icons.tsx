@@ -5,6 +5,7 @@ export {
   TbSun as SunIcon,
   TbTrashX as TrashIcon,
   TbMenu as MenuIcon,
+  TbRefresh as RefreshIcon
 } from 'solid-icons/tb';
 
 export { 
