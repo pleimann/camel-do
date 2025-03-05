@@ -17,18 +17,11 @@ const (
 	ColorTeal
 	ColorCyan
 	ColorSky
-	ColorBlue
-	ColorIndigo
 	ColorViolet
 	ColorPurple
 	ColorFuchsia
 	ColorPink
 	ColorRose
-	ColorSlate
-	ColorGray
-	ColorZinc
-	ColorNeutral
-	ColorStone
 )
 
 var colorName = map[Color]string{
@@ -42,18 +35,11 @@ var colorName = map[Color]string{
 	ColorTeal:    "teal",
 	ColorCyan:    "cyan",
 	ColorSky:     "sky",
-	ColorBlue:    "blue",
-	ColorIndigo:  "indigo",
-	ColorViolet:  "violat",
+	ColorViolet:  "violet",
 	ColorPurple:  "purple",
-	ColorFuchsia: "fuchsio",
+	ColorFuchsia: "fuchsia",
 	ColorPink:    "pink",
 	ColorRose:    "rose",
-	ColorSlate:   "slate",
-	ColorGray:    "gray",
-	ColorZinc:    "zinc",
-	ColorNeutral: "neutral",
-	ColorStone:   "stone",
 }
 
 func (c Color) String() string {

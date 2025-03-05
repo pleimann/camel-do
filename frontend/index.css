@@ -10,6 +10,12 @@
   --radius-field: 0.5rem;
   --radius-box: 0.5rem;
 }
+@plugin "daisyui/theme" {
+  name: "dark";
+  --radius-selector: 1rem;
+  --radius-field: 0.5rem;
+  --radius-box: 0.5rem;
+}
 
 html {
   height: 100%;

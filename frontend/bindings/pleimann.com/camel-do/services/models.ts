@@ -25,18 +25,11 @@ export enum Color {
     ColorTeal = 7,
     ColorCyan = 8,
     ColorSky = 9,
-    ColorBlue = 10,
-    ColorIndigo = 11,
-    ColorViolet = 12,
-    ColorPurple = 13,
-    ColorFuchsia = 14,
-    ColorPink = 15,
-    ColorRose = 16,
-    ColorSlate = 17,
-    ColorGray = 18,
-    ColorZinc = 19,
-    ColorNeutral = 20,
-    ColorStone = 21,
+    ColorViolet = 10,
+    ColorPurple = 11,
+    ColorFuchsia = 12,
+    ColorPink = 13,
+    ColorRose = 14,
 };
 
 /**

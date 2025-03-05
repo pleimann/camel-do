@@ -23,18 +23,11 @@ const backgroundColors = [
   "bg-teal-100",
   "bg-cyan-100",
   "bg-sky-100",
-  "bg-blue-100",
-  "bg-indigo-100",
-  "bg-violat-100",
+  "bg-violet-100",
   "bg-purple-100",
-  "bg-fuchsio-100",
+  "bg-fuchsia-100",
   "bg-pink-100",
   "bg-rose-100",
-  "bg-slate-100",
-  "bg-gray-100",
-  "bg-zinc-100",
-  "bg-neutral-100",
-  "bg-stone-100",
 ]
 
 const textColors = [
@@ -48,18 +41,11 @@ const textColors = [
   "text-teal-900",
   "text-cyan-900",
   "text-sky-900",
-  "text-blue-900",
-  "text-indigo-900",
-  "text-violat-900",
+  "text-violet-900",
   "text-purple-900",
-  "text-fuchsio-900",
+  "text-fuchsia-900",
   "text-pink-900",
   "text-rose-900",
-  "text-slate-900",
-  "text-gray-900",
-  "text-zinc-900",
-  "text-neutral-900",
-  "text-stone-900",
 ]
 
 interface Props {
