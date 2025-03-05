@@ -40,3 +40,18 @@ html {
   background-color: var(--color-gray-300);
   border-radius: 1000px; /* can't use 50% cause it will produce an oval */
 }
+
+/* From solidjs.com title bar to be used at bottom of backlog */
+.fade {
+  position: absolute;
+  z-index: 1;
+  pointer-events: none;
+  transition: opacity 300ms, transform 300ms;
+  top: 0px;
+  left: 0px;
+  background: linear-gradient(to right, rgb(255, 255, 255), 50%, rgba(255, 255, 255, 0));
+  width: 25%;
+  height: 100%;
+  transform-origin: left center;
+  opacity: 1;
+}
