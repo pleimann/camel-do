@@ -7,24 +7,30 @@ import Backlog from '@/components/Backlog';
 import Timeline from '@/components/Timeline';
 
 const App = () => {
-  const [tasks] = createResource(async () => await TaskService.GetTasks());
+  const [tasks, { refetch }] = createResource(async () => await TaskService.GetTasks());
 
   const onTitleBarAction = (action: TitleBarAction) => {
-    console.log(action);
+    switch(action) {
+      case "refresh":
+        refetch();
+        break;
+      case "search":
+        break;
+    }
   }
 
   return (
-    <div class="mt-[64px] scrollbar-thin scrollbar-track-rounded-full scrollbar-thumb-accent scrollbar-track-slate-300">
+    <div>
       <TitleBar onAction={onTitleBarAction} />
 
-      <main class="h-[calc(100dvh-64px)] max-h-[calc(100dvh-64px)] w-full overflow-hidden">
+      <main class="h-[calc(100dvh-(var(--spacing)*16))] max-h-[calc(100dvh-(var(--spacing)*16))] w-full overflow-hidden">
         <ErrorBoundary fallback={(err) => <div>Error: {err.message}</div>}>
           <Suspense ref={tasks()}>
-            <div class="flex flex-row h-full w-full">
-              <div class="py-4 pl-4 bg-primary-content h-full shadow-xl">
+            <div class="flex flex-row h-full">
+              <div class="py-4 pr-1 bg-primary-content/50 dark:bg-primary-content h-full min-w-75">
                 <Backlog tasks={tasks() || []} />
               </div>
-              <div class="grow place-items-center h-full overflow-y-auto p-8">
+              <div class="grow overflow-y-auto m-1 p-8">
                 <Timeline tasks={tasks() || []} />
               </div>
             </div>

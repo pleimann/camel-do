@@ -6,7 +6,7 @@ interface Props {
   tasks: Task[]
 }
 
-export type TaskAction = "complete" | "schedule" | "delete";
+export type TaskAction = "complete" | "schedule" | "delete" | "edit";
 
 export default function Backlog(props: Props) {
   const p = mergeProps({tasks: []}, props);
@@ -15,8 +15,8 @@ export default function Backlog(props: Props) {
     console.log(`${action} task ${task.id}`)
   }
 
-  return (
-    <div class="w-96 min-w-96 mb-4 mr-1 pr-1 flex flex-col gap-2 h-full overflow-y-auto">
+  return ( // padding being defined in Backlog component rather than parent (App) prevents drop shadows from being clipped
+    <div class="pl-4 pb-2 pr-1 flex flex-col gap-2 h-full w-full overflow-y-scroll">
       <For each={p.tasks} fallback={<div>Loading...</div>}>
         {(task) => <TaskView task={task} onTaskAction={onTaskAction} />}
       </For>

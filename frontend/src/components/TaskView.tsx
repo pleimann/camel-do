@@ -63,27 +63,29 @@ export default function TaskView(props: Props) {
   };
 
   return (
-    <div class="card card-side card-sm bg-base-100 shadow-md select-none">
-      <figure class={`w-20 max-w-20 min-w-20 ${backgroundClass} ${textClass}`}>
-        <Icon name={p.task.icon} class="size-8" />
+    <div class="card card-side card-xs bg-base-100 dark:bg-base-300 shadow-md text-sm select-none rounded-2xl">
+      <figure class={`w-18 ${backgroundClass} ${textClass}`}>
+        <Icon name={p.task.icon} class="size-7" strokeWidth={1.25} />
       </figure>
-      <div class="card-body flex-col justify-start items-start">
-        <p class="text-lg font-bold line-clamp-1">{p.task.title}</p>
-        <time class="text-sm italic">{p.task.duration}</time>
+      <div class="card-body flex-col justify-center items-start">
+        <div class="text-sm font-medium">{p.task.title}</div>
+        <time class="italic">{p.task.duration}</time>
       </div>
-      <div class="card-actions rounded-e-box bg-base-200 p-2">
-        <div class="flex flex-col gap-2">
-          <div class="dropdown dropdown-hover dropdown-left dropdown-center rounded-2xl" ref={actionsMenu}>
-            <button class="btn btn-circle btn-ghost" role="button" tabIndex={0}><Icon.Menu class="size-6" /></button>
+      <div class="card-actions rounded-e-2xl bg-base-200 p-2">
+        <div class="flex flex-col justify-between">
+          <div class="dropdown dropdown-hover dropdown-left dropdown-center" ref={actionsMenu}>
+            <button class="btn btn-circle btn-ghost" role="button" tabIndex={0}><Icon.Menu class="size-4" /></button>
             <ul class="dropdown-content p-2 z-1 gap-2 flex flex-row-reverse rounded-s-full bg-base-200/90 bg-blend-overlay" tabIndex={0}>
-              <li><button class="btn btn-circle tooltip tooltip-bottom shadow-sm" data-tip="Complete" onClick={(e) => taskAction('complete')}><Icon.ChevronDown class="size-6" /></button></li>
-              <li><button class="btn btn-circle tooltip tooltip-bottom shadow-sm" data-tip="Schedule" onClick={(e) => taskAction('schedule')}><Icon.Schedule class="size-6" /></button></li>
-              <li><button class="btn btn-circle tooltip tooltip-bottom shadow-sm" data-tip="Delete" onClick={(e) => taskAction('delete')}><Icon.Trash class="size-6" /></button></li>
+              <li><button class="btn btn-circle btn-ghost tooltip tooltip-bottom" data-tip="Edit" onClick={(e) => taskAction('edit')}><Icon.Edit class="size-4" /></button></li>
+              <li>
+                <button class="btn btn-circle btn-ghost tooltip tooltip-bottom" data-tip={p.task.completed ? "Uncomplete" : "Complete"} onClick={(e) => taskAction('complete')}>
+                  {p.task.completed ? (<Icon.CircleChecked class="size-4" />) : (<Icon.Circle class="size-4" />)}
+                </button>
+              </li>
+              <li><button class="btn btn-circle btn-ghost tooltip tooltip-bottom" data-tip="Delete" onClick={(e) => taskAction('delete')}><Icon.Trash class="size-4" /></button></li>
             </ul>
           </div>
-          <button class="btn btn-circle btn-ghost" data-tip={p.task.completed ? "Uncomplete" : "Complete"} onClick={(e) => taskAction('complete')}>
-            {p.task.completed ? (<Icon.CircleChecked class="size-6" />) : (<Icon.Circle class="size-6" />)}
-          </button>
+          <button class="btn btn-circle btn-ghost tooltip tooltip-left" data-tip="Schedule" onClick={(e) => taskAction('schedule')}><Icon.Schedule class="size-4" /></button>
         </div>
       </div>
     </div>

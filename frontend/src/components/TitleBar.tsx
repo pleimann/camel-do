@@ -18,23 +18,23 @@ export default function TitleBar(props: Props) {
   }
 
   return (
-    <div class="navbar bg-neutral-100 shadow-md fixed top-0 left-0 w-full">
+    <div class="navbar shadow-lg bg-auto w-full p-0 pr-6">
       <div class="navbar-start">
       </div>
       <div class="navbar-center">
-        <a class="btn btn-ghost text-xl">Camel Do</a>
+        <a class="text-lg font-black font-stretch-125%">Camel Do</a>
       </div>
       <div class="navbar-end flex flex-row gap-2">
-        <button class="btn btn-ghost btn-circle" onClick={search}>
+        <button class="btn btn-lg btn-ghost btn-circle" onClick={search}>
           <Icon.Search class="size-6" />
         </button>
-        <button class="btn btn-ghost btn-circle">
+        <button class="btn btn-lg btn-ghost btn-circle">
           <Icon.Bell class="size-6" />
         </button>
-        <button class="btn btn-ghost btn-circle" onClick={refresh}>
+        <button class="btn btn-lg btn-ghost btn-circle" onClick={refresh}>
           <Icon.Refresh class="size-6" />
         </button>
-        <label class="btn btn-ghost btn-circle swap swap-rotate">
+        <label class="btn btn-lg btn-ghost btn-circle swap swap-rotate">
           <input type="checkbox" value="dark" class="theme-controller" />
           <Icon.Sun class="size-6 swap-on" />
           <Icon.Moon class="size-6 swap-off" />

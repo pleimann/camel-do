@@ -72,8 +72,8 @@ func createWindow(app *application.App) *application.WebviewWindow {
 		InitialPosition: application.WindowXY,
 		X:               viper.GetInt("WINDOW_X"),
 		Y:               viper.GetInt("WINDOW_Y"),
-		Width:           viper.GetInt("WINDOW_WIDTH"),
-		Height:          viper.GetInt("WINDOW_HEIGHT"),
+		Width:           768,
+		Height:          1024,
 		Mac: application.MacWindow{
 			InvisibleTitleBarHeight: 64,
 			Backdrop:                application.MacBackdropNormal,

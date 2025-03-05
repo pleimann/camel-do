@@ -19,11 +19,10 @@ export default function Timeline(props: Props) {
             </Show>
             <div class="timeline-middle mb-2">
               {task.completed ? (<Icon.CircleChecked class="size-6" />) : (<Icon.Circle class="size-6" />)}
-
             </div>
-            <div class={`mb-10 ${i() % 2 ? "md:text-end timeline-start" : "md:text-start timeline-end"} `} >
+            <div class={`pt-1 mb-4 ${i() % 2 ? "md:text-end timeline-start" : "md:text-start timeline-end"} `} >
               <div class="font-bold">{task.title}</div>
-              <div class="font-mono italic">{task.duration}</div>
+              <div class="font-light italic">{task.duration}</div>
               {task.description}
             </div>
             <Show when={i() < p.tasks.length - 1}>

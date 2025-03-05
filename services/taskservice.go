@@ -17,15 +17,15 @@ type TaskService struct {
 }
 
 func (t *TaskService) GetTasks() []model.Task {
-	if t.Tasks == nil {
-		tasks, err := t.generateRandomTasks(rand.Intn(50) + 1)
+	// if t.Tasks == nil {
+	tasks, err := t.generateRandomTasks(rand.Intn(50) + 1)
 
-		if err != nil {
-			return []model.Task{}
-		}
-
-		t.Tasks = tasks
+	if err != nil {
+		return []model.Task{}
 	}
+
+	t.Tasks = tasks
+	// }
 
 	return t.Tasks
 }

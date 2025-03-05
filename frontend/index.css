@@ -1,21 +1,32 @@
 @import "tailwindcss";
 @plugin "daisyui" {
-  themes: light --default, dark --prefersdark, night;
+  themes: light --default, dark --prefersdark;
+  exclude: scrollbar;
 }
 
 @plugin "daisyui/theme" {
   name: "light";
   default: true;
+  color-scheme: light;
+
   --radius-selector: 1rem;
   --radius-field: 0.5rem;
   --radius-box: 0.5rem;
+
+  --size-selector: 0.17rem;
+  --size-field: 0.17rem;
 }
 
 @plugin "daisyui/theme" {
   name: "dark";
+  color-scheme: dark;
+
   --radius-selector: 1rem;
   --radius-field: 0.5rem;
   --radius-box: 0.5rem;
+
+  --size-selector: 0.17rem;
+  --size-field: 0.17rem;
 }
 
 html {
@@ -24,8 +35,8 @@ html {
 }
 
 ::-webkit-scrollbar {
-  width: calc(var(--spacing) * 2);
-  height: calc(var(--spacing) * 2);
+  width: var(--spacing);
+  height: var(--spacing);
 }
 
 ::-webkit-scrollbar-track {

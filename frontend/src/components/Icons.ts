@@ -28,3 +28,4 @@ export {default as Bug} from 'lucide-solid/icons/bug';
 export {default as Fish} from 'lucide-solid/icons/fish';
 export {default as Rat} from 'lucide-solid/icons/rat';
 export {default as Worm} from 'lucide-solid/icons/worm';
+export {default as Edit} from 'lucide-solid/icons/edit';
