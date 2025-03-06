@@ -14,6 +14,15 @@ import {Call as $Call, Create as $Create} from "@wailsio/runtime";
 // @ts-ignore: Unused imports
 import * as model$0 from "../model/models.js";
 
+export function CreateTask(task: model$0.Task): Promise<model$0.Task> & { cancel(): void } {
+    let $resultPromise = $Call.ByID(1131059521, task) as any;
+    let $typingPromise = $resultPromise.then(($result: any) => {
+        return $$createType0($result);
+    }) as any;
+    $typingPromise.cancel = $resultPromise.cancel.bind($resultPromise);
+    return $typingPromise;
+}
+
 export function GetTasks(): Promise<model$0.Task[]> & { cancel(): void } {
     let $resultPromise = $Call.ByID(1119464718) as any;
     let $typingPromise = $resultPromise.then(($result: any) => {

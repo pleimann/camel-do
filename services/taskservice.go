@@ -17,7 +17,6 @@ type TaskService struct {
 }
 
 func (t *TaskService) GetTasks() []model.Task {
-	// if t.Tasks == nil {
 	tasks, err := t.generateRandomTasks(rand.Intn(50) + 1)
 
 	if err != nil {
@@ -25,9 +24,14 @@ func (t *TaskService) GetTasks() []model.Task {
 	}
 
 	t.Tasks = tasks
-	// }
 
 	return t.Tasks
+}
+
+func (t *TaskService) CreateTask(task model.Task) (model.Task, error) {
+	t.Tasks = append(t.Tasks, task)
+
+	return task, nil
 }
 
 // GenerateRandomTasks generates a slice of Task with random data.
