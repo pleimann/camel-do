@@ -5,42 +5,6 @@ import Icon from '@/components/Icon';
 import { Task } from "@bindings/pleimann.com/camel-do/model";
 import { type TaskAction } from "@/components/Backlog";
 
-[
-  "bg-red-100",
-  "bg-orange-100",
-  "bg-amber-100",
-  "bg-yellow-100",
-  "bg-lime-100",
-  "bg-green-100",
-  "bg-emerald-100",
-  "bg-teal-100",
-  "bg-cyan-100",
-  "bg-sky-100",
-  "bg-violet-100",
-  "bg-purple-100",
-  "bg-fuchsia-100",
-  "bg-pink-100",
-  "bg-rose-100",
-];
-
-[
-  "text-red-900",
-  "text-orange-900",
-  "text-amber-900",
-  "text-yellow-900",
-  "text-lime-900",
-  "text-green-900",
-  "text-emerald-900",
-  "text-teal-900",
-  "text-cyan-900",
-  "text-sky-900",
-  "text-violet-900",
-  "text-purple-900",
-  "text-fuchsia-900",
-  "text-pink-900",
-  "text-rose-900",
-];
-
 interface Props {
   task: Task;
   onTaskAction: (task: Task, action: TaskAction) => void
@@ -53,8 +17,8 @@ const defaults: Partial<Props> = {
 export default function TaskView(props: Props) {
   const p = mergeProps(defaults, props);
 
-  const backgroundClass = `bg-${p.task.color.toLowerCase()}-100`;
-  const textClass = `text-${p.task.color.toLowerCase()}-900`;
+  const backgroundClass = `bg-${p.task.color.toLowerCase()}-100 dark:bg-${p.task.color.toLowerCase()}-900`;
+  const textClass = `text-${p.task.color.toLowerCase()}-900 dark:text-${p.task.color.toLowerCase()}-100`;
   
   let actionsMenu!: HTMLDivElement;
 
@@ -91,3 +55,72 @@ export default function TaskView(props: Props) {
     </div>
   );
 }
+
+// The code dynamically generates these names so tailwind can't pick them up
+[
+  "bg-red-100",
+  "bg-orange-100",
+  "bg-amber-100",
+  "bg-yellow-100",
+  "bg-lime-100",
+  "bg-green-100",
+  "bg-emerald-100",
+  "bg-teal-100",
+  "bg-cyan-100",
+  "bg-sky-100",
+  "bg-violet-100",
+  "bg-purple-100",
+  "bg-fuchsia-100",
+  "bg-pink-100",
+  "bg-rose-100",
+
+  "dark:bg-red-900",
+  "dark:bg-orange-900",
+  "dark:bg-amber-900",
+  "dark:bg-yellow-900",
+  "dark:bg-lime-900",
+  "dark:bg-green-900",
+  "dark:bg-emerald-900",
+  "dark:bg-teal-900",
+  "dark:bg-cyan-900",
+  "dark:bg-sky-900",
+  "dark:bg-violet-900",
+  "dark:bg-purple-900",
+  "dark:bg-fuchsia-900",
+  "dark:bg-pink-900",
+  "dark:bg-rose-900",
+];
+
+[
+  "dark:text-red-100",
+  "dark:text-orange-100",
+  "dark:text-amber-100",
+  "dark:text-yellow-100",
+  "dark:text-lime-100",
+  "dark:text-green-100",
+  "dark:text-emerald-100",
+  "dark:text-teal-100",
+  "dark:text-cyan-100",
+  "dark:text-sky-100",
+  "dark:text-violet-100",
+  "dark:text-purple-100",
+  "dark:text-fuchsia-100",
+  "dark:text-pink-100",
+  "dark:text-rose-100",
+
+  "text-red-900",
+  "text-orange-900",
+  "text-amber-900",
+  "text-yellow-900",
+  "text-lime-900",
+  "text-green-900",
+  "text-emerald-900",
+  "text-teal-900",
+  "text-cyan-900",
+  "text-sky-900",
+  "text-violet-900",
+  "text-purple-900",
+  "text-fuchsia-900",
+  "text-pink-900",
+  "text-rose-900",
+];

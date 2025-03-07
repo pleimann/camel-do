@@ -16,7 +16,7 @@ export default function Backlog(props: Props) {
   }
 
   return ( // padding being defined in Backlog component rather than parent (App) prevents drop shadows from being clipped
-    <div class="pl-4 pb-2 pr-1 flex flex-col gap-2 h-full w-full overflow-y-scroll">
+    <div class="pl-4 py-4 pr-1 flex flex-col gap-2 h-full w-full overflow-y-scroll scroll-shadows">
       <For each={p.tasks} fallback={<div>Loading...</div>}>
         {(task) => <TaskView task={task} onTaskAction={onTaskAction} />}
       </For>

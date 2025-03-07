@@ -1,7 +1,7 @@
 import { createResource, ErrorBoundary, Suspense } from 'solid-js';
-import { Portal } from "solid-js/web"
+import { Portal } from "solid-js/web";
 
-import { TaskService } from '@bindings/pleimann.com/camel-do/services'
+import { TaskService } from '@bindings/pleimann.com/camel-do/services/task';
 
 import TitleBar, { TitleBarAction } from '@/components/TitleBar';
 import Backlog from '@/components/Backlog';
@@ -24,7 +24,7 @@ const App = () => {
 
   let modal: HTMLDialogElement | undefined;
 
-  const newTask = () => {
+  const newTask = async () => {
     modal?.showModal()
   }
 
@@ -37,7 +37,7 @@ const App = () => {
           <ErrorBoundary fallback={(err) => <div>Error: {err.message}</div>}>
             <Suspense ref={tasks()}>
               <div class="flex flex-row h-full">
-                <div class="py-4 pr-1 bg-primary-content/50 dark:bg-primary-content h-full min-w-75">
+                <div class="pr-1 bg-primary/40 dark:bg-primary-content h-full min-w-75">
                   <Backlog tasks={tasks() || []} />
                 </div>
                 <div class="grow overflow-y-auto m-1 p-8">

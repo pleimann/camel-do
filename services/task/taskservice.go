@@ -1,4 +1,4 @@
-package services
+package task
 
 import (
 	"fmt"
@@ -14,6 +14,13 @@ import (
 type TaskService struct {
 	// Tasks is a slice of Task.
 	Tasks []model.Task
+}
+
+type Config struct {
+}
+
+func NewTaskService(config Config) *TaskService {
+	return &TaskService{}
 }
 
 func (t *TaskService) GetTasks() []model.Task {

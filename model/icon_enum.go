@@ -34,6 +34,8 @@ const (
 	IconRat Icon = "Rat"
 	// IconWorm is a Icon of type Worm.
 	IconWorm Icon = "Worm"
+	// IconBear is a Icon of type Bear.
+	IconBear Icon = "Bear"
 )
 
 var ErrInvalidIcon = fmt.Errorf("not a valid Icon, try [%s]", strings.Join(_IconNames, ", "))
@@ -50,6 +52,7 @@ var _IconNames = []string{
 	string(IconFish),
 	string(IconRat),
 	string(IconWorm),
+	string(IconBear),
 }
 
 // IconNames returns a list of possible string values of Icon.
@@ -73,6 +76,7 @@ func IconValues() []Icon {
 		IconFish,
 		IconRat,
 		IconWorm,
+		IconBear,
 	}
 }
 
@@ -100,6 +104,7 @@ var _IconValue = map[string]Icon{
 	"Fish":     IconFish,
 	"Rat":      IconRat,
 	"Worm":     IconWorm,
+	"Bear":     IconBear,
 }
 
 // ParseIcon attempts to convert a string to a Icon.

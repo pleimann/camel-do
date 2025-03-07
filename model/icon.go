@@ -16,6 +16,7 @@ ENUM(
 	Fish,
 	Rat,
 	Worm,
+	Bear,
 
 )
 */

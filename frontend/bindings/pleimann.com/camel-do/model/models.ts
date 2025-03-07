@@ -46,6 +46,7 @@ export type Color = string;
  * 	Fish,
  * 	Rat,
  * 	Worm,
+ * 	Bear,
  * 
  * )
  */

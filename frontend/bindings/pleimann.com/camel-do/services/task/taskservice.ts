@@ -12,10 +12,10 @@ import {Call as $Call, Create as $Create} from "@wailsio/runtime";
 
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore: Unused imports
-import * as model$0 from "../model/models.js";
+import * as model$0 from "../../model/models.js";
 
 export function CreateTask(task: model$0.Task): Promise<model$0.Task> & { cancel(): void } {
-    let $resultPromise = $Call.ByID(1131059521, task) as any;
+    let $resultPromise = $Call.ByID(234157733, task) as any;
     let $typingPromise = $resultPromise.then(($result: any) => {
         return $$createType0($result);
     }) as any;
@@ -24,7 +24,7 @@ export function CreateTask(task: model$0.Task): Promise<model$0.Task> & { cancel
 }
 
 export function GetTasks(): Promise<model$0.Task[]> & { cancel(): void } {
-    let $resultPromise = $Call.ByID(1119464718) as any;
+    let $resultPromise = $Call.ByID(527301714) as any;
     let $typingPromise = $resultPromise.then(($result: any) => {
         return $$createType1($result);
     }) as any;

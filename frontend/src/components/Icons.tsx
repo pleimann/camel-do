@@ -31,3 +31,10 @@ export { default as Worm } from 'lucide-solid/icons/worm';
 export { default as Edit } from 'lucide-solid/icons/edit';
 export { default as Plus } from 'lucide-solid/icons/plus';
 export { default as Minus } from 'lucide-solid/icons/minus';
+
+// import { Icon } from 'lucide-solid';
+// import { bearFace } from '@lucide/lab';
+
+// const Bear = <Icon iconNode={bearFace} />
+
+// export { Bear };
