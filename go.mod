@@ -5,18 +5,26 @@ go 1.24
 toolchain go1.24.0
 
 require (
+	github.com/99designs/keyring v1.2.2
 	github.com/derektata/lorem v0.0.2
-	github.com/gorilla/pat v1.0.2
-	github.com/gorilla/sessions v1.4.0
-	github.com/markbates/goth v1.80.0
+	github.com/joho/godotenv v1.5.1
 	github.com/spf13/viper v1.19.0
 	github.com/wailsapp/wails/v3 v3.0.0-alpha.9
 )
 
 require (
+	github.com/99designs/go-keychain v0.0.0-20191008050251-8e49817e8af4 // indirect
+	github.com/danieljoos/wincred v1.1.2 // indirect
+	github.com/dvsekhvalnov/jose2go v1.5.0 // indirect
+	github.com/godbus/dbus v0.0.0-20190726142602-4481cbc300e2 // indirect
+	github.com/gsterjov/go-libsecret v0.0.0-20161001094733-a6f4afe4910c // indirect
+	github.com/mtibben/percent v0.2.1 // indirect
+	golang.org/x/term v0.29.0 // indirect
+)
+
+require (
 	cloud.google.com/go/auth v0.15.0 // indirect
 	cloud.google.com/go/auth/oauth2adapt v0.2.7 // indirect
-	cloud.google.com/go/compute v1.24.0 // indirect
 	cloud.google.com/go/compute/metadata v0.6.0 // indirect
 	dario.cat/mergo v1.0.1 // indirect
 	github.com/Microsoft/go-winio v0.6.1 // indirect
@@ -37,14 +45,10 @@ require (
 	github.com/go-ole/go-ole v1.3.0 // indirect
 	github.com/godbus/dbus/v5 v5.1.0 // indirect
 	github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da // indirect
-	github.com/golang/protobuf v1.5.4 // indirect
 	github.com/google/s2a-go v0.1.9 // indirect
 	github.com/google/uuid v1.6.0 // indirect
 	github.com/googleapis/enterprise-certificate-proxy v0.3.5 // indirect
 	github.com/googleapis/gax-go/v2 v2.14.1 // indirect
-	github.com/gorilla/context v1.1.2 // indirect
-	github.com/gorilla/mux v1.8.1 // indirect
-	github.com/gorilla/securecookie v1.1.2 // indirect
 	github.com/hashicorp/hcl v1.0.0 // indirect
 	github.com/jbenet/go-context v0.0.0-20150711004518-d14ea06fba99 // indirect
 	github.com/jchv/go-winloader v0.0.0-20210711035445-715c2860da7e // indirect
@@ -85,13 +89,12 @@ require (
 	golang.org/x/exp v0.0.0-20240719175910-8a7402abbf56 // indirect
 	golang.org/x/mod v0.23.0 // indirect
 	golang.org/x/net v0.35.0 // indirect
-	golang.org/x/oauth2 v0.28.0 // indirect
+	golang.org/x/oauth2 v0.28.0
 	golang.org/x/sync v0.11.0 // indirect
 	golang.org/x/sys v0.30.0 // indirect
 	golang.org/x/text v0.22.0 // indirect
 	golang.org/x/tools v0.30.0 // indirect
-	google.golang.org/api v0.224.0 // indirect
-	google.golang.org/appengine v1.6.8 // indirect
+	google.golang.org/api v0.224.0
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20250227231956-55c901821b1e // indirect
 	google.golang.org/grpc v1.70.0 // indirect
 	google.golang.org/protobuf v1.36.5 // indirect

@@ -1,0 +1,57 @@
+{
+  "version": "2.0.0",
+  "options": {
+    "cwd": "${workspaceFolder}",
+    "env": {
+      "ENV_FILE": "${workspaceFolder}/.env",
+    }
+  },
+  "tasks": [
+    {
+      "label": "wails-dev",
+      "type": "shell",
+      "command": "set -a; . \"$ENV_FILE\"; echo $GOOGLE_CLIENT_ID; wails3 dev",
+      "isBackground": true,
+      "problemMatcher": {
+        "owner": "custom",
+        "pattern": {
+          "regexp": "__________________"
+        },
+        "background": {
+          "activeOnStart": true,
+          "beginsPattern": ".*",
+          "endsPattern": "AssetServer Info: middleware=true handler=true devServerURL=*"
+        }
+      }
+    },
+    {
+      "label": "dlv-server",
+      "type": "shell",
+      "command": "python",
+      "options": {
+        "env": {
+          "PORT": "7890",
+          "PROCESS_NAME": "bin/camel-do"
+        }
+      },
+      "isBackground": true,
+      "problemMatcher": {
+        "owner": "custom",
+        "pattern": {
+          "regexp": "__________________"
+        },
+        "background": {
+          "activeOnStart": true,
+          "beginsPattern": ".*",
+          "endsPattern": "API server listening at: *"
+        }
+      },
+      "args": [
+        "debug.py",
+      ],
+      "dependsOn": [
+        "wails-dev"
+      ]
+    },
+  ]
+}

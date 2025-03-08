@@ -1,26 +1,46 @@
 package task
 
 import (
+	"context"
 	"fmt"
+	"log"
 	"math/rand"
 	"time"
 
 	lorem "github.com/derektata/lorem/ipsum"
 	"pleimann.com/camel-do/model"
 	"pleimann.com/camel-do/utils"
+	"pleimann.com/camel-do/utils/google"
+	"pleimann.com/camel-do/utils/google/oauth"
 )
 
 // TaskService is a service for managing tasks.
 type TaskService struct {
 	// Tasks is a slice of Task.
 	Tasks []model.Task
+
+	config      *Config
+	googleTasks *google.GoogleTasksService
 }
 
 type Config struct {
+	TokenSourceProvider *oauth.TokenSourceProvider
 }
 
-func NewTaskService(config Config) *TaskService {
-	return &TaskService{}
+func NewTaskService(config *Config) *TaskService {
+	googleTasks, err := google.NewGoogleTasksService(
+		context.Background(),
+		config.TokenSourceProvider,
+	)
+
+	if err != nil {
+		log.Fatal("Unable to create Google Tasks service: ", err)
+	}
+
+	return &TaskService{
+		googleTasks: googleTasks,
+		config:      config,
+	}
 }
 
 func (t *TaskService) GetTasks() []model.Task {

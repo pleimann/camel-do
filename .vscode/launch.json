@@ -1,0 +1,15 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Wails Debug with delve",
+      "type": "go",
+      "request": "attach",
+      "mode": "remote",
+      "preLaunchTask": "dlv-server",
+      "remotePath": "${workspaceFolder}",
+      "port": 7890,
+      "host": "localhost"
+    }
+  ]
+}
