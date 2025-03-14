@@ -8,8 +8,8 @@ import (
 	"github.com/spf13/viper"
 	"github.com/wailsapp/wails/v3/pkg/application"
 	"github.com/wailsapp/wails/v3/pkg/events"
+	"pleimann.com/camel-do/services/google/oauth"
 	"pleimann.com/camel-do/services/task"
-	"pleimann.com/camel-do/utils/google/oauth"
 )
 
 var assets embed.FS
@@ -20,7 +20,9 @@ func main() {
 	viper.SetConfigFile(".camel-do")
 	viper.ReadInConfig()
 
-	oauthService := oauth.NewOauthService(&oauth.Config{})
+	oauthService := oauth.NewOauthService(&oauth.Config{
+		OneTapEnabled: true,
+	})
 	tasksService := task.NewTaskService(&task.Config{
 		TokenSourceProvider: &oauthService.TokenSourceProvider,
 	})
@@ -30,6 +32,7 @@ func main() {
 		Description: "Camel Task Manager",
 		Services: []application.Service{
 			application.NewService(tasksService),
+			application.NewService(oauthService),
 		},
 		Assets: application.AssetOptions{
 			Handler: application.AssetFileServerFS(assets),
@@ -41,10 +44,10 @@ func main() {
 
 	var appWindow application.Window
 	user, err := oauthService.Authenticate(func(url string) {
-		app.Logger.Info("Opening...", "url", url)
+		app.Logger.Info("Opening OAuth login page...", "url", url)
 		window := app.NewWebviewWindowWithOptions(
 			application.WebviewWindowOptions{
-				Title:  "OAuth Login",
+				Title:  "Camel Do - Sign In",
 				Width:  600,
 				Height: 850,
 				URL:    url,
@@ -61,9 +64,11 @@ func main() {
 		log.Fatal(err)
 	}
 
-	appWindow.Close()
+	if appWindow != nil {
+		appWindow.Close()
+	}
 
-	app.Logger.Info("Authenticated", "User: ", user)
+	app.Logger.Info("Authenticated", "User", user)
 
 	window := createMainWindow(app)
 

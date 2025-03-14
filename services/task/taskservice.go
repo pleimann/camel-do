@@ -9,9 +9,9 @@ import (
 
 	lorem "github.com/derektata/lorem/ipsum"
 	"pleimann.com/camel-do/model"
+	"pleimann.com/camel-do/services/google"
+	"pleimann.com/camel-do/services/google/oauth"
 	"pleimann.com/camel-do/utils"
-	"pleimann.com/camel-do/utils/google"
-	"pleimann.com/camel-do/utils/google/oauth"
 )
 
 // TaskService is a service for managing tasks.

@@ -24,6 +24,7 @@ type User struct {
 }
 
 type Config struct {
+	OneTapEnabled bool
 }
 
 type TokenSourceProvider func(context.Context) (oauth2.TokenSource, error)
@@ -36,6 +37,7 @@ type OauthService struct {
 	oauthConfig *oauth2.Config
 	token       *oauth2.Token
 	ring        keyring.Keyring
+	oneTapEnabled bool
 }
 
 var clientId, clientSecret string
@@ -83,7 +85,10 @@ func NewOauthService(config *Config) *OauthService {
 			},
 		},
 		ring: ring,
+		oneTapEnabled: config.OneTapEnabled,
 	}
+
+	service.TokenSourceProvider = service.TokenSource
 
 	return service
 }
@@ -111,11 +116,105 @@ func (s *OauthService) User() *User {
 
 func (s *OauthService) Authenticate(launcher func(url string)) (*User, error) {
 	callbackHandler := NewGoogleOauthCallbackHandler(s.oauthConfig)
+	oneTapHandler := NewOneTapHandler(s.oauthConfig)
 
 	mux := http.NewServeMux()
-	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) { w.Write([]byte("Hello World!")) })
+	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) { 
+		// Serve the login page with One Tap integration
+		w.Header().Set("Content-Type", "text/html")
+		loginHTML := `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login - Camel Do</title>
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      margin: 0;
+      background-color: #f5f5f5;
+    }
+    .container {
+      background-color: white;
+      padding: 2rem;
+      border-radius: 8px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      text-align: center;
+      max-width: 400px;
+      width: 100%;
+    }
+    h1 {
+      margin-bottom: 2rem;
+      color: #333;
+    }
+    .or-divider {
+      display: flex;
+      align-items: center;
+      margin: 1.5rem 0;
+    }
+    .or-divider::before, .or-divider::after {
+      content: '';
+      flex: 1;
+      border-bottom: 1px solid #ddd;
+    }
+    .or-divider span {
+      padding: 0 1rem;
+      color: #777;
+    }
+    .btn {
+      display: inline-block;
+      background-color: #4285F4;
+      color: white;
+      padding: 0.75rem 1.5rem;
+      border-radius: 4px;
+      text-decoration: none;
+      font-weight: 500;
+      margin-top: 1rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Welcome to Camel Do</h1>
+    
+    <div id="g_id_onload"
+         data-client_id="` + clientId + `"
+         data-context="signin"
+         data-ux_mode="popup"
+         data-login_uri="http://localhost:9876/auth/google/onetap"
+         data-auto_prompt="true">
+    </div>
+
+    <div class="g_id_signin"
+         data-type="standard"
+         data-shape="rectangular"
+         data-theme="outline"
+         data-text="signin_with"
+         data-size="large"
+         data-logo_alignment="left">
+    </div>
+    
+    <div class="or-divider">
+      <span>OR</span>
+    </div>
+    
+    <a href="/auth/google/login" class="btn">Sign in with Google</a>
+  </div>
+</body>
+</html>
+`
+		w.Write([]byte(loginHTML))
+	})
 	mux.HandleFunc("/auth/google/login", s.oauthGoogleLogin)
 	mux.Handle("/auth/google/callback", callbackHandler)
+	mux.Handle("/auth/google/onetap", oneTapHandler)
 
 	var r http.Handler = mux
 	server := &http.Server{
@@ -131,9 +230,31 @@ func (s *OauthService) Authenticate(launcher func(url string)) (*User, error) {
 		return nil, err
 	}
 
-	launcher("http://localhost:9876/auth/google/login")
+	launcher("http://localhost:9876/")
 
-	user, token := callbackHandler.GetUserAndToken()
+	var user *User
+	var token *oauth2.Token
+
+	// Create a channel to receive authentication method
+	authMethodChan := make(chan string)
+	
+	// Listen for both authentication methods
+	go func() {
+		select {
+		case userInfo := <-callbackHandler.data:
+			user = userInfo.User
+			token = userInfo.Token
+			authMethodChan <- "standard"
+		case userInfo := <-oneTapHandler.data:
+			user = userInfo.User
+			token = userInfo.Token
+			authMethodChan <- "onetap"
+		}
+	}()
+
+	// Wait for authentication to complete
+	authMethod := <-authMethodChan
+	log.Printf("User authenticated via %s", authMethod)
 
 	fmt.Println("got user", "user", user)
 	fmt.Println("storing token in keyring", "token", token)

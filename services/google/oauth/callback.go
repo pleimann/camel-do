@@ -37,7 +37,6 @@ type GoogleOauthCallbackHandler struct {
 func (h *GoogleOauthCallbackHandler) GetUserAndToken() (*User, *oauth2.Token) {
 	userInfo := <-h.data
 
-	
 	fmt.Printf("received user from channel %s\n", userInfo.String())
 
 	return userInfo.User, userInfo.Token

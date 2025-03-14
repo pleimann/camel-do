@@ -6,7 +6,7 @@ import (
 
 	"google.golang.org/api/option"
 	tasks "google.golang.org/api/tasks/v1"
-	"pleimann.com/camel-do/utils/google/oauth"
+	"pleimann.com/camel-do/services/google/oauth"
 )
 
 type GoogleTasksService struct {
