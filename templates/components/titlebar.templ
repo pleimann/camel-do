@@ -1,0 +1,28 @@
+package components
+
+// BodyContent defines HTML content.
+templ TitleBar() {
+	<div class="navbar shadow-lg bg-auto w-full p-0 pr-6">
+    <div class="navbar-start">
+    </div>
+    <div class="navbar-center">
+      <a class="text-lg font-black font-stretch-125%">Camel Do</a>
+    </div>
+    <div class="navbar-end flex flex-row gap-2">
+      <button class="btn btn-lg btn-ghost btn-circle">
+        <i data-lucide="search" class="size-6" />
+      </button>
+      <button class="btn btn-lg btn-ghost btn-circle">
+        <i data-lucide="bell" class="size-6" />
+      </button>
+      <button class="btn btn-lg btn-ghost btn-circle">
+        <i data-lucide="refresh" class="size-6" />
+      </button>
+      <label class="btn btn-lg btn-ghost btn-circle swap swap-rotate">
+        <input type="checkbox" value="dark" class="theme-controller" />
+        <i data-lucide="sun" class="size-6 swap-on" />
+        <i data-lucide="moon" class="size-6 swap-off" />
+      </label>
+    </div>
+  </div>
+}

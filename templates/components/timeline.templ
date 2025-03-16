@@ -1,0 +1,35 @@
+package components
+
+import "github.com/pleimann/camel-do/model"
+
+templ Timeline(tasks []model.Task) {
+  <ul class="timeline timeline-vertical timeline-compact timeline-snap-icon">
+    for i, task := range tasks {
+      <li>
+        if i < 0 { 
+          <hr/> 
+        }
+        <div class="timeline-start">
+          <time class="font-medium" dateTime={task.StartTime.Format("HH:mm")}>
+            {task.StartTime.Format("HH:mm")}
+          </time>
+          <div class="font-light italic">{task.Duration.String()}</div>
+        </div>
+        <div class="timeline-middle mb-2">
+          if task.Completed {
+            <i data-lucide="circle-checked" class="size-8" />
+          } else {
+            <i data-lucide="circle" class="size-8" />
+          }
+        </div>
+        <div class="pt-1 mb-4 timeline-end">
+          <div class="font-bold">{task.Title}</div>
+          <p>{task.Description}</p>
+        </div>
+        if i < len(tasks) {
+          <hr />
+        }
+      </li>
+    }
+  </ul>
+}

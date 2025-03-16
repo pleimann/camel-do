@@ -1,0 +1,14 @@
+github.com/a-h/templ v0.3.833 h1:L/KOk/0VvVTBegtE0fp2RJQiBm7/52Zxv5fqlEHiQUU=
+github.com/a-h/templ v0.3.833/go.mod h1:cAu4AiZhtJfBjMY0HASlyzvkrtjnHWPeEsyGK2YYmfk=
+github.com/angelofallars/htmx-go v0.5.0 h1:L7M48cCH7nX8cV5wRYn04pN6AE4qNdh86iTbuKxhnIo=
+github.com/angelofallars/htmx-go v0.5.0/go.mod h1:izXk6A+Jllc3vXs1dUvxUJs/jE0weiEC07ZPlCVi4cc=
+github.com/derektata/lorem v0.0.2 h1:6esAdZDRz+hHiGO8AWxvDf2CwEb1wV7oi6pRWikG+Os=
+github.com/derektata/lorem v0.0.2/go.mod h1:4elDc+N81tciTDNFVCO3TxJKM+HRVJLszBcG00iREcA=
+github.com/google/go-cmp v0.6.0 h1:ofyhxvXcZhMsU5ulbFiLKl/XBFqE1GSq7atu8tAmTRI=
+github.com/google/go-cmp v0.6.0/go.mod h1:17dUlkBOakJ0+DkrSSNjCkIjxS6bF9zb3elmeNGIjoY=
+github.com/gorilla/mux v1.8.1 h1:TuBL49tXwgrFYWhqrNgrUNEY92u81SPhu7sTdzQEiWY=
+github.com/gorilla/mux v1.8.1/go.mod h1:AKf9I4AEqPTmMytcMc0KkNouC66V3BtZ4qD5fmWSiMQ=
+github.com/joho/godotenv v1.5.1 h1:7eLL/+HRGLY0ldzfGMeQkb7vMd0as4CfYvUVzLqw0N0=
+github.com/joho/godotenv v1.5.1/go.mod h1:f4LDr5Voq0i2e/R5DDNOoa2zzDfwtkZa6DnEwAbqwq4=
+golang.org/x/text v0.11.0 h1:LAntKIrcmeSKERyiOh0XMV39LXS8IE9UL2yP7+f5ij4=
+golang.org/x/text v0.11.0/go.mod h1:TvPlkZtksWOMsz7fbANvkp4WM8x/WCo/om8BMLbz+aE=

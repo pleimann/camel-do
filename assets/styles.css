@@ -1,0 +1,105 @@
+@import 'tailwindcss' source('../templates');
+
+@plugin 'daisyui';
+
+/* User styles */
+@plugin "daisyui" {
+  themes: light --default, dark --prefersdark;
+  exclude: scrollbar;
+}
+
+@plugin "daisyui/theme" {
+  name: "light";
+  default: true;
+  color-scheme: light;
+
+  --radius-selector: 1rem;
+  --radius-field: 0.5rem;
+  --radius-box: 0.5rem;
+
+  --size-selector: 0.17rem;
+  --size-field: 0.17rem;
+}
+
+@plugin "daisyui/theme" {
+  name: "dark";
+  color-scheme: dark;
+
+  --radius-selector: 1rem;
+  --radius-field: 0.5rem;
+  --radius-box: 0.5rem;
+
+  --size-selector: 0.17rem;
+  --size-field: 0.17rem;
+}
+
+html {
+  height: 100%;
+  overflow: hidden;
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-gray-500) white;
+}
+
+::-webkit-scrollbar {
+  width: var(--spacing);
+  height: var(--spacing);
+}
+
+::-webkit-scrollbar-track {
+  background-color: transparent;
+  border-radius: 50%;
+}
+
+::-webkit-scrollbar-corner {
+  background-color: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: var(--color-gray-500);
+  border-radius: 1000px; /* can't use 50% cause it will produce an oval */
+}
+
+.scroll-shadows {
+  --bgRGB: 73, 89, 99;
+  --bg: rgb(var(--bgRGB));
+  --bgTrans: rgba(var(--bgRGB), 0);
+  
+  --shadow: rgba(41, 50, 56, 0.5);
+
+  background:
+    /* Shadow Cover TOP */
+    linear-gradient(
+      var(--bg) 30%,
+      var(--bgTrans)
+    ) center top,
+    
+    /* Shadow Cover BOTTOM */
+    linear-gradient(
+      var(--bgTrans), 
+      var(--bg) 70%
+    ) center bottom,
+    
+    /* Shadow TOP */
+    radial-gradient(
+      farthest-side at 50% 0,
+      var(--shadow),
+      rgba(0, 0, 0, 0)
+    ) center top,
+    
+    /* Shadow BOTTOM */
+    radial-gradient(
+      farthest-side at 50% 100%,
+      var(--shadow),
+      rgba(0, 0, 0, 0)
+    ) center bottom;
+  
+  background-repeat: no-repeat;
+  background-size: 100% 40px, 100% 40px, 100% 14px, 100% 14px;
+  background-attachment: local, local, scroll, scroll;
+}
+
+/* Alpine.js styles */
+
+[x-cloak] {
+  display: none !important;
+}

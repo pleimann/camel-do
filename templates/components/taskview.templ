@@ -1,0 +1,127 @@
+package components
+
+import (
+	"fmt"
+	"github.com/pleimann/camel-do/model"
+	"strings"
+)
+
+// BodyContent defines HTML content.
+templ TaskView(task model.Task) {
+	{{ 
+    backgroundColor := fmt.Sprintf("bg-%s-100", strings.ToLower(task.Color.String()))
+	  backgroundColorDark := fmt.Sprintf("dark:bg-%s-100", strings.ToLower(task.Color.String()))
+	  textColor := fmt.Sprintf("text-%s-100", strings.ToLower(task.Color.String()))
+	  textColorDark := fmt.Sprintf("dark:text-%s-100", strings.ToLower(task.Color.String())) 
+  }}
+
+	<div class="card card-side card-xs bg-base-100 dark:bg-base-300 shadow-md text-sm select-none rounded-2xl">
+		<figure class={ "w-18", backgroundColor, backgroundColorDark, textColor, textColorDark }>
+			<i data-lucide={task.Icon.String()} class="size-7"></i>
+		</figure>
+		<div class="card-body flex-col justify-center items-start">
+			<div class="text-sm font-medium">{ task.Title }</div>
+			<time class="italic">{ task.Duration.String() }</time>
+		</div>
+		<div class="card-actions rounded-e-2xl bg-base-200 p-2">
+			<div class="flex flex-col justify-between">
+				<div class="dropdown dropdown-hover dropdown-left dropdown-center">
+					<button class="btn btn-circle btn-ghost" role="button" tabIndex="0"><i data-lucide="menu" class="size-4" /></button>
+					<ul class="dropdown-content p-2 z-1 gap-2 flex flex-row-reverse rounded-s-full bg-base-200/90 bg-blend-overlay" tabIndex="0">
+						<li><button class="btn btn-circle btn-ghost tooltip tooltip-bottom" data-tip="Edit"><i data-lucide="edit" class="size-4" /></button></li>
+						<li>
+							{{ 
+                var tip string
+                if task.Completed {
+                  tip = "Uncomplete"
+                } else {
+                  tip = "Complete"
+                } 
+              }}
+							<button class="btn btn-circle btn-ghost tooltip tooltip-bottom" data-tip={ tip }>
+								if task.Completed {
+									<i data-lucide="circle-checked" class="size-4"></i>
+								} else {
+									<i data-lucide="circle" class="size-4"></i>
+								}
+							</button>
+						</li>
+						<li>
+							<button class="btn btn-circle btn-ghost tooltip tooltip-bottom" data-tip="Delete">
+								<i data-lucide="trash" class="size-4"></i>
+							</button>
+						</li>
+					</ul>
+				</div>
+				<button class="btn btn-circle btn-ghost tooltip tooltip-left" data-tip="Schedule">
+					<i data-lucide="schedule" class="size-4"></i>
+				</button>
+			</div>
+		</div>
+	</div>
+
+  // The code dynamically generates these names so tailwind can't pick them up
+  // "bg-red-100",
+  // "bg-orange-100",
+  // "bg-amber-100",
+  // "bg-yellow-100",
+  // "bg-lime-100",
+  // "bg-green-100",
+  // "bg-emerald-100",
+  // "bg-teal-100",
+  // "bg-cyan-100",
+  // "bg-sky-100",
+  // "bg-violet-100",
+  // "bg-purple-100",
+  // "bg-fuchsia-100",
+  // "bg-pink-100",
+  // "bg-rose-100",
+
+  // "dark:bg-red-900",
+  // "dark:bg-orange-900",
+  // "dark:bg-amber-900",
+  // "dark:bg-yellow-900",
+  // "dark:bg-lime-900",
+  // "dark:bg-green-900",
+  // "dark:bg-emerald-900",
+  // "dark:bg-teal-900",
+  // "dark:bg-cyan-900",
+  // "dark:bg-sky-900",
+  // "dark:bg-violet-900",
+  // "dark:bg-purple-900",
+  // "dark:bg-fuchsia-900",
+  // "dark:bg-pink-900",
+  // "dark:bg-rose-900",
+
+  // "dark:text-red-100",
+  // "dark:text-orange-100",
+  // "dark:text-amber-100",
+  // "dark:text-yellow-100",
+  // "dark:text-lime-100",
+  // "dark:text-green-100",
+  // "dark:text-emerald-100",
+  // "dark:text-teal-100",
+  // "dark:text-cyan-100",
+  // "dark:text-sky-100",
+  // "dark:text-violet-100",
+  // "dark:text-purple-100",
+  // "dark:text-fuchsia-100",
+  // "dark:text-pink-100",
+  // "dark:text-rose-100",
+
+  // "text-red-900",
+  // "text-orange-900",
+  // "text-amber-900",
+  // "text-yellow-900",
+  // "text-lime-900",
+  // "text-green-900",
+  // "text-emerald-900",
+  // "text-teal-900",
+  // "text-cyan-900",
+  // "text-sky-900",
+  // "text-violet-900",
+  // "text-purple-900",
+  // "text-fuchsia-900",
+  // "text-pink-900",
+  // "text-rose-900",
+}
