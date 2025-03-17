@@ -12,54 +12,56 @@ import (
 )
 
 const (
-	// IconCat is a Icon of type Cat.
-	IconCat Icon = "Cat"
-	// IconRabbit is a Icon of type Rabbit.
-	IconRabbit Icon = "Rabbit"
-	// IconSnail is a Icon of type Snail.
-	IconSnail Icon = "Snail"
-	// IconSquirrel is a Icon of type Squirrel.
-	IconSquirrel Icon = "Squirrel"
-	// IconTurtle is a Icon of type Turtle.
-	IconTurtle Icon = "Turtle"
-	// IconBird is a Icon of type Bird.
-	IconBird Icon = "Bird"
-	// IconBug is a Icon of type Bug.
-	IconBug Icon = "Bug"
-	// IconFish is a Icon of type Fish.
-	IconFish Icon = "Fish"
-	// IconRat is a Icon of type Rat.
-	IconRat Icon = "Rat"
-	// IconWorm is a Icon of type Worm.
-	IconWorm Icon = "Worm"
-	// IconBear is a Icon of type Bear.
-	IconBear Icon = "Bear"
-	// IconElephant is a Icon of type Elephant.
-	IconElephant Icon = "Elephant"
-	// IconCow is a Icon of type Cow.
-	IconCow Icon = "Cow"
-	// IconButterfly is a Icon of type Butterfly.
-	IconButterfly Icon = "Butterfly"
-	// IconLion is a Icon of type Lion.
-	IconLion Icon = "Lion"
-	// IconCrab is a Icon of type Crab.
-	IconCrab Icon = "Crab"
-	// IconFrog is a Icon of type Frog.
-	IconFrog Icon = "Frog"
-	// IconHedgehog is a Icon of type Hedgehog.
-	IconHedgehog Icon = "Hedgehog"
-	// IconHorse is a Icon of type Horse.
-	IconHorse Icon = "Horse"
-	// IconOwl is a Icon of type Owl.
-	IconOwl Icon = "Owl"
-	// IconPig is a Icon of type Pig.
-	IconPig Icon = "Pig"
-	// IconShark is a Icon of type Shark.
-	IconShark Icon = "Shark"
-	// IconWhale is a Icon of type Whale.
-	IconWhale Icon = "Whale"
-	// IconNarwhal is a Icon of type Narwhal.
-	IconNarwhal Icon = "Narwhal"
+	// IconCat is a Icon of type cat.
+	IconCat Icon = "cat"
+	// IconRabbit is a Icon of type rabbit.
+	IconRabbit Icon = "rabbit"
+	// IconSnail is a Icon of type snail.
+	IconSnail Icon = "snail"
+	// IconSquirrel is a Icon of type squirrel.
+	IconSquirrel Icon = "squirrel"
+	// IconTurtle is a Icon of type turtle.
+	IconTurtle Icon = "turtle"
+	// IconBird is a Icon of type bird.
+	IconBird Icon = "bird"
+	// IconBug is a Icon of type bug.
+	IconBug Icon = "bug"
+	// IconFish is a Icon of type fish.
+	IconFish Icon = "fish"
+	// IconRat is a Icon of type rat.
+	IconRat Icon = "rat"
+	// IconWorm is a Icon of type worm.
+	IconWorm Icon = "worm"
+	// IconBear is a Icon of type bear.
+	IconBear Icon = "bear"
+	// IconElephant is a Icon of type elephant.
+	IconElephant Icon = "elephant"
+	// IconCow is a Icon of type cow.
+	IconCow Icon = "cow"
+	// IconButterfly is a Icon of type butterfly.
+	IconButterfly Icon = "butterfly"
+	// IconLion is a Icon of type lion.
+	IconLion Icon = "lion"
+	// IconCrab is a Icon of type crab.
+	IconCrab Icon = "crab"
+	// IconFrog is a Icon of type frog.
+	IconFrog Icon = "frog"
+	// IconHedgehog is a Icon of type hedgehog.
+	IconHedgehog Icon = "hedgehog"
+	// IconHorse is a Icon of type horse.
+	IconHorse Icon = "horse"
+	// IconOwl is a Icon of type owl.
+	IconOwl Icon = "owl"
+	// IconPig is a Icon of type pig.
+	IconPig Icon = "pig"
+	// IconShark is a Icon of type shark.
+	IconShark Icon = "shark"
+	// IconWhale is a Icon of type whale.
+	IconWhale Icon = "whale"
+	// IconNarwhal is a Icon of type narwhal.
+	IconNarwhal Icon = "narwhal"
+	// IconCircleHelp is a Icon of type circleHelp.
+	IconCircleHelp Icon = "circleHelp"
 )
 
 var ErrInvalidIcon = fmt.Errorf("not a valid Icon, try [%s]", strings.Join(_IconNames, ", "))
@@ -89,6 +91,7 @@ var _IconNames = []string{
 	string(IconShark),
 	string(IconWhale),
 	string(IconNarwhal),
+	string(IconCircleHelp),
 }
 
 // IconNames returns a list of possible string values of Icon.
@@ -125,6 +128,7 @@ func IconValues() []Icon {
 		IconShark,
 		IconWhale,
 		IconNarwhal,
+		IconCircleHelp,
 	}
 }
 
@@ -141,30 +145,31 @@ func (x Icon) IsValid() bool {
 }
 
 var _IconValue = map[string]Icon{
-	"Cat":       IconCat,
-	"Rabbit":    IconRabbit,
-	"Snail":     IconSnail,
-	"Squirrel":  IconSquirrel,
-	"Turtle":    IconTurtle,
-	"Bird":      IconBird,
-	"Bug":       IconBug,
-	"Fish":      IconFish,
-	"Rat":       IconRat,
-	"Worm":      IconWorm,
-	"Bear":      IconBear,
-	"Elephant":  IconElephant,
-	"Cow":       IconCow,
-	"Butterfly": IconButterfly,
-	"Lion":      IconLion,
-	"Crab":      IconCrab,
-	"Frog":      IconFrog,
-	"Hedgehog":  IconHedgehog,
-	"Horse":     IconHorse,
-	"Owl":       IconOwl,
-	"Pig":       IconPig,
-	"Shark":     IconShark,
-	"Whale":     IconWhale,
-	"Narwhal":   IconNarwhal,
+	"cat":        IconCat,
+	"rabbit":     IconRabbit,
+	"snail":      IconSnail,
+	"squirrel":   IconSquirrel,
+	"turtle":     IconTurtle,
+	"bird":       IconBird,
+	"bug":        IconBug,
+	"fish":       IconFish,
+	"rat":        IconRat,
+	"worm":       IconWorm,
+	"bear":       IconBear,
+	"elephant":   IconElephant,
+	"cow":        IconCow,
+	"butterfly":  IconButterfly,
+	"lion":       IconLion,
+	"crab":       IconCrab,
+	"frog":       IconFrog,
+	"hedgehog":   IconHedgehog,
+	"horse":      IconHorse,
+	"owl":        IconOwl,
+	"pig":        IconPig,
+	"shark":      IconShark,
+	"whale":      IconWhale,
+	"narwhal":    IconNarwhal,
+	"circleHelp": IconCircleHelp,
 }
 
 // ParseIcon attempts to convert a string to a Icon.

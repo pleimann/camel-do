@@ -1,7 +1,8 @@
-import 'htmx.org'
+import htmx from 'htmx.org'
+
+// htmx.logAll()
 
 import Alpine from 'alpinejs'
-import { createIcons, icons } from 'lucide';
 
 // Add Alpine instance to window object.
 window.Alpine = Alpine
@@ -9,7 +10,6 @@ window.Alpine = Alpine
 // Start Alpine.
 Alpine.start()
 
-// Recommended way, to include only the icons you need.
 import {
   createIcons,
   Menu,
@@ -24,6 +24,10 @@ import {
   Search,
   Sun,
   Trash2 as Trash,
+  Edit,
+  Plus,
+  Minus,
+  X,
   Cat,
   Rabbit,
   Snail,
@@ -34,9 +38,6 @@ import {
   Fish,
   Rat,
   Worm,
-  Edit,
-  Plus,
-  Minus,
 } from 'lucide';
 
 import { 
@@ -57,6 +58,11 @@ import {
  } from '@lucide/lab';
 
 createIcons({
+  attrs: {
+    class: ['icon'],
+    'stroke-width': 1,
+  },
+  nameAttr: 'data-lucide',
   icons: {
     Menu,
     ArrowRight,
@@ -73,6 +79,7 @@ createIcons({
     Edit,
     Plus,
     Minus,
+    X,
     Cat,
     Rabbit,
     Snail,

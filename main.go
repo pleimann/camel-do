@@ -1,15 +1,11 @@
 package main
 
 import (
-	"context"
 	"embed"
-	"flag"
 	"fmt"
-	"log"
 	"log/slog"
 	"net/http"
 	"os"
-	"os/signal"
 	"strconv"
 	"time"
 
@@ -24,40 +20,13 @@ import (
 
 func main() {
 	// Run your server.
-	if server, err := runServer(); err != nil {
+	err := runServer()
+	if err != nil {
 		slog.Error("Failed to start server!", "details", err.Error())
 		os.Exit(1)
-
-	} else {
-		var wait time.Duration
-		flag.DurationVar(&wait, "graceful-timeout", time.Second*15, "the duration for which the server gracefully wait for existing connections to finish - e.g. 15s or 1m")
-		flag.Parse()
-
-		c := make(chan os.Signal, 1)
-		// We'll accept graceful shutdowns when quit via SIGINT (Ctrl+C)
-		// SIGKILL, SIGQUIT or SIGTERM (Ctrl+/) will not be caught.
-		signal.Notify(c, os.Interrupt)
-
-		// Block until we receive our signal.
-		<-c
-
-		// Create a deadline to wait for.
-		ctx, cancel := context.WithTimeout(context.Background(), wait)
-		defer cancel()
-
-		// Doesn't block if no connections, but will otherwise wait
-		// until the timeout deadline.
-		go server.Shutdown(ctx)
-
-		<-ctx.Done()
-
-		// Optionally, you could run srv.Shutdown in a goroutine and block on
-		// <-ctx.Done() if your application should wait for other services
-		// to finalize based on context cancellation.
-		log.Println("shutting down")
-
-		os.Exit(0)
 	}
+
+	os.Exit(0)
 }
 
 var taskService = task.NewTaskService(&task.Config{})
@@ -65,25 +34,26 @@ var taskService = task.NewTaskService(&task.Config{})
 //go:embed all:static
 var static embed.FS
 
+var googleClientId = utils.EnvWithDefault("GOOGLE_CLIENT_ID", "")
+
 // runServer runs a new HTTP server with the loaded environment variables.
-func runServer() (*http.Server, error) {
+func runServer() error {
 	port, err := strconv.Atoi(utils.EnvWithDefault("PORT", "4000"))
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	// Create a new HTTP router.
 	router := mux.NewRouter()
 
-	// This will serve files under http://localhost:8000/static/<filename>
+	// Handle index page view.
+	router.HandleFunc("/", indexViewHandler).Methods(http.MethodGet)
+
+	// This will serve files under http://localhost:4000/static/<filename>
 	router.PathPrefix("/static/").Handler(http.FileServer(http.FS(static)))
 
-	// Handle index page view.
-	router.HandleFunc("/", indexViewHandler).Methods("GET")
-
 	// Add taskService sub router
-	tasksRouter := router.PathPrefix("/tasks/").Subrouter()
-	task.Routes(tasksRouter, taskService)
+	task.NewTaskHandler(router.PathPrefix("/tasks/").Subrouter(), taskService)
 
 	// Create a new server instance with options from environment variables.
 	// For more information, see https://blog.cloudflare.com/the-complete-guide-to-golang-net-http-timeouts/
@@ -98,16 +68,13 @@ func runServer() (*http.Server, error) {
 	}
 
 	// Send log message.
-	slog.Info("Starting server...", "port", port)
+	slog.Info("Starting server...", "port", server.Addr)
 
-	// Run our server in a goroutine so that it doesn't block.
-	go func() {
-		if err := server.ListenAndServe(); err != nil {
-			log.Println(err)
-		}
-	}()
+	if err := server.ListenAndServe(); err != nil {
+		slog.Error("Error starting server", "err", err)
+	}
 
-	return server, nil
+	return nil
 }
 
 // indexViewHandler handles a view for the index page.
@@ -120,20 +87,18 @@ func indexViewHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Define template meta tags.
-	metaTags := pages.MetaTags(
-		"camel-do, todo, tasks", // define meta keywords
-		"Welcome to Camel Do! You're here because camels are awesome and you need more of them in your life.", // define meta description
-	)
-
-	// Define template body content.
-	bodyContent := pages.BodyContent(taskService.GetTasks())
-
 	// Define template layout for index page.
 	indexTemplate := templates.Layout(
-		"Camel Do ", // define title text
-		metaTags,    // define meta tags
-		bodyContent, // define body content
+		templates.Config{
+			Title:          "Camel Do ", // define title text
+			GoogleClientId: googleClientId,
+			LoginUri:       "http://localhost:4000/auth/google/login",
+		},
+		pages.MetaTags(
+			"camel-do, todo, tasks", // define meta keywords
+			"Welcome to Camel Do! You're here because camels are awesome and you need more of them in your life.", // define meta description
+		),
+		pages.BodyContent(taskService.GetTasks()), // define body content
 	)
 
 	// Render index page template.

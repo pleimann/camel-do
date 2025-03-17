@@ -6,7 +6,7 @@ tmp_dir = "tmp"
 
 [build]
 pre_cmd = ["bun run build"]
-cmd = "go run github.com/a-h/templ/cmd/templ@latest generate && go build -o ./tmp/gowebly_gorilla ."
+cmd = "templ generate && go build -o ./tmp/gowebly_gorilla ."
 bin = "tmp/gowebly_gorilla"
 include_ext = ["go", "templ", "html", "json", "js", "ts", "css", "scss"]
 exclude_dir = [".parcel-cache", "bin", "dist", "node_modules", "static", "tmp", "tests", "vendor"]
@@ -24,7 +24,7 @@ rerun = false
 rerun_delay = 500
 
 [log]
-time = false
+time = true
 main_only = false
 
 [color]

@@ -2,7 +2,13 @@ package templates
 
 import "github.com/pleimann/camel-do/templates/pages"
 
-templ Layout(title string, metaTags, bodyContent templ.Component) {
+type Config struct {
+	Title          string
+	GoogleClientId string
+	LoginUri       string
+}
+
+templ Layout(config Config, metaTags, bodyContent templ.Component) {
 	<!DOCTYPE html>
 	<html lang="en">
 		<head>
@@ -11,7 +17,7 @@ templ Layout(title string, metaTags, bodyContent templ.Component) {
 			<meta http-equiv="X-UA-Compatible" content="ie=edge"/>
 			// <meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://accounts.google.com/gsi/client; connect-src 'self' ws://localhost:*; img-src 'self' data:*;"/>
 			<meta name="theme-color" content="#FEFEF5"/>
-			<title>{ title }</title>
+			<title>{ config.Title }</title>
 			@metaTags
 			<link rel="dns-prefetch" href="//fonts.googleapis.com"/>
 			<link rel="dns-prefetch" href="//fonts.gstatic.com"/>
@@ -24,13 +30,18 @@ templ Layout(title string, metaTags, bodyContent templ.Component) {
 			<link rel="icon" href="/static/favicon.png" sizes="any"/>
 			<link href="https://fonts.googleapis.com/css2?family=Inter&display=swap" rel="stylesheet"/>
 			<link href="/static/styles.css" rel="stylesheet"/>
-
-      <script src="https://accounts.google.com/gsi/client" async defer></script>
+			<script src="https://accounts.google.com/gsi/client" async defer></script>
 		</head>
 		<body onload={ pages.BodyScripts() } class="bg-base-100">
 			@bodyContent
-      <div id="dialog"></div>
+			<div id="dialog"></div>
+			<div
+				id="g_id_onload"
+				data-client_id={ config.GoogleClientId }
+				data-login_uri={ config.LoginUri }
+			></div>
 			<script src="/static/scripts.js"></script>
+      <script src="/static/auth.js"></script>
 		</body>
 	</html>
 }

@@ -22,7 +22,5 @@ FROM scratch
 # Copy project's binary and templates from /build to the scratch container.
 COPY --from=builder /build/gowebly_gorilla /
 
-
-
 # Set entry point.
 ENTRYPOINT ["/gowebly_gorilla"]

@@ -4,14 +4,15 @@ import (
 	"fmt"
 	"log/slog"
 	"math/rand"
-	"net/http"
 	"time"
 
-	"github.com/angelofallars/htmx-go"
 	lorem "github.com/derektata/lorem/ipsum"
 	"github.com/pleimann/camel-do/model"
 	"github.com/pleimann/camel-do/utils"
 )
+
+type Config struct {
+}
 
 // TaskService is a service for managing tasks.
 type TaskService struct {
@@ -21,33 +22,30 @@ type TaskService struct {
 	config *Config
 }
 
-type Config struct {
-}
-
 func NewTaskService(config *Config) *TaskService {
 	return &TaskService{
 		config: config,
 	}
 }
 
-func (t *TaskService) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	// Check, if the current request has a 'HX-Request' header.
-	// For more information, see https://htmx.org/docs/#request-headers
-	if !htmx.IsHTMX(r) {
-		// If not, return HTTP 400 error.
-		w.WriteHeader(http.StatusBadRequest)
-		slog.Error("request API", "method", r.Method, "status", http.StatusBadRequest, "path", r.URL.Path)
-		return
+func (t *TaskService) AddTask(task model.Task) (model.Task, error) {
+	slog.Info("adding task", "task", task)
+
+	slog.Info("NewTask", "color", task.Color, "icon", task.Icon)
+
+	if task.Color == "" {
+		task.Color = model.ColorZinc
 	}
 
-	// Write HTML content.
-	w.Write([]byte("<p>🎉 Yes, <strong>htmx</strong> is ready to use! (<code>GET /api/hello-world</code>)</p>"))
+	if task.Icon == "" {
+		task.Icon = model.IconCircleHelp
+	}
 
-	// Send htmx response.
-	htmx.NewResponse().Write(w)
+	slog.Info("NewTask", "color", task.Color, "icon", task.Icon)
 
-	// Send log message.
-	slog.Info("request API", "method", r.Method, "status", http.StatusOK, "path", r.URL.Path)
+	t.tasks = append([]model.Task{task}, t.tasks...)
+
+	return task, nil
 }
 
 func (t *TaskService) GetTasks() []model.Task {
@@ -60,12 +58,6 @@ func (t *TaskService) GetTasks() []model.Task {
 	t.tasks = tasks
 
 	return t.tasks
-}
-
-func (t *TaskService) CreateTask(task model.Task) (model.Task, error) {
-	t.tasks = append(t.tasks, task)
-
-	return task, nil
 }
 
 // GenerateRandomTasks generates a slice of Task with random data.
@@ -89,8 +81,8 @@ func (t *TaskService) generateRandomTask(id int) model.Task {
 	// Seed the random number generator.
 	rand.New(rand.NewSource(time.Now().UnixNano()))
 
-	color := model.Color(model.ColorNames()[rand.Intn(len(model.ColorNames()))])
-	icon := model.Icon(model.IconNames()[rand.Intn(len(model.IconNames()))])
+	color := model.Color(model.ColorNames()[rand.Intn(len(model.ColorNames())-1)])
+	icon := model.Icon(model.IconNames()[rand.Intn(len(model.IconNames())-1)])
 
 	// Generate random title.
 	titles := []string{

@@ -6,9 +6,9 @@
   "browserslist": "> 0.5%, last 2 versions, not dead",
   "scripts": {
     "fmt": "prettier --write .",
-    "build": "parcel build ./assets/scripts.js ./assets/styles.css --dist-dir ./static",
-    "dev": "parcel build ./assets/scripts.js ./assets/styles.css --dist-dir ./static --no-optimize",
-    "watch": "parcel watch ./assets/scripts.js ./assets/styles.css --dist-dir ./static --no-optimize"
+    "build": "parcel build ./assets/scripts.js ./assets/auth.js ./assets/styles.css --dist-dir ./static",
+    "dev": "parcel build ./assets/scripts.js ./assets/auth.js ./assets/styles.css --dist-dir ./static --no-optimize",
+    "watch": "parcel watch ./assets/scripts.js ./assets/auth.js ./assets/styles.css --dist-dir ./static --no-optimize"
   },
   "dependencies": {
     "@lucide/lab": "^0.1.2",

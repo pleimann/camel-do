@@ -1,0 +1,17 @@
+# https://taskfile.dev
+
+version: '3'
+
+vars:
+  GREETING: Hello, World!
+
+tasks:
+  run:
+    summary: Runs the application
+    cmds:
+      - go run github.com/gowebly/gowebly/v3@latest run
+    silent: true
+  build:
+    summary: Builds the application
+    cmds:
+      - go build

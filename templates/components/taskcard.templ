@@ -7,8 +7,8 @@ import (
 )
 
 // BodyContent defines HTML content.
-templ TaskView(task model.Task) {
-	{{ 
+templ TaskCard(task model.Task) {
+	{{
     backgroundColor := fmt.Sprintf("bg-%s-100", strings.ToLower(task.Color.String()))
 	  backgroundColorDark := fmt.Sprintf("dark:bg-%s-100", strings.ToLower(task.Color.String()))
 	  textColor := fmt.Sprintf("text-%s-100", strings.ToLower(task.Color.String()))
@@ -17,7 +17,7 @@ templ TaskView(task model.Task) {
 
 	<div class="card card-side card-xs bg-base-100 dark:bg-base-300 shadow-md text-sm select-none rounded-2xl">
 		<figure class={ "w-18", backgroundColor, backgroundColorDark, textColor, textColorDark }>
-			<i data-lucide={task.Icon.String()} class="size-7"></i>
+			<i data-lucide={ task.Icon.String() } class="size-7" />
 		</figure>
 		<div class="card-body flex-col justify-center items-start">
 			<div class="text-sm font-medium">{ task.Title }</div>
@@ -48,7 +48,7 @@ templ TaskView(task model.Task) {
 						</li>
 						<li>
 							<button class="btn btn-circle btn-ghost tooltip tooltip-bottom" data-tip="Delete">
-								<i data-lucide="trash" class="size-4"></i>
+								<i data-lucide="Trash" class="size-4"></i>
 							</button>
 						</li>
 					</ul>

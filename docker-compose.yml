@@ -19,7 +19,7 @@ services:
       - '4000:4000'
     # Set needed environment variables for the Go backend.
     environment:
-      BACKEND_PORT: 4000 # same as the exposed container port
+      PORT: 4000 # same as the exposed container port
     # Networks to join.
     # Services on the same network can communicate with each other using their name.
     networks:

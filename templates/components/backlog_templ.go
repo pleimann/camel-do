@@ -33,22 +33,80 @@ func Backlog(tasks []model.Task) templ.Component {
 			templ_7745c5c3_Var1 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<div class=\"p-4 flex flex-col gap-2 h-full w-full overflow-y-scroll scroll-shadows\">")
+		var templ_7745c5c3_Var2 = []any{"p-4 flex flex-col gap-2 h-full w-full overflow-y-scroll"}
+		templ_7745c5c3_Err = templ.RenderCSSItems(ctx, templ_7745c5c3_Buffer, templ_7745c5c3_Var2...)
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<div id=\"backlog\" class=\"")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		var templ_7745c5c3_Var3 string
+		templ_7745c5c3_Var3, templ_7745c5c3_Err = templ.JoinStringErrs(templ.CSSClasses(templ_7745c5c3_Var2).String())
+		if templ_7745c5c3_Err != nil {
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/components/backlog.templ`, Line: 1, Col: 0}
+		}
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var3))
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		for _, task := range tasks {
-			templ_7745c5c3_Err = TaskView(task).Render(ctx, templ_7745c5c3_Buffer)
+			templ_7745c5c3_Err = TaskCard(task).Render(ctx, templ_7745c5c3_Buffer)
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "</div>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 3, "</div>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		return nil
 	})
+}
+
+func ScrollShadows() templ.CSSClass {
+	templ_7745c5c3_CSSBuilder := templruntime.GetBuilder()
+	templ_7745c5c3_CSSBuilder.WriteString(`--bg:var(--bg-primary);`)
+	templ_7745c5c3_CSSBuilder.WriteString(`--bgTrans:rgba(var(--bg-primary);, 0);`)
+	templ_7745c5c3_CSSBuilder.WriteString(`--shadow:rgba(41, 50, 56, 0.5);`)
+	templ_7745c5c3_CSSBuilder.WriteString(`background:/* Shadow Cover TOP */
+    linear-gradient(
+      var(--bg) 30%,
+      var(--bgTrans)
+    ) center top,
+    
+    /* Shadow Cover BOTTOM */
+    linear-gradient(
+      var(--bgTrans), 
+      var(--bg) 70%
+    ) center bottom,
+    
+    /* Shadow TOP */
+    radial-gradient(
+      farthest-side at 50% 0,
+      var(--shadow),
+      rgba(0, 0, 0, 0)
+    ) center top,
+    
+    /* Shadow BOTTOM */
+    radial-gradient(
+      farthest-side at 50% 100%,
+      var(--shadow),
+      rgba(0, 0, 0, 0)
+    ) center bottom;`)
+	templ_7745c5c3_CSSBuilder.WriteString(`background-repeat:no-repeat;`)
+	templ_7745c5c3_CSSBuilder.WriteString(`background-size:100% 40px, 100% 40px, 100% 14px, 100% 14px;`)
+	templ_7745c5c3_CSSBuilder.WriteString(`background-attachment:local, local, scroll, scroll;`)
+	templ_7745c5c3_CSSID := templ.CSSID(`ScrollShadows`, templ_7745c5c3_CSSBuilder.String())
+	return templ.ComponentCSSClass{
+		ID:    templ_7745c5c3_CSSID,
+		Class: templ.SafeCSS(`.` + templ_7745c5c3_CSSID + `{` + templ_7745c5c3_CSSBuilder.String() + `}`),
+	}
 }
 
 var _ = templruntime.GeneratedTemplate

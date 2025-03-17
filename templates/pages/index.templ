@@ -29,7 +29,7 @@ templ BodyContent(tasks []model.Task) {
           @components.Timeline(tasks)
         </div>
       </div>
-      <button class="btn btn-circle size-16 fixed bottom-4 right-4 shadow-xl bg-primary/75 text-primary-content" hx-get="/tasks/new" hx-target="#dialog">
+      <button class="btn btn-circle size-16 fixed bottom-4 right-4 shadow-xl bg-primary/75 text-primary-content" hx-get="/tasks/new" hx-target="#dialog" hx-trigger="click, keyup[cmdKey&&key=='N'] from:body">
         <i data-lucide="plus" class="size-16" />
       </button>
     </main>

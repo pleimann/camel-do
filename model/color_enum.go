@@ -42,6 +42,8 @@ const (
 	ColorPink Color = "Pink"
 	// ColorRose is a Color of type Rose.
 	ColorRose Color = "Rose"
+	// ColorZinc is a Color of type Zinc.
+	ColorZinc Color = "Zinc"
 )
 
 var ErrInvalidColor = fmt.Errorf("not a valid Color, try [%s]", strings.Join(_ColorNames, ", "))
@@ -62,6 +64,7 @@ var _ColorNames = []string{
 	string(ColorFuchsia),
 	string(ColorPink),
 	string(ColorRose),
+	string(ColorZinc),
 }
 
 // ColorNames returns a list of possible string values of Color.
@@ -89,6 +92,7 @@ func ColorValues() []Color {
 		ColorFuchsia,
 		ColorPink,
 		ColorRose,
+		ColorZinc,
 	}
 }
 
@@ -120,6 +124,7 @@ var _ColorValue = map[string]Color{
 	"Fuchsia": ColorFuchsia,
 	"Pink":    ColorPink,
 	"Rose":    ColorRose,
+	"Zinc":    ColorZinc,
 }
 
 // ParseColor attempts to convert a string to a Color.

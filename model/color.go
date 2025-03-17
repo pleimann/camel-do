@@ -18,6 +18,8 @@ Violet,
 Purple,
 Fuchsia,
 Pink,
-Rose)
+Rose,
+Zinc,
+)
 */
 type Color string

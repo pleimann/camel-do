@@ -3,24 +3,32 @@ package pages
 import "github.com/pleimann/camel-do/model"
 
 templ TaskDialog(task *model.Task) {
-  <dialog x-ref="newTaskDialog" class="modal" open>
+  <dialog class="modal" hx-on:htmx:load="this.showModal(); document.querySelector('form#taskForm').focus();" hx-on:close-modal="this.close()">
     <div class="modal-box">
-      <h3 class="text-lg font-bold">Hello!</h3>
-      <form method="dialog">
-        <button class="btn btn-circle btn-ghost absolute right-2 top-2 modal-backdrop">✕</button>
-        <input type="text" placeholder="New Task..." class="input input-ghost" />
-        <fieldset class="fieldset w-xs bg-base-200 border border-base-300 p-4 rounded-box">
+      <button class="btn btn-circle btn-ghost absolute right-2 top-2 modal-backdrop">
+        <i data-lucide="x" />
+      </button>
+
+      <form id="taskForm" method="dialog" class="flex flex-col gap-4" hx-post="/tasks/new" hx-target="#backlog" hx-swap="afterbegin transition:true">
+        <input type="text" placeholder="New Task..." class="input input-ghost text-lg w-full font-bold" name="title" />
+
+        <fieldset class="fieldset bg-base-200 border border-base-300 p-4 w-full rounded-box">
           <legend class="fieldset-legend">Task Details</legend>
           
-          <label class="fieldset-label">Title</label>
-          <input type="text" class="input" placeholder="My awesome task" />
+          <label class="fieldset-label">Color
+            <input type="text" class="input" placeholder="My awesome task" name="color" />
+          </label>
           
-          <label class="fieldset-label">Description</label>
-          <input type="text" class="input" placeholder="my-awesome-task" />
+          <label class="fieldset-label">Description
+            <textarea class="input h-16 max-h-64" name="description" />
+          </label>
           
-          <label class="fieldset-label">Author</label>
-          <input type="text" class="input" placeholder="Name" />
+          <label class="fieldset-label">Duration
+            <input type="text" class="input" placeholder="Name" name="duration" />
+          </label>
         </fieldset>
+
+        <button class="btn btn-primary btn-lg rounded">Create</button>
       </form>
     </div>
   </dialog>

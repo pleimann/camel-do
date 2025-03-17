@@ -1,6 +1,7 @@
 package model
 
 import (
+	"log/slog"
 	"time"
 
 	"github.com/pleimann/camel-do/utils"
@@ -22,6 +23,18 @@ type Task struct {
 
 // NewTask creates a new Task instance with default values.
 func NewTask(id int, title string, description string, color Color, icon Icon, startTime time.Time, duration utils.Duration, completed bool, createdAt time.Time, updatedAt time.Time) Task {
+	slog.Info("NewTask", "color", color, "icon", icon)
+
+	if color == "" {
+		color = ColorZinc
+	}
+
+	if icon == "" {
+		icon = IconCircleHelp
+	}
+
+	slog.Info("NewTask", "color", color, "icon", icon)
+
 	return Task{
 		ID:          id,
 		Title:       title,

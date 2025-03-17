@@ -6,9 +6,47 @@ import (
 
 templ Backlog(tasks []model.Task) {
   // padding being defined in Backlog component rather than parent (App) prevents drop shadows from being clipped
-  <div class="p-4 flex flex-col gap-2 h-full w-full overflow-y-scroll scroll-shadows">
+  <div id="backlog" class={"p-4 flex flex-col gap-2 h-full w-full overflow-y-scroll"}>
     for _, task := range tasks {
-      @TaskView(task)
+      @TaskCard(task)
     }
   </div>
-} 
+}
+
+css ScrollShadows() {
+  --bg: var(--bg-primary);
+  --bgTrans: rgba(var(--bg-primary);, 0);
+  
+  --shadow: rgba(41, 50, 56, 0.5);
+
+  background:
+    /* Shadow Cover TOP */
+    linear-gradient(
+      var(--bg) 30%,
+      var(--bgTrans)
+    ) center top,
+    
+    /* Shadow Cover BOTTOM */
+    linear-gradient(
+      var(--bgTrans), 
+      var(--bg) 70%
+    ) center bottom,
+    
+    /* Shadow TOP */
+    radial-gradient(
+      farthest-side at 50% 0,
+      var(--shadow),
+      rgba(0, 0, 0, 0)
+    ) center top,
+    
+    /* Shadow BOTTOM */
+    radial-gradient(
+      farthest-side at 50% 100%,
+      var(--shadow),
+      rgba(0, 0, 0, 0)
+    ) center bottom;
+  
+  background-repeat: no-repeat;
+  background-size: 100% 40px, 100% 40px, 100% 14px, 100% 14px;
+  background-attachment: local, local, scroll, scroll;
+}
