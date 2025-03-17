@@ -29,6 +29,7 @@ templ Layout(title string, metaTags, bodyContent templ.Component) {
 		</head>
 		<body onload={ pages.BodyScripts() } class="bg-base-100">
 			@bodyContent
+      <div id="dialog"></div>
 			<script src="/static/scripts.js"></script>
 		</body>
 	</html>

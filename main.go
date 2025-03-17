@@ -1,11 +1,15 @@
 package main
 
 import (
+	"context"
 	"embed"
+	"flag"
 	"fmt"
+	"log"
 	"log/slog"
 	"net/http"
 	"os"
+	"os/signal"
 	"strconv"
 	"time"
 
@@ -18,26 +22,54 @@ import (
 	"github.com/pleimann/camel-do/utils"
 )
 
-var taskService *task.TaskService
-
 func main() {
-	taskService = task.NewTaskService(&task.Config{})
-
 	// Run your server.
-	if err := runServer(); err != nil {
+	if server, err := runServer(); err != nil {
 		slog.Error("Failed to start server!", "details", err.Error())
 		os.Exit(1)
+
+	} else {
+		var wait time.Duration
+		flag.DurationVar(&wait, "graceful-timeout", time.Second*15, "the duration for which the server gracefully wait for existing connections to finish - e.g. 15s or 1m")
+		flag.Parse()
+
+		c := make(chan os.Signal, 1)
+		// We'll accept graceful shutdowns when quit via SIGINT (Ctrl+C)
+		// SIGKILL, SIGQUIT or SIGTERM (Ctrl+/) will not be caught.
+		signal.Notify(c, os.Interrupt)
+
+		// Block until we receive our signal.
+		<-c
+
+		// Create a deadline to wait for.
+		ctx, cancel := context.WithTimeout(context.Background(), wait)
+		defer cancel()
+
+		// Doesn't block if no connections, but will otherwise wait
+		// until the timeout deadline.
+		go server.Shutdown(ctx)
+
+		<-ctx.Done()
+
+		// Optionally, you could run srv.Shutdown in a goroutine and block on
+		// <-ctx.Done() if your application should wait for other services
+		// to finalize based on context cancellation.
+		log.Println("shutting down")
+
+		os.Exit(0)
 	}
 }
+
+var taskService = task.NewTaskService(&task.Config{})
 
 //go:embed all:static
 var static embed.FS
 
 // runServer runs a new HTTP server with the loaded environment variables.
-func runServer() error {
+func runServer() (*http.Server, error) {
 	port, err := strconv.Atoi(utils.EnvWithDefault("PORT", "4000"))
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	// Create a new HTTP router.
@@ -49,8 +81,9 @@ func runServer() error {
 	// Handle index page view.
 	router.HandleFunc("/", indexViewHandler).Methods("GET")
 
-	// Handle API endpoints.
-	router.HandleFunc("/api/hello-world", showContentAPIHandler).Methods("GET")
+	// Add taskService sub router
+	tasksRouter := router.PathPrefix("/tasks/").Subrouter()
+	task.Routes(tasksRouter, taskService)
 
 	// Create a new server instance with options from environment variables.
 	// For more information, see https://blog.cloudflare.com/the-complete-guide-to-golang-net-http-timeouts/
@@ -67,7 +100,14 @@ func runServer() error {
 	// Send log message.
 	slog.Info("Starting server...", "port", port)
 
-	return server.ListenAndServe()
+	// Run our server in a goroutine so that it doesn't block.
+	go func() {
+		if err := server.ListenAndServe(); err != nil {
+			log.Println(err)
+		}
+	}()
+
+	return server, nil
 }
 
 // indexViewHandler handles a view for the index page.
@@ -82,8 +122,8 @@ func indexViewHandler(w http.ResponseWriter, r *http.Request) {
 
 	// Define template meta tags.
 	metaTags := pages.MetaTags(
-		"gowebly, htmx example page, go with htmx",               // define meta keywords
-		"Welcome to example! You're here because it worked out.", // define meta description
+		"camel-do, todo, tasks", // define meta keywords
+		"Welcome to Camel Do! You're here because camels are awesome and you need more of them in your life.", // define meta description
 	)
 
 	// Define template body content.
@@ -91,9 +131,9 @@ func indexViewHandler(w http.ResponseWriter, r *http.Request) {
 
 	// Define template layout for index page.
 	indexTemplate := templates.Layout(
-		"Welcome to example!", // define title text
-		metaTags,              // define meta tags
-		bodyContent,           // define body content
+		"Camel Do ", // define title text
+		metaTags,    // define meta tags
+		bodyContent, // define body content
 	)
 
 	// Render index page template.
@@ -106,25 +146,4 @@ func indexViewHandler(w http.ResponseWriter, r *http.Request) {
 
 	// Send log message.
 	slog.Info("render page", "method", r.Method, "status", http.StatusOK, "path", r.URL.Path)
-}
-
-// showContentAPIHandler handles an API endpoint to show content.
-func showContentAPIHandler(w http.ResponseWriter, r *http.Request) {
-	// Check, if the current request has a 'HX-Request' header.
-	// For more information, see https://htmx.org/docs/#request-headers
-	if !htmx.IsHTMX(r) {
-		// If not, return HTTP 400 error.
-		w.WriteHeader(http.StatusBadRequest)
-		slog.Error("request API", "method", r.Method, "status", http.StatusBadRequest, "path", r.URL.Path)
-		return
-	}
-
-	// Write HTML content.
-	w.Write([]byte("<p>🎉 Yes, <strong>htmx</strong> is ready to use! (<code>GET /api/hello-world</code>)</p>"))
-
-	// Send htmx response.
-	htmx.NewResponse().Write(w)
-
-	// Send log message.
-	slog.Info("request API", "method", r.Method, "status", http.StatusOK, "path", r.URL.Path)
 }

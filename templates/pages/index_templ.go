@@ -126,7 +126,7 @@ func BodyContent(tasks []model.Task) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 7, "</div></div><button class=\"btn btn-circle size-16 fixed bottom-4 right-4 shadow-xl bg-primary/75 text-primary-content\"><i data-lucide=\"plus\" class=\"size-16\"></i></button></main></div>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 7, "</div></div><button class=\"btn btn-circle size-16 fixed bottom-4 right-4 shadow-xl bg-primary/75 text-primary-content\" hx-get=\"/tasks/new\" hx-target=\"#dialog\"><i data-lucide=\"plus\" class=\"size-16\"></i></button></main></div>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

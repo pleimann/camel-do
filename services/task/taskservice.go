@@ -2,9 +2,12 @@ package task
 
 import (
 	"fmt"
+	"log/slog"
 	"math/rand"
+	"net/http"
 	"time"
 
+	"github.com/angelofallars/htmx-go"
 	lorem "github.com/derektata/lorem/ipsum"
 	"github.com/pleimann/camel-do/model"
 	"github.com/pleimann/camel-do/utils"
@@ -25,6 +28,26 @@ func NewTaskService(config *Config) *TaskService {
 	return &TaskService{
 		config: config,
 	}
+}
+
+func (t *TaskService) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	// Check, if the current request has a 'HX-Request' header.
+	// For more information, see https://htmx.org/docs/#request-headers
+	if !htmx.IsHTMX(r) {
+		// If not, return HTTP 400 error.
+		w.WriteHeader(http.StatusBadRequest)
+		slog.Error("request API", "method", r.Method, "status", http.StatusBadRequest, "path", r.URL.Path)
+		return
+	}
+
+	// Write HTML content.
+	w.Write([]byte("<p>🎉 Yes, <strong>htmx</strong> is ready to use! (<code>GET /api/hello-world</code>)</p>"))
+
+	// Send htmx response.
+	htmx.NewResponse().Write(w)
+
+	// Send log message.
+	slog.Info("request API", "method", r.Method, "status", http.StatusOK, "path", r.URL.Path)
 }
 
 func (t *TaskService) GetTasks() []model.Task {
