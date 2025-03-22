@@ -1,14 +1,19 @@
 package task
 
 import (
+	"context"
 	"fmt"
+	"log"
 	"log/slog"
 	"math/rand"
+	"net/http"
 	"time"
 
 	lorem "github.com/derektata/lorem/ipsum"
 	"github.com/pleimann/camel-do/model"
 	"github.com/pleimann/camel-do/utils"
+	"google.golang.org/api/option"
+	"google.golang.org/api/tasks/v1"
 )
 
 type Config struct {
@@ -19,13 +24,24 @@ type TaskService struct {
 	// Tasks is a slice of Task.
 	tasks []model.Task
 
-	config *Config
+	config       *Config
+	tasksService *tasks.Service
 }
 
-func NewTaskService(config *Config) *TaskService {
-	return &TaskService{
-		config: config,
+func NewTaskService(config *Config, http *http.Client) (*TaskService, error) {
+	service, err := tasks.NewService(context.Background(), option.WithHTTPClient(http))
+
+	if err != nil {
+		slog.Error("error creating google tasks service", "error", err.Error())
+		return nil, err
 	}
+
+	taskService := &TaskService{
+		config:       config,
+		tasksService: service,
+	}
+
+	return taskService, nil
 }
 
 func (t *TaskService) AddTask(task model.Task) (model.Task, error) {
@@ -49,6 +65,20 @@ func (t *TaskService) AddTask(task model.Task) (model.Task, error) {
 }
 
 func (t *TaskService) GetTasks() []model.Task {
+	r, err := t.tasksService.Tasklists.List().MaxResults(10).Do()
+	if err != nil {
+		log.Fatalf("Unable to retrieve task lists. %v", err)
+	}
+
+	fmt.Println("Task Lists:")
+	if len(r.Items) > 0 {
+		for _, i := range r.Items {
+			fmt.Printf("%s (%s)\n", i.Title, i.Id)
+		}
+	} else {
+		fmt.Print("No task lists found.")
+	}
+
 	tasks, err := t.generateRandomTasks(rand.Intn(50) + 1)
 
 	if err != nil {

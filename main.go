@@ -3,15 +3,18 @@ package main
 import (
 	"embed"
 	"fmt"
+	"log"
 	"log/slog"
 	"net/http"
 	"os"
+	"os/user"
 	"strconv"
 	"time"
 
 	"github.com/angelofallars/htmx-go"
 	"github.com/gorilla/mux"
 	_ "github.com/joho/godotenv/autoload"
+	"github.com/pleimann/camel-do/services/oauth"
 	"github.com/pleimann/camel-do/services/task"
 	"github.com/pleimann/camel-do/templates"
 	"github.com/pleimann/camel-do/templates/pages"
@@ -19,8 +22,15 @@ import (
 )
 
 func main() {
+	usr, err := user.Current()
+	if err != nil {
+		log.Fatalf("Failed to locate the user's home directory: %s\n", err)
+	}
+
+	slog.Info("current user", "name", usr.Name, "home-dir", usr.HomeDir)
+
 	// Run your server.
-	err := runServer()
+	err = runServer()
 	if err != nil {
 		slog.Error("Failed to start server!", "details", err.Error())
 		os.Exit(1)
@@ -29,12 +39,11 @@ func main() {
 	os.Exit(0)
 }
 
-var taskService = task.NewTaskService(&task.Config{})
-
 //go:embed all:static
 var static embed.FS
 
-var googleClientId = utils.EnvWithDefault("GOOGLE_CLIENT_ID", "")
+var taskHandler *task.TaskHandler
+var taskService *task.TaskService
 
 // runServer runs a new HTTP server with the loaded environment variables.
 func runServer() error {
@@ -53,7 +62,13 @@ func runServer() error {
 	router.PathPrefix("/static/").Handler(http.FileServer(http.FS(static)))
 
 	// Add taskService sub router
-	task.NewTaskHandler(router.PathPrefix("/tasks/").Subrouter(), taskService)
+	httpClient := oauth.NewGoogleAuth().GetClient()
+	taskService, err = task.NewTaskService(&task.Config{}, httpClient)
+	if err != nil {
+		log.Fatalf("error creating TaskService %s", err.Error())
+	}
+
+	taskHandler = task.NewTaskHandler(router.PathPrefix("/tasks/").Subrouter(), taskService)
 
 	// Create a new server instance with options from environment variables.
 	// For more information, see https://blog.cloudflare.com/the-complete-guide-to-golang-net-http-timeouts/
@@ -90,9 +105,8 @@ func indexViewHandler(w http.ResponseWriter, r *http.Request) {
 	// Define template layout for index page.
 	indexTemplate := templates.Layout(
 		templates.Config{
-			Title:          "Camel Do ", // define title text
-			GoogleClientId: googleClientId,
-			LoginUri:       "http://localhost:4000/auth/google/login",
+			Title:    "Camel Do ", // define title text
+			LoginUri: "http://localhost:4000/auth/google/login",
 		},
 		pages.MetaTags(
 			"camel-do, todo, tasks", // define meta keywords

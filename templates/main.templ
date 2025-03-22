@@ -4,7 +4,6 @@ import "github.com/pleimann/camel-do/templates/pages"
 
 type Config struct {
 	Title          string
-	GoogleClientId string
 	LoginUri       string
 }
 
@@ -35,11 +34,6 @@ templ Layout(config Config, metaTags, bodyContent templ.Component) {
 		<body onload={ pages.BodyScripts() } class="bg-base-100">
 			@bodyContent
 			<div id="dialog"></div>
-			<div
-				id="g_id_onload"
-				data-client_id={ config.GoogleClientId }
-				data-login_uri={ config.LoginUri }
-			></div>
 			<script src="/static/scripts.js"></script>
       <script src="/static/auth.js"></script>
 		</body>
