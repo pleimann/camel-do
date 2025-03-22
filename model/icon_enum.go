@@ -60,8 +60,8 @@ const (
 	IconWhale Icon = "whale"
 	// IconNarwhal is a Icon of type narwhal.
 	IconNarwhal Icon = "narwhal"
-	// IconCircleHelp is a Icon of type circleHelp.
-	IconCircleHelp Icon = "circleHelp"
+	// IconUnknown is a Icon of type unknown.
+	IconUnknown Icon = "unknown"
 )
 
 var ErrInvalidIcon = fmt.Errorf("not a valid Icon, try [%s]", strings.Join(_IconNames, ", "))
@@ -91,7 +91,7 @@ var _IconNames = []string{
 	string(IconShark),
 	string(IconWhale),
 	string(IconNarwhal),
-	string(IconCircleHelp),
+	string(IconUnknown),
 }
 
 // IconNames returns a list of possible string values of Icon.
@@ -128,7 +128,7 @@ func IconValues() []Icon {
 		IconShark,
 		IconWhale,
 		IconNarwhal,
-		IconCircleHelp,
+		IconUnknown,
 	}
 }
 
@@ -145,31 +145,31 @@ func (x Icon) IsValid() bool {
 }
 
 var _IconValue = map[string]Icon{
-	"cat":        IconCat,
-	"rabbit":     IconRabbit,
-	"snail":      IconSnail,
-	"squirrel":   IconSquirrel,
-	"turtle":     IconTurtle,
-	"bird":       IconBird,
-	"bug":        IconBug,
-	"fish":       IconFish,
-	"rat":        IconRat,
-	"worm":       IconWorm,
-	"bear":       IconBear,
-	"elephant":   IconElephant,
-	"cow":        IconCow,
-	"butterfly":  IconButterfly,
-	"lion":       IconLion,
-	"crab":       IconCrab,
-	"frog":       IconFrog,
-	"hedgehog":   IconHedgehog,
-	"horse":      IconHorse,
-	"owl":        IconOwl,
-	"pig":        IconPig,
-	"shark":      IconShark,
-	"whale":      IconWhale,
-	"narwhal":    IconNarwhal,
-	"circleHelp": IconCircleHelp,
+	"cat":       IconCat,
+	"rabbit":    IconRabbit,
+	"snail":     IconSnail,
+	"squirrel":  IconSquirrel,
+	"turtle":    IconTurtle,
+	"bird":      IconBird,
+	"bug":       IconBug,
+	"fish":      IconFish,
+	"rat":       IconRat,
+	"worm":      IconWorm,
+	"bear":      IconBear,
+	"elephant":  IconElephant,
+	"cow":       IconCow,
+	"butterfly": IconButterfly,
+	"lion":      IconLion,
+	"crab":      IconCrab,
+	"frog":      IconFrog,
+	"hedgehog":  IconHedgehog,
+	"horse":     IconHorse,
+	"owl":       IconOwl,
+	"pig":       IconPig,
+	"shark":     IconShark,
+	"whale":     IconWhale,
+	"narwhal":   IconNarwhal,
+	"unknown":   IconUnknown,
 }
 
 // ParseIcon attempts to convert a string to a Icon.

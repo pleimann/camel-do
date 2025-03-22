@@ -1,6 +1,4 @@
-import htmx from 'htmx.org'
-
-// htmx.logAll()
+import 'htmx.org'
 
 import Alpine from 'alpinejs'
 
@@ -9,6 +7,7 @@ window.Alpine = Alpine
 
 // Start Alpine.
 Alpine.start()
+
 
 import {
   createIcons,

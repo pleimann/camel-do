@@ -41,6 +41,25 @@ func (t *TaskService) AddTask(task *model.Task) error {
 	return nil
 }
 
+func (t *TaskService) UpdateTask(task *model.Task) error {
+	slog.Info("updating task", "task", task)
+
+	if err := t.db.Save(task).Error; err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (t *TaskService) DeleteTask(id string) error {
+	slog.Info("deleting task", "id", id)
+	if err := t.db.Delete(&model.Task{}, "id = ?", id).Error; err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (t *TaskService) GetBacklogTasks() ([]model.Task, error) {
 	tasks := []model.Task{}
 	if err := t.db.Limit(100).Order("updated_at desc").Find(&tasks).Error; err != nil {

@@ -58,7 +58,7 @@ var dbService *db.DatabaseService
 var taskSyncService *task.TaskSyncService
 
 func createDatabase() error {
-	dbService = db.NewDatabaseService("test.db")
+	dbService = db.NewDatabaseService("camel-do.db")
 
 	return nil
 }

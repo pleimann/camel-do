@@ -120,7 +120,7 @@ func TaskCard(task model.Task) templ.Component {
 		var templ_7745c5c3_Var7 string
 		templ_7745c5c3_Var7, templ_7745c5c3_Err = templ.JoinStringErrs(tip)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/components/taskcard.templ`, Line: 41, Col: 85}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/components/taskcard.templ`, Line: 45, Col: 85}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var7))
 		if templ_7745c5c3_Err != nil {
@@ -141,7 +141,20 @@ func TaskCard(task model.Task) templ.Component {
 				return templ_7745c5c3_Err
 			}
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 11, "</button></li><li><button class=\"btn btn-circle btn-ghost tooltip tooltip-bottom\" data-tip=\"Delete\"><i data-lucide=\"Trash\" class=\"size-4\"></i></button></li></ul></div><button class=\"btn btn-circle btn-ghost tooltip tooltip-left\" data-tip=\"Schedule\"><i data-lucide=\"schedule\" class=\"size-4\"></i></button></div></div></div>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 11, "</button></li><li><button class=\"btn btn-circle btn-ghost tooltip tooltip-bottom\" data-tip=\"Delete\" hx-delete=\"")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		var templ_7745c5c3_Var8 string
+		templ_7745c5c3_Var8, templ_7745c5c3_Err = templ.JoinStringErrs("/tasks/" + task.ID)
+		if templ_7745c5c3_Err != nil {
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/components/taskcard.templ`, Line: 55, Col: 47}
+		}
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var8))
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 12, "\" hx-target=\"closest .card\" hx-swap=\"delete\"><i data-lucide=\"Trash\" class=\"size-4\"></i></button></li></ul></div><button class=\"btn btn-circle btn-ghost tooltip tooltip-left\" data-tip=\"Schedule\"><i data-lucide=\"schedule\" class=\"size-4\"></i></button></div></div></div>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

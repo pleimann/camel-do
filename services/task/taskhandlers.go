@@ -29,6 +29,8 @@ func NewTaskHandler(router *mux.Router, taskService *TaskService) *TaskHandler {
 
 	router.HandleFunc("/new", taskHandler.handleNewTask).Methods(http.MethodGet)
 	router.HandleFunc("/", taskHandler.handleTaskCreate).Methods(http.MethodPost)
+	router.HandleFunc("/{id}", taskHandler.handleTaskDelete).Methods(http.MethodDelete)
+	// router.HandleFunc("/{id}", taskHandler.handleTaskUpdate).Methods(http.MethodPut)
 
 	return taskHandler
 }
@@ -59,9 +61,9 @@ func init() {
 		return reflect.ValueOf(color)
 	})
 
-	decoder.RegisterConverter(model.IconCircleHelp, func(input string) reflect.Value {
+	decoder.RegisterConverter(model.IconUnknown, func(input string) reflect.Value {
 		if input == "" {
-			return reflect.ValueOf(model.IconCircleHelp)
+			return reflect.ValueOf(model.IconUnknown)
 		}
 
 		color, _ := model.ParseIcon(input)
@@ -74,31 +76,23 @@ func (t *TaskHandler) handleTaskCreate(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 
 	if err := r.ParseForm(); err != nil {
-		errorRespone := fmt.Sprintf("Error parsing form data: %s", err.Error())
-
-		http.Error(w, errorRespone, http.StatusUnprocessableEntity)
+		t.handleError(w, r, http.StatusUnprocessableEntity, "parsing form data", err)
 		return
 	}
 
-	slog.Info("handleTaskCreate", "form", r.PostForm.Encode())
+	slog.Debug("handleTaskCreate", "form", r.PostForm.Encode())
 
 	var task model.Task
 
 	if err := decoder.Decode(&task, r.PostForm); err != nil {
-		errorRespone := fmt.Sprintf("Error decoding form data: %s", err.Error())
-
-		http.Error(w, errorRespone, http.StatusUnprocessableEntity)
+		t.handleError(w, r, http.StatusUnprocessableEntity, "decoding form data", err)
 		return
 	}
 
-	slog.Info("handleTaskCreate", "task", task)
+	slog.Debug("handleTaskCreate", "task", task)
 
 	if err := t.taskService.AddTask(&task); err != nil {
-		errorRespone := fmt.Sprintf("<dir>%s</div>", err.Error())
-
-		htmx.NewResponse().
-			StatusCode(http.StatusInternalServerError).
-			RenderHTML(w, template.HTML(errorRespone))
+		t.handleError(w, r, http.StatusInternalServerError, "adding task", err)
 	}
 
 	backlogTemplate := components.AddedTaskCard(task)
@@ -106,4 +100,32 @@ func (t *TaskHandler) handleTaskCreate(w http.ResponseWriter, r *http.Request) {
 	htmx.NewResponse().
 		AddTrigger(htmx.Trigger("close-modal")).
 		RenderTempl(r.Context(), w, backlogTemplate)
+}
+
+func (t *TaskHandler) handleTaskDelete(w http.ResponseWriter, r *http.Request) {
+	defer r.Body.Close()
+
+	vars := mux.Vars(r)
+
+	id := vars["id"]
+	slog.Debug("handleTaskDelete", "taskId", id)
+
+	if err := t.taskService.DeleteTask(id); err != nil {
+		t.handleError(w, r, http.StatusInternalServerError, "deleting task", err)
+		return
+	}
+}
+
+func (t *TaskHandler) handleError(w http.ResponseWriter, r *http.Request, code int, location string, err error) {
+	var errorMessage string
+
+	if err != nil {
+		errorMessage = fmt.Sprintf("Error %s: %s", location, err.Error())
+	} else {
+		errorMessage = location
+	}
+
+	htmx.NewResponse().
+		StatusCode(code).
+		RenderHTML(w, template.HTML(errorMessage))
 }

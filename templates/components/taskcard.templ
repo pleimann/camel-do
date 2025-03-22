@@ -28,7 +28,11 @@ templ TaskCard(task model.Task) {
 				<div class="dropdown dropdown-hover dropdown-left dropdown-center">
 					<button class="btn btn-circle btn-ghost" role="button" tabIndex="0"><i data-lucide="menu" class="size-4" /></button>
 					<ul class="dropdown-content p-2 z-1 gap-2 flex flex-row-reverse rounded-s-full bg-base-200/90 bg-blend-overlay" tabIndex="0">
-						<li><button class="btn btn-circle btn-ghost tooltip tooltip-bottom" data-tip="Edit"><i data-lucide="edit" class="size-4" /></button></li>
+						<li>
+              <button class="btn btn-circle btn-ghost tooltip tooltip-bottom" data-tip="Edit">
+                <i data-lucide="edit" class="size-4" />
+              </button>
+            </li>
 						<li>
 							{{ 
                 var tip string
@@ -47,7 +51,8 @@ templ TaskCard(task model.Task) {
 							</button>
 						</li>
 						<li>
-							<button class="btn btn-circle btn-ghost tooltip tooltip-bottom" data-tip="Delete">
+							<button class="btn btn-circle btn-ghost tooltip tooltip-bottom" data-tip="Delete" 
+                hx-delete={ "/tasks/" + task.ID } hx-target="closest .card" hx-swap="delete">
 								<i data-lucide="Trash" class="size-4"></i>
 							</button>
 						</li>

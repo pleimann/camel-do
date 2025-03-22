@@ -3,6 +3,7 @@
 
 credentials.json
 token.json
+camel-do.db
 
 # macOS files.
 .DS_Store
