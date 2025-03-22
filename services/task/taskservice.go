@@ -1,17 +1,16 @@
 package task
 
 import (
+	"cmp"
 	"context"
 	"fmt"
 	"log"
 	"log/slog"
-	"math/rand"
 	"net/http"
-	"time"
+	"slices"
+	"strconv"
 
-	lorem "github.com/derektata/lorem/ipsum"
 	"github.com/pleimann/camel-do/model"
-	"github.com/pleimann/camel-do/utils"
 	"google.golang.org/api/option"
 	"google.golang.org/api/tasks/v1"
 )
@@ -24,8 +23,8 @@ type TaskService struct {
 	// Tasks is a slice of Task.
 	tasks []model.Task
 
-	config       *Config
-	tasksService *tasks.Service
+	config      *Config
+	googleTasks *tasks.Service
 }
 
 func NewTaskService(config *Config, http *http.Client) (*TaskService, error) {
@@ -37,8 +36,8 @@ func NewTaskService(config *Config, http *http.Client) (*TaskService, error) {
 	}
 
 	taskService := &TaskService{
-		config:       config,
-		tasksService: service,
+		config:      config,
+		googleTasks: service,
 	}
 
 	return taskService, nil
@@ -65,88 +64,48 @@ func (t *TaskService) AddTask(task model.Task) (model.Task, error) {
 }
 
 func (t *TaskService) GetTasks() []model.Task {
-	r, err := t.tasksService.Tasklists.List().MaxResults(10).Do()
+	r, err := t.googleTasks.Tasklists.List().MaxResults(10).Do()
 	if err != nil {
 		log.Fatalf("Unable to retrieve task lists. %v", err)
 	}
 
+	tasks := []model.Task{}
+
 	fmt.Println("Task Lists:")
 	if len(r.Items) > 0 {
-		for _, i := range r.Items {
-			fmt.Printf("%s (%s)\n", i.Title, i.Id)
+		taskList := r.Items[0]
+		gtasks, err := t.googleTasks.Tasks.List(taskList.Id).Do()
+		if err != nil {
+			return []model.Task{}
 		}
+
+		for i, gtask := range gtasks.Items {
+			b, _ := gtask.MarshalJSON()
+
+			fmt.Printf("%d gtask: %v\n", i, string(b))
+
+			order, _ := strconv.Atoi(gtask.Position)
+
+			tasks = append(tasks, model.Task{
+				ID:          gtask.Id,
+				Title:       gtask.Title,
+				Description: gtask.Notes,
+				Completed:   gtask.Completed != nil,
+				Order:       order,
+			})
+		}
+
+		slices.SortStableFunc(tasks, func(a, b model.Task) int {
+			return cmp.Compare(a.Order, b.Order)
+		})
+
+		return tasks
+
 	} else {
 		fmt.Print("No task lists found.")
-	}
-
-	tasks, err := t.generateRandomTasks(rand.Intn(50) + 1)
-
-	if err != nil {
-		return []model.Task{}
 	}
 
 	t.tasks = tasks
 
 	return t.tasks
-}
-
-// GenerateRandomTasks generates a slice of Task with random data.
-func (t *TaskService) generateRandomTasks(count int) ([]model.Task, error) {
-	if count < 1 || count > 50 {
-		return nil, fmt.Errorf("task count must be between 1 and 50, got %d", count)
-	}
-
-	tasks := make([]model.Task, count)
-	for i := 0; i < count; i++ {
-		tasks[i] = t.generateRandomTask(i)
-	}
-
-	return tasks, nil
-}
-
-var loremGen = lorem.NewGenerator()
-
-// generateRandomTask generates a single task with random data.
-func (t *TaskService) generateRandomTask(id int) model.Task {
-	// Seed the random number generator.
-	rand.New(rand.NewSource(time.Now().UnixNano()))
-
-	color := model.Color(model.ColorNames()[rand.Intn(len(model.ColorNames())-1)])
-	icon := model.Icon(model.IconNames()[rand.Intn(len(model.IconNames())-1)])
-
-	// Generate random title.
-	titles := []string{
-		"Write code",
-		"Read documentation",
-		"Attend meeting",
-		"Fix bug",
-		"Test features",
-		"Plan project",
-		"Refactor code",
-		"Deploy application",
-		"Learn new technology",
-		"Debug issue",
-		"Review code",
-	}
-	title := titles[rand.Intn(len(titles))]
-
-	// Generate random description.
-	description := loremGen.Generate(rand.Intn(20) + 5)
-
-	// Generate random start time within the past week.
-	startTime := time.Now().Add(time.Duration(-rand.Intn(7*24)) * time.Hour)
-
-	// Generate random duration between 15 minutes and 4 hours.
-	duration := utils.Duration{Duration: time.Duration(rand.Intn(4*60-15)+15) * time.Minute}
-
-	// Generate random completed status.
-	completed := rand.Intn(2) == 1
-
-	createdAt := time.Now().Add(time.Duration(-rand.Intn(7*24)) * time.Hour)
-	updatedAt := createdAt.Add(time.Duration(rand.Intn(72)) * time.Hour)
-	if updatedAt.After(time.Now()) {
-		updatedAt = time.Now()
-	}
-
-	return model.NewTask(id, title, description, color, icon, startTime, duration, completed, createdAt, updatedAt)
 }

@@ -9,7 +9,7 @@ import (
 
 // Task represents a task in the task tracking application.
 type Task struct {
-	ID          int            `json:"id"`          // Unique identifier for the task
+	ID          string         `json:"id"`          // Unique identifier for the task
 	Title       string         `json:"title"`       // Title of the task
 	Description string         `json:"description"` // Description of the task
 	Color       Color          `json:"color"`       // Color of the task
@@ -19,10 +19,11 @@ type Task struct {
 	Completed   bool           `json:"completed"`   // Status of task completion
 	CreatedAt   time.Time      `json:"createdAt"`   // Timestamp indicating when the task was created.
 	UpdatedAt   time.Time      `json:"updatedAt"`   // Timestamp indicating when the task was last updated.
+	Order       int
 }
 
 // NewTask creates a new Task instance with default values.
-func NewTask(id int, title string, description string, color Color, icon Icon, startTime time.Time, duration utils.Duration, completed bool, createdAt time.Time, updatedAt time.Time) Task {
+func NewTask(id string, title string, description string, color Color, icon Icon, startTime time.Time, duration utils.Duration, completed bool, createdAt time.Time, updatedAt time.Time, order int) Task {
 	slog.Info("NewTask", "color", color, "icon", icon)
 
 	if color == "" {
@@ -46,5 +47,6 @@ func NewTask(id int, title string, description string, color Color, icon Icon, s
 		Completed:   completed, // default to not completed.
 		CreatedAt:   createdAt, // Set the creation timestamp
 		UpdatedAt:   updatedAt, // Set the update timestamp
+		Order:       order,
 	}
 }
