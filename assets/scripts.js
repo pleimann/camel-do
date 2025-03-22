@@ -1,4 +1,8 @@
-import 'htmx.org'
+import htmx from 'htmx.org'
+
+htmx.on("htmx:beforeSwap", function(event) {
+  console.log("htmx:beforeSwap", event);
+});
 
 import Alpine from 'alpinejs'
 
