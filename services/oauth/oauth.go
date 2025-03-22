@@ -95,7 +95,7 @@ func (a *GoogleAuth) startServer(authCodeChannel chan string) *http.Server {
 
 			if req.URL.Query().Has("code") {
 				authCodeChannel <- req.URL.Query().Get("code")
-				fmt.Fprintf(w, "This window can be closed. <scrip>window.close()</script>")
+				fmt.Fprintf(w, "<html><body>This window can be closed.<scrip>window.close()</script></body></html>")
 			}
 		}),
 	}

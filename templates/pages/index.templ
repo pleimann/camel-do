@@ -17,16 +17,16 @@ css styledTextStyles() {
 }
 
 // BodyContent defines HTML content.
-templ BodyContent(tasks []model.Task) {
+templ BodyContent(backlogTasks []model.Task, todaysTasks []model.Task) {
 	<div id="app">
     @components.TitleBar()
     <main class="h-[calc(100dvh-(var(--spacing)*16))] max-h-[calc(100dvh-(var(--spacing)*16))] w-full overflow-hidden">
       <div class="flex flex-row h-full">
         <div class="pr-1 bg-primary/40 dark:bg-primary-content h-full min-w-75">
-          @components.Backlog(tasks)
+          @components.Backlog(backlogTasks)
         </div>
         <div class="grow overflow-y-auto m-1 p-8">
-          @components.Timeline(tasks)
+          @components.Timeline(todaysTasks)
         </div>
       </div>
       <button class="btn btn-circle size-16 fixed bottom-4 right-4 shadow-xl bg-primary/75 text-primary-content" hx-get="/tasks/new" hx-target="#dialog" hx-trigger="click, keyup[cmdKey&&key=='N'] from:body">

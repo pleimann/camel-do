@@ -9,7 +9,7 @@ templ TaskDialog(task *model.Task) {
         <i data-lucide="x" />
       </button>
 
-      <form id="taskForm" method="dialog" class="flex flex-col gap-4" hx-post="/tasks/new" hx-target="#backlog" hx-swap="afterbegin transition:true">
+      <form id="taskForm" method="dialog" class="flex flex-col gap-4" hx-post="/tasks/">
         <input type="text" placeholder="New Task..." class="input input-ghost text-lg w-full font-bold" name="title" />
 
         <fieldset class="fieldset bg-base-200 border border-base-300 p-4 w-full rounded-box">

@@ -1,18 +1,12 @@
 package task
 
 import (
-	"cmp"
-	"context"
-	"fmt"
-	"log"
 	"log/slog"
-	"net/http"
-	"slices"
-	"strconv"
+	"time"
 
+	"github.com/oklog/ulid/v2"
 	"github.com/pleimann/camel-do/model"
-	"google.golang.org/api/option"
-	"google.golang.org/api/tasks/v1"
+	"github.com/pleimann/camel-do/services/db"
 )
 
 type Config struct {
@@ -20,92 +14,49 @@ type Config struct {
 
 // TaskService is a service for managing tasks.
 type TaskService struct {
-	// Tasks is a slice of Task.
-	tasks []model.Task
-
-	config      *Config
-	googleTasks *tasks.Service
+	config *Config
+	db     *db.DatabaseService
 }
 
-func NewTaskService(config *Config, http *http.Client) (*TaskService, error) {
-	service, err := tasks.NewService(context.Background(), option.WithHTTPClient(http))
-
-	if err != nil {
-		slog.Error("error creating google tasks service", "error", err.Error())
-		return nil, err
-	}
-
+func NewTaskService(config *Config, db *db.DatabaseService) (*TaskService, error) {
 	taskService := &TaskService{
-		config:      config,
-		googleTasks: service,
+		config: config,
+		db:     db,
 	}
 
 	return taskService, nil
 }
 
-func (t *TaskService) AddTask(task model.Task) (model.Task, error) {
+func (t *TaskService) AddTask(task *model.Task) error {
 	slog.Info("adding task", "task", task)
 
-	slog.Info("NewTask", "color", task.Color, "icon", task.Icon)
-
-	if task.Color == "" {
-		task.Color = model.ColorZinc
+	if task.ID == "" {
+		task.ID = ulid.Make().String()
 	}
 
-	if task.Icon == "" {
-		task.Icon = model.IconCircleHelp
+	if err := t.db.Create(task).Error; err != nil {
+		return err
 	}
 
-	slog.Info("NewTask", "color", task.Color, "icon", task.Icon)
-
-	t.tasks = append([]model.Task{task}, t.tasks...)
-
-	return task, nil
+	return nil
 }
 
-func (t *TaskService) GetTasks() []model.Task {
-	r, err := t.googleTasks.Tasklists.List().MaxResults(10).Do()
-	if err != nil {
-		log.Fatalf("Unable to retrieve task lists. %v", err)
-	}
-
+func (t *TaskService) GetBacklogTasks() ([]model.Task, error) {
 	tasks := []model.Task{}
-
-	fmt.Println("Task Lists:")
-	if len(r.Items) > 0 {
-		taskList := r.Items[0]
-		gtasks, err := t.googleTasks.Tasks.List(taskList.Id).Do()
-		if err != nil {
-			return []model.Task{}
-		}
-
-		for i, gtask := range gtasks.Items {
-			b, _ := gtask.MarshalJSON()
-
-			fmt.Printf("%d gtask: %v\n", i, string(b))
-
-			order, _ := strconv.Atoi(gtask.Position)
-
-			tasks = append(tasks, model.Task{
-				ID:          gtask.Id,
-				Title:       gtask.Title,
-				Description: gtask.Notes,
-				Completed:   gtask.Completed != nil,
-				Order:       order,
-			})
-		}
-
-		slices.SortStableFunc(tasks, func(a, b model.Task) int {
-			return cmp.Compare(a.Order, b.Order)
-		})
-
-		return tasks
-
-	} else {
-		fmt.Print("No task lists found.")
+	if err := t.db.Limit(100).Order("updated_at desc").Find(&tasks).Error; err != nil {
+		return nil, err
 	}
 
-	t.tasks = tasks
+	return tasks, nil
+}
 
-	return t.tasks
+func (t *TaskService) GetTodaysTasks() ([]model.Task, error) {
+	tasks := []model.Task{}
+	end := time.Now().UTC()
+	start := end.Add(-time.Hour * 24)
+	if err := t.db.Where("start_time BETWEEN ? AND ?", start, end).Find(&tasks).Error; err != nil {
+		return nil, err
+	}
+
+	return tasks, nil
 }

@@ -38,6 +38,7 @@ import {
   Fish,
   Rat,
   Worm,
+  CircleHelp as Unknown,
 } from 'lucide';
 
 import { 
@@ -64,6 +65,7 @@ createIcons({
   },
   nameAttr: 'data-lucide',
   icons: {
+    Unknown,
     Menu,
     ArrowRight,
     Globe,

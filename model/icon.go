@@ -29,7 +29,7 @@ ENUM(
 	shark,
 	whale,
 	narwhal,
-	circleHelp
+	unknown,
 
 )
 */

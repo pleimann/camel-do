@@ -1,6 +1,9 @@
 # Auto-generated .gitignore file.
 # See https://gowebly.org for more information.
 
+credentials.json
+token.json
+
 # macOS files.
 .DS_Store
 
