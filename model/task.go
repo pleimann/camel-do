@@ -14,7 +14,7 @@ type Task struct {
 	Title       string        `schema:"title,required"`                               // Title of the task
 	Description string        `schema:"description"`                                  // Description of the task
 	Color       Color         `schema:"color" gorm:"default:Zinc"`                    // Color of the task
-	Icon        Icon          `schema:"-" gorm:"default:circleHelp"`                  // Icon to identify project
+	Icon        Icon          `schema:"-" gorm:"default:unknown"`                     // Icon to identify project
 	StartTime   time.Time     `schema:"startTime"`                                    // Start time of the task
 	Duration    time.Duration `schema:"duration"`                                     // Duration of the task
 	Completed   bool          `schema:"completed,default:false" grom:"default:false"` // Status of task completion

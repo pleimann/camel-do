@@ -93,6 +93,7 @@ func (t *TaskHandler) handleTaskCreate(w http.ResponseWriter, r *http.Request) {
 
 	if err := t.taskService.AddTask(&task); err != nil {
 		t.handleError(w, r, http.StatusInternalServerError, "adding task", err)
+		return
 	}
 
 	backlogTemplate := components.AddedTaskCard(task)

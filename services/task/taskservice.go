@@ -28,7 +28,7 @@ func NewTaskService(config *Config, db *db.DatabaseService) (*TaskService, error
 }
 
 func (t *TaskService) AddTask(task *model.Task) error {
-	slog.Info("adding task", "task", task)
+	slog.Debug("adding task", "task", task)
 
 	if task.ID == "" {
 		task.ID = ulid.Make().String()
@@ -42,7 +42,7 @@ func (t *TaskService) AddTask(task *model.Task) error {
 }
 
 func (t *TaskService) UpdateTask(task *model.Task) error {
-	slog.Info("updating task", "task", task)
+	slog.Debug("updating task", "task", task)
 
 	if err := t.db.Save(task).Error; err != nil {
 		return err
@@ -52,7 +52,7 @@ func (t *TaskService) UpdateTask(task *model.Task) error {
 }
 
 func (t *TaskService) DeleteTask(id string) error {
-	slog.Info("deleting task", "id", id)
+	slog.Debug("deleting task", "id", id)
 	if err := t.db.Delete(&model.Task{}, "id = ?", id).Error; err != nil {
 		return err
 	}

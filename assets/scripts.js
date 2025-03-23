@@ -1,9 +1,5 @@
 import htmx from 'htmx.org'
 
-htmx.on("htmx:beforeSwap", function(event) {
-  console.log("htmx:beforeSwap", event);
-});
-
 import Alpine from 'alpinejs'
 
 // Add Alpine instance to window object.
@@ -12,9 +8,9 @@ window.Alpine = Alpine
 // Start Alpine.
 Alpine.start()
 
-
 import {
   createIcons,
+  replaceElement,
   Menu,
   ArrowRight,
   Globe,
@@ -61,12 +57,11 @@ import {
   whaleNarwhal as Narwhal
  } from '@lucide/lab';
 
-createIcons({
+ const lucideConfig = {
   attrs: {
     class: ['icon'],
     'stroke-width': 1,
   },
-  nameAttr: 'data-lucide',
   icons: {
     Unknown,
     Menu,
@@ -109,5 +104,30 @@ createIcons({
     Shark,
     Whale,
     Narwhal,
+  }  
+};
+
+createIcons(lucideConfig);
+
+function withMockDocument(mock, callback) {
+  const originalDocument = document;
+
+  // Redefine document for this scope
+  global.document = mock;
+
+  try {
+    callback();
+  } finally {
+    global.document = originalDocument; // Restore the original document
   }
+}
+
+htmx.onLoad((content) => {
+  console.log("htmx:onLoad", content);
+
+  // Sub loaded content for document to confine ludide.createIcons()
+  //  search for elements to replace to the new content rather than the whole document
+  withMockDocument(content, function() {
+    createIcons(lucideConfig);
+  });
 });
