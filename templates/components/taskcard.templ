@@ -2,22 +2,43 @@ package components
 
 import (
 	"fmt"
-	"github.com/pleimann/camel-do/model"
 	"strings"
+	"github.com/pleimann/camel-do/model"
 )
+
+const LightLevel = 200
+const DarkLevel = 800
 
 // BodyContent defines HTML content.
 templ TaskCard(task *model.Task) {
 	{{
-    backgroundColor := fmt.Sprintf("bg-%s-100", strings.ToLower(task.Color.String()))
-	  backgroundColorDark := fmt.Sprintf("dark:bg-%s-100", strings.ToLower(task.Color.String()))
-	  textColor := fmt.Sprintf("text-%s-100", strings.ToLower(task.Color.String()))
-	  textColorDark := fmt.Sprintf("dark:text-%s-100", strings.ToLower(task.Color.String())) 
+    var bgColor, txColor string
+    var bgColorDark, txColorDark string
+    if task.Project.Color.String() != "" {
+      bgColor = fmt.Sprintf("bg-%s-%d", strings.ToLower(task.Project.Color.String()), LightLevel)
+      txColor = fmt.Sprintf("text-%s-%d", strings.ToLower(task.Project.Color.String()), DarkLevel)
+      bgColorDark = fmt.Sprintf("dark:bg-%s-%d", strings.ToLower(task.Project.Color.String()), LightLevel)
+      txColorDark = fmt.Sprintf("dark:text-%s-%d", strings.ToLower(task.Project.Color.String()), DarkLevel)
+
+    } else {
+      bgColor = fmt.Sprintf("bg-base-%d", LightLevel)
+      txColor = fmt.Sprintf("text-base-%d", DarkLevel)
+      bgColorDark = fmt.Sprintf("dark:bg-base-%d", LightLevel)
+      txColorDark = fmt.Sprintf("dark:text-base-%d", DarkLevel)
+    }
+
+    var icon string
+    if task.Project.Icon.String() != "" {
+      icon = task.Project.Icon.String()
+    } else {
+      icon = "package"
+    }
   }}
 
-	<div class="card card-side card-xs bg-base-100 dark:bg-base-300 shadow-md text-sm select-none rounded-2xl">
-		<figure class={ "w-18", backgroundColor, backgroundColorDark, textColor, textColorDark }>
-			<i data-lucide={ task.Icon.String() } class="size-7" />
+	<div class="card card-side card-xs bg-base-100 shadow-md text-sm select-none rounded-2xl">
+		<figure class={ "w-16", bgColor, txColor, bgColorDark, txColorDark }>
+      
+			<i data-lucide={ icon } class="size-7" />
 		</figure>
 		<div class="card-body flex-col justify-center items-start">
 			<div class="text-sm font-medium">{ task.Title }</div>
@@ -26,111 +47,31 @@ templ TaskCard(task *model.Task) {
 		<div class="card-actions rounded-e-2xl bg-base-200 p-2">
 			<div class="flex flex-col justify-between">
 				<div class="dropdown dropdown-hover dropdown-left dropdown-center">
-					<button class="btn btn-circle btn-ghost" role="button" tabIndex="0"><i data-lucide="menu" class="size-4" /></button>
+          <button class="btn btn-circle btn-ghost"
+            hx-put={ "/tasks/" + task.ID + "/complete" } hx-target="closest .card" hx-swap="outerHTML"
+          >
+            if task.Completed {
+              <i data-lucide="circle-checked" class="size-5"></i>
+            } else {
+              <i data-lucide="circle" class="size-5"></i>
+            }
+          </button>
 					<ul class="dropdown-content p-2 z-1 gap-2 flex flex-row-reverse rounded-s-full bg-base-200/90 bg-blend-overlay" tabIndex="0">
-						<li>
-              <button class="btn btn-circle btn-ghost tooltip tooltip-bottom" data-tip="Edit">
-                <i data-lucide="edit" class="size-4" />
-              </button>
+						<li class="btn btn-circle btn-ghost tooltip tooltip-bottom" data-tip="Edit">
+              <i data-lucide="edit" class="size-5" />
             </li>
-						<li>
-							{{ 
-                var tip string
-                if task.Completed {
-                  tip = "Uncomplete"
-                } else {
-                  tip = "Complete"
-                } 
-              }}
-							<button class="btn btn-circle btn-ghost tooltip tooltip-bottom" data-tip={ tip } 
-                hx-put={ "/tasks/" + task.ID + "/complete" } hx-target="closest .card" hx-swap="outerHTML"
-              >
-								if task.Completed {
-									<i data-lucide="circle-checked" class="size-4"></i>
-								} else {
-									<i data-lucide="circle" class="size-4"></i>
-								}
-							</button>
-						</li>
-						<li>
-							<button class="btn btn-circle btn-ghost tooltip tooltip-bottom" data-tip="Delete" 
+						<li class="btn btn-circle btn-ghost tooltip tooltip-bottom" data-tip="Delete" 
                 hx-delete={ "/tasks/" + task.ID } hx-target="closest .card" hx-swap="delete">
-								<i data-lucide="Trash" class="size-4"></i>
-							</button>
+              <i data-lucide="Trash" class="size-5"></i>
 						</li>
 					</ul>
 				</div>
 				<button class="btn btn-circle btn-ghost tooltip tooltip-left" data-tip="Schedule">
-					<i data-lucide="schedule" class="size-4"></i>
+					<i data-lucide="schedule" class="size-5"></i>
 				</button>
 			</div>
 		</div>
 	</div>
-
-  // The code dynamically generates these names so tailwind can't pick them up
-  // "bg-red-100",
-  // "bg-orange-100",
-  // "bg-amber-100",
-  // "bg-yellow-100",
-  // "bg-lime-100",
-  // "bg-green-100",
-  // "bg-emerald-100",
-  // "bg-teal-100",
-  // "bg-cyan-100",
-  // "bg-sky-100",
-  // "bg-violet-100",
-  // "bg-purple-100",
-  // "bg-fuchsia-100",
-  // "bg-pink-100",
-  // "bg-rose-100",
-
-  // "dark:bg-red-900",
-  // "dark:bg-orange-900",
-  // "dark:bg-amber-900",
-  // "dark:bg-yellow-900",
-  // "dark:bg-lime-900",
-  // "dark:bg-green-900",
-  // "dark:bg-emerald-900",
-  // "dark:bg-teal-900",
-  // "dark:bg-cyan-900",
-  // "dark:bg-sky-900",
-  // "dark:bg-violet-900",
-  // "dark:bg-purple-900",
-  // "dark:bg-fuchsia-900",
-  // "dark:bg-pink-900",
-  // "dark:bg-rose-900",
-
-  // "dark:text-red-100",
-  // "dark:text-orange-100",
-  // "dark:text-amber-100",
-  // "dark:text-yellow-100",
-  // "dark:text-lime-100",
-  // "dark:text-green-100",
-  // "dark:text-emerald-100",
-  // "dark:text-teal-100",
-  // "dark:text-cyan-100",
-  // "dark:text-sky-100",
-  // "dark:text-violet-100",
-  // "dark:text-purple-100",
-  // "dark:text-fuchsia-100",
-  // "dark:text-pink-100",
-  // "dark:text-rose-100",
-
-  // "text-red-900",
-  // "text-orange-900",
-  // "text-amber-900",
-  // "text-yellow-900",
-  // "text-lime-900",
-  // "text-green-900",
-  // "text-emerald-900",
-  // "text-teal-900",
-  // "text-cyan-900",
-  // "text-sky-900",
-  // "text-violet-900",
-  // "text-purple-900",
-  // "text-fuchsia-900",
-  // "text-pink-900",
-  // "text-rose-900",
 }
 
 templ AddedTaskCard(task *model.Task) {
@@ -138,3 +79,72 @@ templ AddedTaskCard(task *model.Task) {
        @TaskCard(task)
    </div>
 }
+
+// The code dynamically generates these names so tailwind can't pick them up
+// "bg-red-200",
+// "bg-orange-200",
+// "bg-amber-200",
+// "bg-yellow-200",
+// "bg-lime-200",
+// "bg-green-200",
+// "bg-emerald-200",
+// "bg-teal-200",
+// "bg-cyan-200",
+// "bg-sky-200",
+// "bg-violet-200",
+// "bg-purple-200",
+// "bg-fuchsia-200",
+// "bg-pink-200",
+// "bg-rose-200",
+// "bg-zinc-200",
+
+// "dark:bg-red-800",
+// "dark:bg-orange-800",
+// "dark:bg-amber-800",
+// "dark:bg-yellow-800",
+// "dark:bg-lime-800",
+// "dark:bg-green-800",
+// "dark:bg-emerald-800",
+// "dark:bg-teal-800",
+// "dark:bg-cyan-800",
+// "dark:bg-sky-800",
+// "dark:bg-violet-800",
+// "dark:bg-purple-800",
+// "dark:bg-fuchsia-800",
+// "dark:bg-pink-800",
+// "dark:bg-rose-800",
+// "dark:bg-zinc-800",
+
+// "dark:text-red-200",
+// "dark:text-orange-200",
+// "dark:text-amber-200",
+// "dark:text-yellow-200",
+// "dark:text-lime-200",
+// "dark:text-green-200",
+// "dark:text-emerald-200",
+// "dark:text-teal-200",
+// "dark:text-cyan-200",
+// "dark:text-sky-200",
+// "dark:text-violet-200",
+// "dark:text-purple-200",
+// "dark:text-fuchsia-200",
+// "dark:text-pink-200",
+// "dark:text-rose-200",
+// "dark:text-zinc-200",
+
+// "text-red-800",
+// "text-orange-800",
+// "text-amber-800",
+// "text-yellow-800",
+// "text-lime-800",
+// "text-green-800",
+// "text-emerald-800",
+// "text-teal-800",
+// "text-cyan-800",
+// "text-sky-800",
+// "text-violet-800",
+// "text-purple-800",
+// "text-fuchsia-800",
+// "text-pink-800",
+// "text-rose-800",
+// "text-zinc-800",

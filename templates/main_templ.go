@@ -74,7 +74,7 @@ func Layout(config Config, metaTags, bodyContent templ.Component) templ.Componen
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 5, "\" class=\"bg-base-100\" x-data=\"{}\" hx-ext=\"remove-me,response-targets,hx-drag\" hx-target-5*=\"#errors\" hx-target-4*=\"#warnings\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 5, "\" x-data=\"{}\" hx-ext=\"remove-me,response-targets,hx-drag\" hx-target-5*=\"#errors\" hx-target-4*=\"#warnings\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

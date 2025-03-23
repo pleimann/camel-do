@@ -1,12 +1,15 @@
 package task
 
 import (
+	"errors"
+	"fmt"
 	"log/slog"
 	"time"
 
 	"github.com/oklog/ulid/v2"
 	"github.com/pleimann/camel-do/model"
 	"github.com/pleimann/camel-do/services/db"
+	"gorm.io/gorm"
 )
 
 type Config struct {
@@ -48,7 +51,11 @@ func (t *TaskService) CompleteTask(id string, completed bool) (*model.Task, erro
 		ID: id,
 	}
 
-	t.db.First(&task)
+	if err := t.db.First(&task).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, fmt.Errorf("not found: %w", err)
+		}
+	}
 
 	task.Completed = completed
 
@@ -59,7 +66,7 @@ func (t *TaskService) CompleteTask(id string, completed bool) (*model.Task, erro
 	return &task, nil
 }
 
-func (t *TaskService) UpdateTask(task *model.Task) error {
+func (t *TaskService) UpsertTask(task *model.Task) error {
 	slog.Debug("updating task", "task", task)
 
 	if err := t.db.Save(task).Error; err != nil {
@@ -72,6 +79,10 @@ func (t *TaskService) UpdateTask(task *model.Task) error {
 func (t *TaskService) DeleteTask(id string) error {
 	slog.Debug("deleting task", "id", id)
 	if err := t.db.Delete(&model.Task{}, "id = ?", id).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return fmt.Errorf("not found: %w", err)
+		}
+
 		return err
 	}
 

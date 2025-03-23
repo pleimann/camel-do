@@ -46,7 +46,6 @@ func (t *TaskSyncService) GetGoogleTasks() []model.Task {
 
 	tasks := []model.Task{}
 
-	fmt.Println("Task Lists:")
 	if len(r.Items) > 0 {
 		taskList := r.Items[0]
 		gtasks, err := t.googleTasks.Tasks.List(taskList.Id).Do()
@@ -66,12 +65,12 @@ func (t *TaskSyncService) GetGoogleTasks() []model.Task {
 				Title:       gtask.Title,
 				Description: gtask.Notes,
 				Completed:   gtask.Completed != nil,
-				Order:       order,
+				Rank:        order,
 			})
 		}
 
 		slices.SortStableFunc(tasks, func(a, b model.Task) int {
-			return cmp.Compare(a.Order, b.Order)
+			return cmp.Compare(a.Rank, b.Rank)
 		})
 
 		return tasks

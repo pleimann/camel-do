@@ -43,7 +43,7 @@ templ Layout(config Config, metaTags, bodyContent templ.Component) {
 			<link href="/static/styles.css" rel="stylesheet"/>
 			// <script src="https://accounts.google.com/gsi/client" async defer></script>
 		</head>
-		<body onload={ pages.BodyScripts() } class="bg-base-100" x-data="{}" 
+		<body onload={ pages.BodyScripts() } x-data="{}" 
       hx-ext="remove-me,response-targets,hx-drag"
       hx-target-5*="#errors"
       hx-target-4*="#warnings"

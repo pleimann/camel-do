@@ -81,7 +81,7 @@ func styledTextStyles() templ.CSSClass {
 }
 
 // BodyContent defines HTML content.
-func BodyContent(backlogTasks []model.Task, todaysTasks []model.Task) templ.Component {
+func BodyContent(backlogTasks []model.Task, todaysTasks []model.Task, projects []model.Project) templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
 		if templ_7745c5c3_CtxErr := ctx.Err(); templ_7745c5c3_CtxErr != nil {
@@ -110,7 +110,7 @@ func BodyContent(backlogTasks []model.Task, todaysTasks []model.Task) templ.Comp
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 5, "<main class=\"h-[calc(100dvh-(var(--spacing)*16))] max-h-[calc(100dvh-(var(--spacing)*16))] w-full overflow-hidden\"><div class=\"flex flex-row h-full\"><div class=\"pr-1 bg-primary/80 dark:bg-primary-content h-full min-w-75\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 5, "<main class=\"h-[calc(100dvh-(var(--spacing)*16))] max-h-[calc(100dvh-(var(--spacing)*16))] w-full overflow-hidden\"><div class=\"flex flex-row h-full bg-base-100\"><div class=\"pr-1 bg-primary/80 dark:bg-primary-content h-full min-w-75\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -126,7 +126,7 @@ func BodyContent(backlogTasks []model.Task, todaysTasks []model.Task) templ.Comp
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 7, "</div></div><button class=\"btn btn-circle size-16 fixed bottom-4 right-4 shadow-xl bg-primary/75 text-primary-content\" hx-get=\"/tasks/new\" hx-target=\"#dialog\" hx-trigger=\"click, keyup[cmdKey&amp;&amp;key==&#39;N&#39;] from:body\"><i data-lucide=\"plus\" class=\"size-16\"></i></button></main></div>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 7, "</div></div><nav class=\"dropdown dropdown-hover dropdown-top fixed bottom-4 right-4\"><button class=\"btn btn-circle size-16 shadow-xl tooltip tooltip-left bg-primary/75 text-primary-content\" data-tip=\"New Task\" hx-get=\"/tasks/new\" hx-target=\"#dialog\" hx-trigger=\"click, keyup[cmdKey&amp;&amp;optKey&amp;&amp;key==&#39;N&#39;] from:body\"><i data-lucide=\"plus\" class=\"size-12\"></i></button><ul class=\"dropdown-content p-2 z-1 gap-2 flex flex-row-reverse\"><li><button class=\"btn btn-circle size-12 shadow-xl tooltip tooltip-left bg-primary/75 text-primary-content\" data-tip=\"New Project\" hx-get=\"/projects/new\" hx-target=\"#dialog\" hx-trigger=\"click\"><i data-lucide=\"package-plus\" class=\"size-8\"></i></button></li></ul></nav></main></div>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

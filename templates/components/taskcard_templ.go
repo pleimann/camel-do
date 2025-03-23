@@ -14,6 +14,9 @@ import (
 	"strings"
 )
 
+const LightLevel = 200
+const DarkLevel = 800
+
 // BodyContent defines HTML content.
 func TaskCard(task *model.Task) templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
@@ -37,15 +40,32 @@ func TaskCard(task *model.Task) templ.Component {
 		}
 		ctx = templ.ClearChildren(ctx)
 
-		backgroundColor := fmt.Sprintf("bg-%s-100", strings.ToLower(task.Color.String()))
-		backgroundColorDark := fmt.Sprintf("dark:bg-%s-100", strings.ToLower(task.Color.String()))
-		textColor := fmt.Sprintf("text-%s-100", strings.ToLower(task.Color.String()))
-		textColorDark := fmt.Sprintf("dark:text-%s-100", strings.ToLower(task.Color.String()))
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<div class=\"card card-side card-xs bg-base-100 dark:bg-base-300 shadow-md text-sm select-none rounded-2xl\">")
+		var bgColor, txColor string
+		var bgColorDark, txColorDark string
+		if task.Project.Color.String() != "" {
+			bgColor = fmt.Sprintf("bg-%s-%d", strings.ToLower(task.Project.Color.String()), LightLevel)
+			txColor = fmt.Sprintf("text-%s-%d", strings.ToLower(task.Project.Color.String()), DarkLevel)
+			bgColorDark = fmt.Sprintf("dark:bg-%s-%d", strings.ToLower(task.Project.Color.String()), LightLevel)
+			txColorDark = fmt.Sprintf("dark:text-%s-%d", strings.ToLower(task.Project.Color.String()), DarkLevel)
+
+		} else {
+			bgColor = fmt.Sprintf("bg-base-%d", LightLevel)
+			txColor = fmt.Sprintf("text-base-%d", DarkLevel)
+			bgColorDark = fmt.Sprintf("dark:bg-base-%d", LightLevel)
+			txColorDark = fmt.Sprintf("dark:text-base-%d", DarkLevel)
+		}
+
+		var icon string
+		if task.Project.Icon.String() != "" {
+			icon = task.Project.Icon.String()
+		} else {
+			icon = "package"
+		}
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<div class=\"card card-side card-xs bg-base-100 shadow-md text-sm select-none rounded-2xl\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		var templ_7745c5c3_Var2 = []any{"w-18", backgroundColor, backgroundColorDark, textColor, textColorDark}
+		var templ_7745c5c3_Var2 = []any{"w-16", bgColor, txColor, bgColorDark, txColorDark}
 		templ_7745c5c3_Err = templ.RenderCSSItems(ctx, templ_7745c5c3_Buffer, templ_7745c5c3_Var2...)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
@@ -68,9 +88,9 @@ func TaskCard(task *model.Task) templ.Component {
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var4 string
-		templ_7745c5c3_Var4, templ_7745c5c3_Err = templ.JoinStringErrs(task.Icon.String())
+		templ_7745c5c3_Var4, templ_7745c5c3_Err = templ.JoinStringErrs(icon)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/components/taskcard.templ`, Line: 20, Col: 38}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/components/taskcard.templ`, Line: 41, Col: 24}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var4))
 		if templ_7745c5c3_Err != nil {
@@ -83,7 +103,7 @@ func TaskCard(task *model.Task) templ.Component {
 		var templ_7745c5c3_Var5 string
 		templ_7745c5c3_Var5, templ_7745c5c3_Err = templ.JoinStringErrs(task.Title)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/components/taskcard.templ`, Line: 23, Col: 48}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/components/taskcard.templ`, Line: 44, Col: 48}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var5))
 		if templ_7745c5c3_Err != nil {
@@ -96,78 +116,54 @@ func TaskCard(task *model.Task) templ.Component {
 		var templ_7745c5c3_Var6 string
 		templ_7745c5c3_Var6, templ_7745c5c3_Err = templ.JoinStringErrs(task.Duration.String())
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/components/taskcard.templ`, Line: 24, Col: 48}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/components/taskcard.templ`, Line: 45, Col: 48}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var6))
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 6, "</time></div><div class=\"card-actions rounded-e-2xl bg-base-200 p-2\"><div class=\"flex flex-col justify-between\"><div class=\"dropdown dropdown-hover dropdown-left dropdown-center\"><button class=\"btn btn-circle btn-ghost\" role=\"button\" tabIndex=\"0\"><i data-lucide=\"menu\" class=\"size-4\"></i></button><ul class=\"dropdown-content p-2 z-1 gap-2 flex flex-row-reverse rounded-s-full bg-base-200/90 bg-blend-overlay\" tabIndex=\"0\"><li><button class=\"btn btn-circle btn-ghost tooltip tooltip-bottom\" data-tip=\"Edit\"><i data-lucide=\"edit\" class=\"size-4\"></i></button></li><li>")
-		if templ_7745c5c3_Err != nil {
-			return templ_7745c5c3_Err
-		}
-
-		var tip string
-		if task.Completed {
-			tip = "Uncomplete"
-		} else {
-			tip = "Complete"
-		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 7, "<button class=\"btn btn-circle btn-ghost tooltip tooltip-bottom\" data-tip=\"")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 6, "</time></div><div class=\"card-actions rounded-e-2xl bg-base-200 p-2\"><div class=\"flex flex-col justify-between\"><div class=\"dropdown dropdown-hover dropdown-left dropdown-center\"><button class=\"btn btn-circle btn-ghost\" hx-put=\"")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var7 string
-		templ_7745c5c3_Var7, templ_7745c5c3_Err = templ.JoinStringErrs(tip)
+		templ_7745c5c3_Var7, templ_7745c5c3_Err = templ.JoinStringErrs("/tasks/" + task.ID + "/complete")
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/components/taskcard.templ`, Line: 45, Col: 85}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/components/taskcard.templ`, Line: 51, Col: 54}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var7))
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 8, "\" hx-put=\"")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 7, "\" hx-target=\"closest .card\" hx-swap=\"outerHTML\">")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		if task.Completed {
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 8, "<i data-lucide=\"circle-checked\" class=\"size-5\"></i>")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+		} else {
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 9, "<i data-lucide=\"circle\" class=\"size-5\"></i>")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+		}
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 10, "</button><ul class=\"dropdown-content p-2 z-1 gap-2 flex flex-row-reverse rounded-s-full bg-base-200/90 bg-blend-overlay\" tabIndex=\"0\"><li class=\"btn btn-circle btn-ghost tooltip tooltip-bottom\" data-tip=\"Edit\"><i data-lucide=\"edit\" class=\"size-5\"></i></li><li class=\"btn btn-circle btn-ghost tooltip tooltip-bottom\" data-tip=\"Delete\" hx-delete=\"")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var8 string
-		templ_7745c5c3_Var8, templ_7745c5c3_Err = templ.JoinStringErrs("/tasks/" + task.ID + "/complete")
+		templ_7745c5c3_Var8, templ_7745c5c3_Err = templ.JoinStringErrs("/tasks/" + task.ID)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/components/taskcard.templ`, Line: 46, Col: 58}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/components/taskcard.templ`, Line: 64, Col: 47}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var8))
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 9, "\" hx-target=\"closest .card\" hx-swap=\"outerHTML\">")
-		if templ_7745c5c3_Err != nil {
-			return templ_7745c5c3_Err
-		}
-		if task.Completed {
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 10, "<i data-lucide=\"circle-checked\" class=\"size-4\"></i>")
-			if templ_7745c5c3_Err != nil {
-				return templ_7745c5c3_Err
-			}
-		} else {
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 11, "<i data-lucide=\"circle\" class=\"size-4\"></i>")
-			if templ_7745c5c3_Err != nil {
-				return templ_7745c5c3_Err
-			}
-		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 12, "</button></li><li><button class=\"btn btn-circle btn-ghost tooltip tooltip-bottom\" data-tip=\"Delete\" hx-delete=\"")
-		if templ_7745c5c3_Err != nil {
-			return templ_7745c5c3_Err
-		}
-		var templ_7745c5c3_Var9 string
-		templ_7745c5c3_Var9, templ_7745c5c3_Err = templ.JoinStringErrs("/tasks/" + task.ID)
-		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/components/taskcard.templ`, Line: 57, Col: 47}
-		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var9))
-		if templ_7745c5c3_Err != nil {
-			return templ_7745c5c3_Err
-		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 13, "\" hx-target=\"closest .card\" hx-swap=\"delete\"><i data-lucide=\"Trash\" class=\"size-4\"></i></button></li></ul></div><button class=\"btn btn-circle btn-ghost tooltip tooltip-left\" data-tip=\"Schedule\"><i data-lucide=\"schedule\" class=\"size-4\"></i></button></div></div></div>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 11, "\" hx-target=\"closest .card\" hx-swap=\"delete\"><i data-lucide=\"Trash\" class=\"size-5\"></i></li></ul></div><button class=\"btn btn-circle btn-ghost tooltip tooltip-left\" data-tip=\"Schedule\"><i data-lucide=\"schedule\" class=\"size-5\"></i></button></div></div></div>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -191,12 +187,12 @@ func AddedTaskCard(task *model.Task) templ.Component {
 			}()
 		}
 		ctx = templ.InitializeContext(ctx)
-		templ_7745c5c3_Var10 := templ.GetChildren(ctx)
-		if templ_7745c5c3_Var10 == nil {
-			templ_7745c5c3_Var10 = templ.NopComponent
+		templ_7745c5c3_Var9 := templ.GetChildren(ctx)
+		if templ_7745c5c3_Var9 == nil {
+			templ_7745c5c3_Var9 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 14, "<div hx-swap-oob=\"afterbegin:#backlog\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 12, "<div hx-swap-oob=\"afterbegin:#backlog\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -204,7 +200,7 @@ func AddedTaskCard(task *model.Task) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 15, "</div>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 13, "</div>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -212,4 +208,72 @@ func AddedTaskCard(task *model.Task) templ.Component {
 	})
 }
 
+// The code dynamically generates these names so tailwind can't pick them up
+// "bg-red-200",
+// "bg-orange-200",
+// "bg-amber-200",
+// "bg-yellow-200",
+// "bg-lime-200",
+// "bg-green-200",
+// "bg-emerald-200",
+// "bg-teal-200",
+// "bg-cyan-200",
+// "bg-sky-200",
+// "bg-violet-200",
+// "bg-purple-200",
+// "bg-fuchsia-200",
+// "bg-pink-200",
+// "bg-rose-200",
+// "bg-zinc-200",
+
+// "dark:bg-red-800",
+// "dark:bg-orange-800",
+// "dark:bg-amber-800",
+// "dark:bg-yellow-800",
+// "dark:bg-lime-800",
+// "dark:bg-green-800",
+// "dark:bg-emerald-800",
+// "dark:bg-teal-800",
+// "dark:bg-cyan-800",
+// "dark:bg-sky-800",
+// "dark:bg-violet-800",
+// "dark:bg-purple-800",
+// "dark:bg-fuchsia-800",
+// "dark:bg-pink-800",
+// "dark:bg-rose-800",
+// "dark:bg-zinc-800",
+
+// "dark:text-red-200",
+// "dark:text-orange-200",
+// "dark:text-amber-200",
+// "dark:text-yellow-200",
+// "dark:text-lime-200",
+// "dark:text-green-200",
+// "dark:text-emerald-200",
+// "dark:text-teal-200",
+// "dark:text-cyan-200",
+// "dark:text-sky-200",
+// "dark:text-violet-200",
+// "dark:text-purple-200",
+// "dark:text-fuchsia-200",
+// "dark:text-pink-200",
+// "dark:text-rose-200",
+// "dark:text-zinc-200",
+
+// "text-red-800",
+// "text-orange-800",
+// "text-amber-800",
+// "text-yellow-800",
+// "text-lime-800",
+// "text-green-800",
+// "text-emerald-800",
+// "text-teal-800",
+// "text-cyan-800",
+// "text-sky-800",
+// "text-violet-800",
+// "text-purple-800",
+// "text-fuchsia-800",
+// "text-pink-800",
+// "text-rose-800",
+// "text-zinc-800",
 var _ = templruntime.GeneratedTemplate

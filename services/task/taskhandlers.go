@@ -1,30 +1,32 @@
 package task
 
 import (
+	"errors"
 	"fmt"
 	"log/slog"
 	"net/http"
-	"reflect"
-	"time"
 
 	"github.com/angelofallars/htmx-go"
 	"github.com/gorilla/mux"
-	"github.com/gorilla/schema"
 
 	"github.com/pleimann/camel-do/model"
+	"github.com/pleimann/camel-do/services/db"
+	"github.com/pleimann/camel-do/services/project"
 	"github.com/pleimann/camel-do/templates/components"
 	"github.com/pleimann/camel-do/templates/pages"
 )
 
 type TaskHandler struct {
 	*mux.Router
-	taskService *TaskService
+	taskService    *TaskService
+	projectService *project.ProjectService
 }
 
-func NewTaskHandler(router *mux.Router, taskService *TaskService) *TaskHandler {
+func NewHandler(router *mux.Router, taskService *TaskService, projectsService *project.ProjectService) *TaskHandler {
 	taskHandler := &TaskHandler{
-		Router:      router,
-		taskService: taskService,
+		Router:         router,
+		taskService:    taskService,
+		projectService: projectsService,
 	}
 
 	router.HandleFunc("/new", taskHandler.handleNewTask).Methods(http.MethodGet)
@@ -36,51 +38,20 @@ func NewTaskHandler(router *mux.Router, taskService *TaskService) *TaskHandler {
 	return taskHandler
 }
 
-func (t *TaskHandler) handleNewTask(w http.ResponseWriter, r *http.Request) {
-	newTaskDialogTemplate := pages.TaskDialog(nil)
+func (h *TaskHandler) handleNewTask(w http.ResponseWriter, r *http.Request) {
+	projects, err := h.projectService.GetProjects()
 
-	if err := htmx.NewResponse().RenderTempl(r.Context(), w, newTaskDialogTemplate); err != nil {
-		// If not, return HTTP 400 error.
-		w.WriteHeader(http.StatusInternalServerError)
-		slog.Error("render template", "method", r.Method, "status", http.StatusInternalServerError, "path", r.URL.Path)
+	if err != nil {
+		h.handleError(w, r, http.StatusInternalServerError, "getting projects", err)
 		return
 	}
-}
 
-var decoder *schema.Decoder
+	newTaskDialogTemplate := pages.TaskDialog(projects, nil)
 
-func init() {
-	decoder = schema.NewDecoder()
-
-	decoder.RegisterConverter(model.ColorZinc, func(input string) reflect.Value {
-		if input == "" {
-			return reflect.ValueOf(model.ColorZinc)
-		}
-
-		color, _ := model.ParseColor(input)
-
-		return reflect.ValueOf(color)
-	})
-
-	decoder.RegisterConverter(model.IconUnknown, func(input string) reflect.Value {
-		if input == "" {
-			return reflect.ValueOf(model.IconUnknown)
-		}
-
-		color, _ := model.ParseIcon(input)
-
-		return reflect.ValueOf(color)
-	})
-
-	decoder.RegisterConverter(time.Second, func(input string) reflect.Value {
-		if input == "" {
-			return reflect.ValueOf(nil)
-		}
-
-		duration, _ := time.ParseDuration(input)
-
-		return reflect.ValueOf(duration)
-	})
+	if err := htmx.NewResponse().RenderTempl(r.Context(), w, newTaskDialogTemplate); err != nil {
+		h.handleError(w, r, http.StatusInternalServerError, "render template", err)
+		return
+	}
 }
 
 func (t *TaskHandler) handleTaskCreate(w http.ResponseWriter, r *http.Request) {
@@ -95,7 +66,7 @@ func (t *TaskHandler) handleTaskCreate(w http.ResponseWriter, r *http.Request) {
 
 	var task model.Task
 
-	if err := decoder.Decode(&task, r.PostForm); err != nil {
+	if err := model.Decoder().Decode(&task, r.PostForm); err != nil {
 		t.handleError(w, r, http.StatusUnprocessableEntity, "decoding form data", err)
 		return
 	}
@@ -114,7 +85,7 @@ func (t *TaskHandler) handleTaskCreate(w http.ResponseWriter, r *http.Request) {
 		RenderTempl(r.Context(), w, addedTaskTemplate)
 }
 
-func (t *TaskHandler) handleTaskDelete(w http.ResponseWriter, r *http.Request) {
+func (h *TaskHandler) handleTaskDelete(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 
 	vars := mux.Vars(r)
@@ -122,13 +93,19 @@ func (t *TaskHandler) handleTaskDelete(w http.ResponseWriter, r *http.Request) {
 	id := vars["id"]
 	slog.Debug("handleTaskDelete", "taskId", id)
 
-	if err := t.taskService.DeleteTask(id); err != nil {
-		t.handleError(w, r, http.StatusInternalServerError, "deleting task", err)
+	if err := h.taskService.DeleteTask(id); err != nil {
+		if errors.Is(err, db.NotFoundError("not found")) {
+			h.handleError(w, r, http.StatusNotFound, "deleting task", err)
+
+		} else {
+			h.handleError(w, r, http.StatusInternalServerError, "deleting task", err)
+		}
+
 		return
 	}
 }
 
-func (t *TaskHandler) handleTaskComplete(w http.ResponseWriter, r *http.Request) {
+func (h *TaskHandler) handleTaskComplete(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 
 	vars := mux.Vars(r)
@@ -136,9 +113,16 @@ func (t *TaskHandler) handleTaskComplete(w http.ResponseWriter, r *http.Request)
 	id := vars["id"]
 	slog.Debug("handleTaskComplete", "taskId", id)
 
-	if task, err := t.taskService.CompleteTask(id, true); err != nil {
-		t.handleError(w, r, http.StatusUnprocessableEntity, "updating task", err)
+	if task, err := h.taskService.CompleteTask(id, true); err != nil {
+		if errors.Is(err, db.NotFoundError("not found")) {
+			h.handleError(w, r, http.StatusNotFound, "updating task", err)
+
+		} else {
+			h.handleError(w, r, http.StatusUnprocessableEntity, "updating task", err)
+		}
+
 		return
+
 	} else {
 		taskTemplate := components.TaskCard(task)
 
@@ -148,6 +132,8 @@ func (t *TaskHandler) handleTaskComplete(w http.ResponseWriter, r *http.Request)
 }
 
 func (t *TaskHandler) handleError(w http.ResponseWriter, r *http.Request, code int, location string, err error) {
+	slog.Error(location, "error", err.Error())
+
 	var errorMessage string
 
 	if err != nil {

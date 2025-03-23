@@ -17,6 +17,7 @@ import (
 	_ "github.com/joho/godotenv/autoload"
 	"github.com/pleimann/camel-do/services/db"
 	"github.com/pleimann/camel-do/services/oauth"
+	"github.com/pleimann/camel-do/services/project"
 	"github.com/pleimann/camel-do/services/task"
 	"github.com/pleimann/camel-do/templates"
 	"github.com/pleimann/camel-do/templates/pages"
@@ -56,9 +57,15 @@ var static embed.FS
 var taskService *task.TaskService
 var dbService *db.DatabaseService
 var taskSyncService *task.TaskSyncService
+var projectService *project.ProjectService
 
 func createDatabase() error {
-	dbService = db.NewDatabaseService("camel-do.db")
+	var err error
+
+	dbService, err = db.NewDatabaseService("camel-do.db")
+	if err != nil {
+		return err
+	}
 
 	return nil
 }
@@ -91,13 +98,21 @@ func runServer() error {
 	// This will serve files under http://localhost:4000/static/<filename>
 	router.PathPrefix("/static/").Handler(http.FileServer(http.FS(static)))
 
+	// Add projectService sub router
+	projectService, err = project.NewService(&project.Config{}, dbService)
+	if err != nil {
+		log.Fatalf("error creating ProjectService %s", err.Error())
+	}
+
+	project.NewHandler(router.PathPrefix("/projects").Subrouter(), projectService)
+
 	// Add taskService sub router
 	taskService, err = task.NewTaskService(&task.Config{}, dbService)
 	if err != nil {
 		log.Fatalf("error creating TaskService %s", err.Error())
 	}
 
-	task.NewTaskHandler(router.PathPrefix("/tasks").Subrouter(), taskService)
+	task.NewHandler(router.PathPrefix("/tasks").Subrouter(), taskService, projectService)
 
 	// Create a new server instance with options from environment variables.
 	// For more information, see https://blog.cloudflare.com/the-complete-guide-to-golang-net-http-timeouts/
@@ -146,6 +161,13 @@ func indexViewHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	projects, err := projectService.GetProjects()
+	if err != nil {
+		slog.Error("get all projects", "err", err)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
 	// Define template layout for index page.
 	indexTemplate := templates.Layout(
 		templates.Config{
@@ -156,7 +178,7 @@ func indexViewHandler(w http.ResponseWriter, r *http.Request) {
 			"camel-do, todo, tasks", // define meta keywords
 			"Welcome to Camel Do! You're here because camels are awesome and you need more of them in your life.", // define meta description
 		),
-		pages.BodyContent(backlogTasks, todaysTasks), // define body content
+		pages.BodyContent(backlogTasks, todaysTasks, projects), // define body content
 	)
 
 	// Render index page template.

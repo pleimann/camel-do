@@ -70,12 +70,14 @@ func generateRandomTask() model.Task {
 	return model.Task{
 		Title:       title,
 		Description: description,
-		Color:       color,
-		Icon:        icon,
-		StartTime:   startTime,
-		Duration:    duration,
-		Completed:   completed, // default to not completed.
-		CreatedAt:   createdAt, // Set the creation timestamp
-		UpdatedAt:   updatedAt, // Set the update timestamp
+		Project: model.Project{
+			Color: color,
+			Icon:  icon,
+		},
+		StartTime: startTime,
+		Duration:  duration,
+		Completed: completed, // default to not completed.
+		CreatedAt: createdAt, // Set the creation timestamp
+		UpdatedAt: updatedAt, // Set the update timestamp
 	}
 }
