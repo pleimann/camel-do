@@ -16,6 +16,18 @@ templ Layout(config Config, metaTags, bodyContent templ.Component) {
 			<meta http-equiv="X-UA-Compatible" content="ie=edge"/>
 			// <meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://accounts.google.com/gsi/client; connect-src 'self' ws://localhost:*; img-src 'self' data:*;"/>
 			<meta name="theme-color" content="#FEFEF5"/>
+      <meta
+        name="htmx-config"
+        content='{
+              "responseHandling":[
+                  {"code":"204", "swap": false},
+                  {"code":"[23]..", "swap": true},
+                  {"code":"422", "swap": true},
+                  {"code":"[45]..", "swap": false, "error": true},
+                  {"code":"...", "swap": true}
+              ]
+          }'
+      />
 			<title>{ config.Title }</title>
 			@metaTags
 			<link rel="dns-prefetch" href="//fonts.googleapis.com"/>
@@ -29,11 +41,18 @@ templ Layout(config Config, metaTags, bodyContent templ.Component) {
 			<link rel="icon" href="/static/favicon.png" sizes="any"/>
 			<link href="https://fonts.googleapis.com/css2?family=Inter&display=swap" rel="stylesheet"/>
 			<link href="/static/styles.css" rel="stylesheet"/>
-			<script src="https://accounts.google.com/gsi/client" async defer></script>
+			// <script src="https://accounts.google.com/gsi/client" async defer></script>
 		</head>
-		<body onload={ pages.BodyScripts() } class="bg-base-100">
+		<body onload={ pages.BodyScripts() } class="bg-base-100" x-data="{}" 
+      hx-ext="remove-me,response-targets,hx-drag"
+      hx-target-5*="#errors"
+      hx-target-4*="#warnings"
+    >
 			@bodyContent
 			<div id="dialog"></div>
+      <div id="warnings"></div>
+      <div id="errors"></div>
+      
 			<script src="/static/scripts.js"></script>
 			<script src="/static/icons.js"></script>
 		</body>

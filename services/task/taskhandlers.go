@@ -2,7 +2,6 @@ package task
 
 import (
 	"fmt"
-	"html/template"
 	"log/slog"
 	"net/http"
 	"reflect"
@@ -146,7 +145,10 @@ func (t *TaskHandler) handleError(w http.ResponseWriter, r *http.Request, code i
 		errorMessage = location
 	}
 
+	messageTemplate := components.ErrorMessage(errorMessage)
+
 	htmx.NewResponse().
+		Retarget("#messages").
 		StatusCode(code).
-		RenderHTML(w, template.HTML(errorMessage))
+		RenderTempl(r.Context(), w, messageTemplate)
 }
