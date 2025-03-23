@@ -5,6 +5,7 @@ import (
 	"log/slog"
 	"net/http"
 	"reflect"
+	"time"
 
 	"github.com/angelofallars/htmx-go"
 	"github.com/gorilla/mux"
@@ -69,6 +70,16 @@ func init() {
 		color, _ := model.ParseIcon(input)
 
 		return reflect.ValueOf(color)
+	})
+
+	decoder.RegisterConverter(time.Second, func(input string) reflect.Value {
+		if input == "" {
+			return reflect.ValueOf(nil)
+		}
+
+		duration, _ := time.ParseDuration(input)
+
+		return reflect.ValueOf(duration)
 	})
 }
 
