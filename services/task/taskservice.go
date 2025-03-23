@@ -41,6 +41,24 @@ func (t *TaskService) AddTask(task *model.Task) error {
 	return nil
 }
 
+func (t *TaskService) CompleteTask(id string, completed bool) (*model.Task, error) {
+	slog.Debug("completing task", "id", id, "completed", completed)
+
+	task := model.Task{
+		ID: id,
+	}
+
+	t.db.First(&task)
+
+	task.Completed = completed
+
+	if err := t.db.Save(&task).Error; err != nil {
+		return nil, err
+	}
+
+	return &task, nil
+}
+
 func (t *TaskService) UpdateTask(task *model.Task) error {
 	slog.Debug("updating task", "task", task)
 

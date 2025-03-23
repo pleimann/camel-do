@@ -30,6 +30,7 @@ func NewTaskHandler(router *mux.Router, taskService *TaskService) *TaskHandler {
 	router.HandleFunc("/new", taskHandler.handleNewTask).Methods(http.MethodGet)
 	router.HandleFunc("/", taskHandler.handleTaskCreate).Methods(http.MethodPost)
 	router.HandleFunc("/{id}", taskHandler.handleTaskDelete).Methods(http.MethodDelete)
+	router.HandleFunc("/{id}/complete", taskHandler.handleTaskComplete).Methods(http.MethodPut)
 	// router.HandleFunc("/{id}", taskHandler.handleTaskUpdate).Methods(http.MethodPut)
 
 	return taskHandler
@@ -96,11 +97,11 @@ func (t *TaskHandler) handleTaskCreate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	backlogTemplate := components.AddedTaskCard(task)
+	addedTaskTemplate := components.AddedTaskCard(&task)
 
 	htmx.NewResponse().
 		AddTrigger(htmx.Trigger("close-modal")).
-		RenderTempl(r.Context(), w, backlogTemplate)
+		RenderTempl(r.Context(), w, addedTaskTemplate)
 }
 
 func (t *TaskHandler) handleTaskDelete(w http.ResponseWriter, r *http.Request) {
@@ -114,6 +115,25 @@ func (t *TaskHandler) handleTaskDelete(w http.ResponseWriter, r *http.Request) {
 	if err := t.taskService.DeleteTask(id); err != nil {
 		t.handleError(w, r, http.StatusInternalServerError, "deleting task", err)
 		return
+	}
+}
+
+func (t *TaskHandler) handleTaskComplete(w http.ResponseWriter, r *http.Request) {
+	defer r.Body.Close()
+
+	vars := mux.Vars(r)
+
+	id := vars["id"]
+	slog.Debug("handleTaskComplete", "taskId", id)
+
+	if task, err := t.taskService.CompleteTask(id, true); err != nil {
+		t.handleError(w, r, http.StatusUnprocessableEntity, "updating task", err)
+		return
+	} else {
+		taskTemplate := components.TaskCard(task)
+
+		htmx.NewResponse().
+			RenderTempl(r.Context(), w, taskTemplate)
 	}
 }
 

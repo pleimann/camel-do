@@ -7,7 +7,7 @@ import (
 )
 
 // BodyContent defines HTML content.
-templ TaskCard(task model.Task) {
+templ TaskCard(task *model.Task) {
 	{{
     backgroundColor := fmt.Sprintf("bg-%s-100", strings.ToLower(task.Color.String()))
 	  backgroundColorDark := fmt.Sprintf("dark:bg-%s-100", strings.ToLower(task.Color.String()))
@@ -42,7 +42,9 @@ templ TaskCard(task model.Task) {
                   tip = "Complete"
                 } 
               }}
-							<button class="btn btn-circle btn-ghost tooltip tooltip-bottom" data-tip={ tip }>
+							<button class="btn btn-circle btn-ghost tooltip tooltip-bottom" data-tip={ tip } 
+                hx-put={ "/tasks/" + task.ID + "/complete" } hx-target="closest .card" hx-swap="outerHTML"
+              >
 								if task.Completed {
 									<i data-lucide="circle-checked" class="size-4"></i>
 								} else {
@@ -129,4 +131,10 @@ templ TaskCard(task model.Task) {
   // "text-fuchsia-900",
   // "text-pink-900",
   // "text-rose-900",
+}
+
+templ AddedTaskCard(task *model.Task) {
+   <div hx-swap-oob="afterbegin:#backlog">
+       @TaskCard(task)
+   </div>
 }
