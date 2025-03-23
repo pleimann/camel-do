@@ -110,7 +110,7 @@ func BodyContent(backlogTasks []model.Task, todaysTasks []model.Task) templ.Comp
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 5, "<main class=\"h-[calc(100dvh-(var(--spacing)*16))] max-h-[calc(100dvh-(var(--spacing)*16))] w-full overflow-hidden\"><div class=\"flex flex-row h-full\"><div class=\"pr-1 bg-primary/40 dark:bg-primary-content h-full min-w-75\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 5, "<main class=\"h-[calc(100dvh-(var(--spacing)*16))] max-h-[calc(100dvh-(var(--spacing)*16))] w-full overflow-hidden\"><div class=\"flex flex-row h-full\"><div class=\"pr-1 bg-primary/80 dark:bg-primary-content h-full min-w-75\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

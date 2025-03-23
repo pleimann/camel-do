@@ -22,7 +22,7 @@ templ BodyContent(backlogTasks []model.Task, todaysTasks []model.Task) {
     @components.TitleBar()
     <main class="h-[calc(100dvh-(var(--spacing)*16))] max-h-[calc(100dvh-(var(--spacing)*16))] w-full overflow-hidden">
       <div class="flex flex-row h-full">
-        <div class="pr-1 bg-primary/40 dark:bg-primary-content h-full min-w-75">
+        <div class="pr-1 bg-primary/80 dark:bg-primary-content h-full min-w-75">
           @components.Backlog(backlogTasks)
         </div>
         <div class="grow overflow-y-auto m-1 p-8">
