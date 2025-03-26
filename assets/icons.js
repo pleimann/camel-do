@@ -21,7 +21,11 @@ import {
   Minus,
   X,
   Package,
+  Boxes as Packages,
+  PackageOpen,
   PackagePlus,
+  PackageMinus,
+
   Cat,
   Rabbit,
   Snail,
@@ -78,7 +82,11 @@ import {
     Minus,
     X,
     Package,
+    Packages,
+    PackageOpen,
     PackagePlus,
+    PackageMinus,
+    
     Cat,
     Rabbit,
     Snail,

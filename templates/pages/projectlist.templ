@@ -1,0 +1,46 @@
+package pages
+
+import (
+  "github.com/pleimann/camel-do/templates/components"
+  "github.com/pleimann/camel-do/model"
+	"fmt"
+)
+
+templ ProjectList(projects []model.Project) {
+  <dialog class="modal" hx-on:htmx:load="this.showModal();" hx-on:close-modal="this.close()">
+		<div class="modal-box w-[25rem]">
+			<button class="btn btn-circle btn-ghost outline-none absolute right-2 top-2 z-1" onclick="htmx.closest(this, 'dialog').remove()">
+				<i data-lucide="x"></i>
+			</button>
+
+      <ul class="list">
+        // <li class="p-4 pb-2 text-xs opacity-60 tracking-wide">Projects</li>
+        
+        for _, project := range(projects) {
+          @ProjectItem(project)
+        }
+      </ul>
+    </div>
+  </dialog>
+}
+
+templ ProjectItem(project model.Project) {
+  <li class="list-row items-center" id="project-item">
+    <div class={ "flex", "justify-center", "items-center", "size-12", "rounded-box", fmt.Sprintf("bg-%s-200", project.Color)}>
+      @components.IconC(project.Icon, project.Color, 24)
+    </div>
+    <div class="grow">
+      <div class="text-lg font-semibold">{ project.Name }</div>
+      // <div class="text-xs uppercase font-semibold opacity-60">Cappuccino</div>
+    </div>
+    <button class="btn btn-square btn-ghost" hx-get={fmt.Sprintf("/projects/edit/%s", project.ID)} hx-target="#dialog">
+      <i data-lucide="pencil-line" />
+    </button>
+    <button class="btn btn-square btn-ghost"  hx-delete={fmt.Sprintf("/projects/%s", project.ID)} hx-target="closest li#project-item" hx-swap="delete">
+      <i data-lucide="trash"/>
+    </button>
+    <button class="btn btn-square btn-ghost" hx-get={fmt.Sprintf("/projects/%s/tasks", project.ID)} hx-target="#dialog">
+      <i data-lucide="package-open" />
+    </button>
+  </li>
+}

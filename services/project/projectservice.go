@@ -26,6 +26,20 @@ func NewService(config *Config, db *db.DatabaseService) (*ProjectService, error)
 	return taskService, nil
 }
 
+func (s *ProjectService) GetProject(id string) (model.Project, error) {
+	var project model.Project
+
+	if err := s.db.First(&project, "id = ?", id).Error; err != nil {
+		return project, err
+	}
+
+	return project, nil
+}
+
+func (s *ProjectService) UpdateProject(project *model.Project) {
+	panic("unimplemented")
+}
+
 func (s *ProjectService) GetProjects() ([]model.Project, error) {
 	var projects []model.Project
 	if err := s.db.Find(&projects).Error; err != nil {
@@ -43,6 +57,16 @@ func (s *ProjectService) AddProject(project *model.Project) error {
 	}
 
 	if err := s.db.Create(project).Error; err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (s *ProjectService) DeleteProject(id string) error {
+	slog.Debug("deleting project", "id", id)
+
+	if err := s.db.Delete(&model.Project{}, "id = ?", id).Error; err != nil {
 		return err
 	}
 
