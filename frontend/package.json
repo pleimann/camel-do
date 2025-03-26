@@ -22,7 +22,7 @@
     "@wailsio/runtime": "latest",
     "daisyui": "^5.0.0",
     "typescript": "^5.2.2",
-    "vite": "^5.0.8",
+    "vite": "^6.2.3",
     "vite-plugin-solid": "^2.8.0",
     "vite-tsconfig-paths": "^5.1.4"
   }
