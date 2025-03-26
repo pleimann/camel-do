@@ -1,35 +1,32 @@
 package model
 
-//go:generate ../go-enum --marshal --names --values
+//go:generate go tool go-enum -type=Icon
 
-/*
-ENUM(
+type Icon int
 
-	bear,
-	bird,
-	bug,
-	butterfly,
-	cat,
-	cow,
-	crab,
-	elephant,
-	fish,
-	frog,
-	hedgehog,
-	horse,
-	lion,
-	narwhal,
-	owl,
-	pig,
-	rabbit,
-	shark,
-	snail,
-	squirrel,
-	rat,
-	turtle,
-	worm,
-	whale,
-
+const (
+	Bear Icon = iota
+	Bird
+	Bug
+	Butterfly
+	Cat
+	Cow
+	Crab
+	Elephant
+	Fish
+	Frog
+	Hedgehog
+	Horse
+	Lion
+	Narwhal
+	Owl
+	Pig
+	Rabbit
+	Shark
+	Snail
+	Squirrel
+	Rat
+	Turtle
+	Worm
+	Whale
 )
-*/
-type Icon string

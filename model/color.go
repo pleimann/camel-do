@@ -1,25 +1,24 @@
 package model
 
-//go:generate ../go-enum --marshal --names --values
+//go:generate go tool go-enum -type=Color
 
-/*
-ENUM(
-Red,
-Orange,
-Amber,
-Yellow,
-Lime,
-Green,
-Emerald,
-Teal,
-Cyan,
-Sky,
-Violet,
-Purple,
-Fuchsia,
-Pink,
-Rose,
-Zinc,
+type Color int
+
+const (
+	Red Color = iota
+	Orange
+	Amber
+	Yellow
+	Lime
+	Green
+	Emerald
+	Teal
+	Cyan
+	Sky
+	Violet
+	Purple
+	Fuchsia
+	Pink
+	Rose
+	Zinc
 )
-*/
-type Color string

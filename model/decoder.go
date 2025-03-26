@@ -16,22 +16,22 @@ func Decoder() *schema.Decoder {
 func init() {
 	decoder = schema.NewDecoder()
 
-	decoder.RegisterConverter(ColorZinc, func(input string) reflect.Value {
+	decoder.RegisterConverter(Zinc, func(input string) reflect.Value {
 		if input == "" {
-			return reflect.ValueOf(ColorZinc)
+			return reflect.ValueOf(Zinc)
 		}
 
-		color, _ := ParseColor(input)
+		color, _ := ParseColorString(input)
 
 		return reflect.ValueOf(color)
 	})
 
-	decoder.RegisterConverter(IconBear, func(input string) reflect.Value {
+	decoder.RegisterConverter(Bear, func(input string) reflect.Value {
 		if input == "" {
 			return reflect.ValueOf("")
 		}
 
-		color, _ := ParseIcon(input)
+		color, _ := ParseIconString(input)
 
 		return reflect.ValueOf(color)
 	})

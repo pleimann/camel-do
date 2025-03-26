@@ -22,20 +22,20 @@ templ ProjectDialog(project *model.Project) {
 
         <div class="flex gap-4 w-full">
           <div class="w-1/4 flex flex-col gap-2">
-            for _, color := range model.ColorNames() {
+            for _, color := range model.ColorValues() {
               <div class={ 
-                fmt.Sprintf("bg-%s-%d", strings.ToLower(color), components.LightLevel), 
-                fmt.Sprintf("text-%s-%d", strings.ToLower(color), components.DarkLevel), 
+                fmt.Sprintf("bg-%s-%d", strings.ToLower(color.String()), components.LightLevel), 
+                fmt.Sprintf("text-%s-%d", strings.ToLower(color.String()), components.DarkLevel), 
                 "btn", "h-4" }
-              >{ color }</div>
+              >{ color.String() }</div>
             }
           </div>
           
           <div class="w-3/4 grid grid-cols-5 gap-2">
-            for _, icon := range model.IconNames() {
-              <div class="btn btn-ghost btn-square flex flex-col size-16" role="button" aria-label={ icon }>
-                <i data-lucide={ icon }></i>
-                <span class="font-light">{ icon }</span>
+            for _, icon := range model.IconValues() {
+              <div class="btn btn-ghost btn-square flex flex-col size-16" role="button" aria-label={ icon.String() }>
+                <i data-lucide={ icon.String() }></i>
+                <span class="font-light">{ icon.String() }</span>
               </div>
             }
           </div>

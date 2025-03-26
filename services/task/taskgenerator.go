@@ -30,8 +30,8 @@ func generateRandomTask() model.Task {
 	// Seed the random number generator.
 	rand.New(rand.NewSource(time.Now().UnixNano()))
 
-	color := model.Color(model.ColorNames()[rand.Intn(len(model.ColorNames())-1)])
-	icon := model.Icon(model.IconNames()[rand.Intn(len(model.IconNames())-1)])
+	color := model.Color(rand.Intn(len(model.ColorValues()) - 1))
+	icon := model.Icon(rand.Intn(len(model.IconValues()) - 1))
 
 	// Generate random title.
 	titles := []string{
