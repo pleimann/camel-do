@@ -4,6 +4,10 @@
 credentials.json
 token.json
 camel-do.db
+static/*.js*
+static/*.css*
+templates/**/*_templ.go
+model/*_enum.go
 
 # macOS files.
 .DS_Store
