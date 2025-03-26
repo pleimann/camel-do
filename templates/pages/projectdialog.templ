@@ -9,13 +9,16 @@ import (
 )
 
 templ ProjectDialog(project *model.Project) {
-	<dialog class="modal overflow-hidden" hx-on:htmx:load="this.showModal(); document.querySelector('form#taskForm').projectName.focus();" hx-on:close-modal="this.close()">
+	<dialog class="modal" hx-on:htmx:load="this.showModal(); document.querySelector('form#taskForm').projectName.focus();" hx-on:close-modal="this.close()">
 		<div class="modal-box p-8">
 			<button class="btn btn-circle btn-ghost absolute right-2 top-2" onclick="htmx.closest(this, 'dialog').remove()">
 				<i data-lucide="x"></i>
 			</button>
       <form id="taskForm" method="dialog" class="flex flex-col gap-8" hx-post="/projects/">
-        <input name="projectName" type="text" placeholder="Project Name..." class="input input-ghost input-xl font-bold border-none"/>
+        <label class="input input-ghost input-lg focus-within:outline-hidden grow">
+          <i data-lucide="pencil-line" class="opacity-50 size-6 -ml-4"/>
+          <input name="projectName" class="w-full shrink font-semibold" type="text" placeholder="New Project..." autocomplete="off">
+        </label>
 
         <div class="flex gap-4 w-full">
           <div class="w-1/4 flex flex-col gap-2">
@@ -23,21 +26,21 @@ templ ProjectDialog(project *model.Project) {
               <div class={ 
                 fmt.Sprintf("bg-%s-%d", strings.ToLower(color), components.LightLevel), 
                 fmt.Sprintf("text-%s-%d", strings.ToLower(color), components.DarkLevel), 
-                "btn", "btn-ghost", "h-4" }
+                "btn", "h-4" }
               >{ color }</div>
             }
           </div>
           
           <div class="w-3/4 grid grid-cols-5 gap-2">
             for _, icon := range model.IconNames() {
-              <div class="btn btn-ghost flex flex-col size-16" role="button" aria-label={ icon }>
+              <div class="btn btn-ghost btn-square flex flex-col size-16" role="button" aria-label={ icon }>
                 <i data-lucide={ icon }></i>
                 <span class="font-light">{ icon }</span>
               </div>
             }
           </div>
         </div>
-        <button class="btn btn-primary btn-lg rounded">Create</button>
+        <button class="btn btn-primary btn-block btn-lg">Create</button>
       </form>
 		</div>
 	</dialog>
