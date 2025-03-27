@@ -21,7 +21,7 @@ templ ProjectDialog(project *model.Project) {
         </label>
 
         <div class="flex gap-4 w-full">
-          <div class="w-1/4 flex flex-col gap-2">
+          <div class="w-1/4 grid gap-1">
             for _, color := range model.ColorValues() {
               <div class={ 
                 fmt.Sprintf("bg-%s-%d", strings.ToLower(color.String()), components.LightLevel), 
@@ -31,9 +31,9 @@ templ ProjectDialog(project *model.Project) {
             }
           </div>
           
-          <div class="w-3/4 grid grid-cols-5 gap-2">
+          <div class="w-3/4 grid grid-cols-4 gap-2">
             for _, icon := range model.IconValues() {
-              <div class="btn btn-ghost btn-square flex flex-col size-16" role="button" aria-label={ icon.String() }>
+              <div class="btn btn-ghost btn-square flex flex-col size-18" role="button" aria-label={ icon.String() }>
                 <i data-lucide={ icon.String() }></i>
                 <span class="font-light">{ icon.String() }</span>
               </div>

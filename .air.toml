@@ -5,7 +5,7 @@ root = "."
 tmp_dir = "tmp"
 
 [build]
-pre_cmd = ["bun run build"]
+pre_cmd = ["bun install", "bun run build"]
 cmd = "go generate ./model && templ generate && go build -o ./tmp/gowebly_gorilla ."
 bin = "tmp/gowebly_gorilla"
 include_ext = ["go", "templ", "html", "json", "js", "ts", "css", "scss"]
