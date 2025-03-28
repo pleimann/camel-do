@@ -1,9 +1,9 @@
 module github.com/pleimann/camel-do
 
-go 1.24
+go 1.24.1
 
 require (
-	github.com/a-h/templ v0.3.833
+	github.com/a-h/templ v0.3.857
 	github.com/angelofallars/htmx-go v0.5.0
 	github.com/derektata/lorem v0.0.2
 	github.com/gorilla/mux v1.8.1
@@ -11,9 +11,52 @@ require (
 )
 
 require (
+	dario.cat/mergo v1.0.1 // indirect
+	github.com/a-h/parse v0.0.0-20250122154542-74294addb73e // indirect
+	github.com/air-verse/air v1.61.7 // indirect
+	github.com/andybalholm/brotli v1.1.0 // indirect
+	github.com/atotto/clipboard v0.1.4 // indirect
+	github.com/aymanbagabas/go-osc52/v2 v2.0.1 // indirect
+	github.com/bep/godartsass v1.2.0 // indirect
+	github.com/bep/godartsass/v2 v2.1.0 // indirect
+	github.com/bep/golibsass v1.2.0 // indirect
+	github.com/catppuccin/go v0.3.0 // indirect
+	github.com/cenkalti/backoff/v4 v4.3.0 // indirect
+	github.com/charmbracelet/bubbles v0.20.0 // indirect
+	github.com/charmbracelet/bubbletea v1.3.4 // indirect
+	github.com/charmbracelet/huh v0.6.0 // indirect
+	github.com/charmbracelet/lipgloss v1.0.0 // indirect
+	github.com/charmbracelet/x/ansi v0.8.0 // indirect
+	github.com/charmbracelet/x/exp/strings v0.0.0-20250303111204-ce812b082f54 // indirect
+	github.com/charmbracelet/x/term v0.2.1 // indirect
+	github.com/cli/browser v1.3.0 // indirect
+	github.com/cli/safeexec v1.0.1 // indirect
+	github.com/creack/pty v1.1.23 // indirect
+	github.com/dustin/go-humanize v1.0.1 // indirect
+	github.com/erikgeiser/coninput v0.0.0-20211004153227-1c3628e74d0f // indirect
+	github.com/fatih/color v1.17.0 // indirect
+	github.com/fsnotify/fsnotify v1.7.0 // indirect
+	github.com/gobwas/glob v0.2.3 // indirect
+	github.com/gohugoio/hugo v0.134.3 // indirect
+	github.com/google/wire v0.6.0 // indirect
+	github.com/gowebly/gowebly/v3 v3.0.0 // indirect
+	github.com/lucasb-eyer/go-colorful v1.2.0 // indirect
+	github.com/mattn/go-localereader v0.0.1 // indirect
+	github.com/mattn/go-runewidth v0.0.16 // indirect
+	github.com/mitchellh/hashstructure/v2 v2.0.2 // indirect
+	github.com/muesli/ansi v0.0.0-20230316100256-276c6243b2f6 // indirect
+	github.com/muesli/cancelreader v0.2.2 // indirect
+	github.com/muesli/termenv v0.16.0 // indirect
+	github.com/natefinch/atomic v1.0.1 // indirect
+	github.com/pelletier/go-toml v1.9.5 // indirect
+	github.com/pelletier/go-toml/v2 v2.2.3 // indirect
+	github.com/rivo/uniseg v0.4.7 // indirect
 	github.com/searKing/golang/go v1.2.115 // indirect
 	github.com/searKing/golang/tools v1.2.115 // indirect
 	github.com/searKing/golang/tools/go-enum v1.2.121 // indirect
+	github.com/spf13/afero v1.11.0 // indirect
+	github.com/spf13/cast v1.7.0 // indirect
+	github.com/tdewolff/parse/v2 v2.7.15 // indirect
 	golang.org/x/mod v0.24.0 // indirect
 	golang.org/x/sync v0.12.0 // indirect
 	golang.org/x/tools v0.31.0 // indirect
@@ -30,18 +73,14 @@ require (
 	github.com/google/uuid v1.6.0 // indirect
 	github.com/googleapis/enterprise-certificate-proxy v0.3.6 // indirect
 	github.com/googleapis/gax-go/v2 v2.14.1 // indirect
-	github.com/gorilla/handlers v1.5.2 // indirect
+	github.com/gorilla/handlers v1.5.2
 	github.com/gorilla/schema v1.4.1
 	github.com/jinzhu/inflection v1.0.0 // indirect
 	github.com/jinzhu/now v1.1.5 // indirect
-	github.com/labstack/echo/v4 v4.13.3 // indirect
-	github.com/labstack/gommon v0.4.2 // indirect
 	github.com/mattn/go-colorable v0.1.13 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect
 	github.com/mattn/go-sqlite3 v1.14.24 // indirect
-	github.com/oklog/ulid/v2 v2.1.0 // indirect
-	github.com/valyala/bytebufferpool v1.0.0 // indirect
-	github.com/valyala/fasttemplate v1.2.2 // indirect
+	github.com/oklog/ulid/v2 v2.1.0
 	go.opentelemetry.io/auto/sdk v1.1.0 // indirect
 	go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp v0.59.0 // indirect
 	go.opentelemetry.io/otel v1.34.0 // indirect
@@ -49,15 +88,20 @@ require (
 	go.opentelemetry.io/otel/trace v1.34.0 // indirect
 	golang.org/x/crypto v0.36.0 // indirect
 	golang.org/x/net v0.37.0 // indirect
-	golang.org/x/oauth2 v0.28.0 // indirect
+	golang.org/x/oauth2 v0.28.0
 	golang.org/x/sys v0.31.0 // indirect
 	golang.org/x/text v0.23.0 // indirect
-	google.golang.org/api v0.227.0 // indirect
+	google.golang.org/api v0.227.0
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20250313205543-e70fdf4c4cb4 // indirect
 	google.golang.org/grpc v1.71.0 // indirect
 	google.golang.org/protobuf v1.36.5 // indirect
-	gorm.io/driver/sqlite v1.5.7 // indirect
-	gorm.io/gorm v1.25.12 // indirect
+	gorm.io/driver/sqlite v1.5.7
+	gorm.io/gorm v1.25.12
 )
 
-tool github.com/searKing/golang/tools/go-enum
+tool (
+	github.com/a-h/templ/cmd/templ
+	github.com/air-verse/air
+	github.com/gowebly/gowebly/v3
+	github.com/searKing/golang/tools/go-enum
+)

@@ -44,26 +44,40 @@ func (t *TaskService) AddTask(task *model.Task) error {
 	return nil
 }
 
-func (t *TaskService) CompleteTask(id string, completed bool) (*model.Task, error) {
-	slog.Debug("completing task", "id", id, "completed", completed)
+func (t *TaskService) GetTask(id string) (*model.Task, error) {
+	slog.Debug("getting task", "id", id)
 
 	task := model.Task{
 		ID: id,
 	}
 
-	if err := t.db.First(&task).Error; err != nil {
+	if err := t.db.Preload("Project").First(&task).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, fmt.Errorf("not found: %w", err)
+		} else {
+			return nil, err
 		}
-	}
 
-	task.Completed = completed
-
-	if err := t.db.Save(&task).Error; err != nil {
-		return nil, err
 	}
 
 	return &task, nil
+}
+
+func (t *TaskService) CompleteTask(id string, completed bool) (*model.Task, error) {
+	slog.Debug("completing task", "id", id, "completed", completed)
+
+	if task, err := t.GetTask(id); err != nil {
+		return nil, err
+
+	} else {
+		task.Completed = completed
+
+		if err := t.db.Save(&task).Error; err != nil {
+			return nil, err
+		}
+
+		return task, nil
+	}
 }
 
 func (t *TaskService) UpsertTask(task *model.Task) error {

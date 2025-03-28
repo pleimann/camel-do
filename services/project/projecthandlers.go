@@ -37,7 +37,7 @@ func NewHandler(router *mux.Router, projectService *ProjectService) *ProjectHand
 }
 
 func (h *ProjectHandler) handleNewProject(w http.ResponseWriter, r *http.Request) {
-	newProjectDialogTemplate := pages.ProjectDialog(nil)
+	newProjectDialogTemplate := pages.ProjectDialog(model.Project{})
 
 	if err := htmx.NewResponse().RenderTempl(r.Context(), w, newProjectDialogTemplate); err != nil {
 		h.handleError(w, r, http.StatusInternalServerError, "render template", err)
@@ -60,7 +60,7 @@ func (h *ProjectHandler) handleEditProject(w http.ResponseWriter, r *http.Reques
 		}
 
 	} else {
-		editProjectDialogTemplate := pages.ProjectDialog(&project)
+		editProjectDialogTemplate := pages.ProjectDialog(project)
 
 		if err := htmx.NewResponse().RenderTempl(r.Context(), w, editProjectDialogTemplate); err != nil {
 			h.handleError(w, r, http.StatusInternalServerError, "render template", err)

@@ -1,11 +1,12 @@
 package pages
 
 import (
+  "fmt"
   "github.com/pleimann/camel-do/model"
 	"github.com/pleimann/camel-do/templates/components"
 )
 
-templ TaskDialog(projects []model.Project, task *model.Task) {
+templ TaskDialog(projects []model.Project, task model.Task) {
 	<dialog class="modal" hx-on:htmx:load="this.showModal(); document.querySelector('form#taskForm').title.focus();" hx-on:close-modal="this.close()">
 		<div class="modal-box w-[20rem] pt-2">
 			<button class="btn btn-circle btn-ghost absolute right-2 top-2 z-1" onclick="htmx.closest(this, 'dialog').remove()" tabindex="-1">
@@ -17,16 +18,20 @@ templ TaskDialog(projects []model.Project, task *model.Task) {
           <input name="title" class="w-full shrink font-semibold" type="text" placeholder="New Task..." autocomplete="off">
         </label>
 
-        <div class="join grow">
-          <input name="project" type="text" placeholder="Project" list="projects" class="input join-item grow" />
+        <div class="join grow" x-data="{ projectId: '', projectName: '' }">
+          <input x-model="projectName" type="text" placeholder="Project"  class="join-item input input-readonly grow" 
+            readonly list="projects" @click="$refs.projectDropdown.focus()" />
+          <input name="project" type="hidden" x-model="projectId" />
           <div class="dropdown dropdown-bottom dropdown-end">
-            <div tabindex="0" role="button" class="join-item btn">▾</div>
-            <ul tabindex="0" class="dropdown-content menu bg-base-200 rounded-box z-1 w-52 p-2 shadow-sm">
+            <div tabindex="0" role="button" class="join-item btn w-4">▾</div>
+            <ul tabindex="0" x-ref="projectDropdown" class="dropdown-content menu bg-base-200 rounded-box z-1 w-52 p-2 mt-2 shadow-sm">
               for _, project := range projects {
-                <li><a value={ project.ID }>
-                  @components.IconC(project.Icon, project.Color, 8)
-                  { project.Name }
-                </a></li>
+                <li @click={ fmt.Sprintf("projectId = '%s'; projectName = '%s'; document.activeElement.blur();", project.ID, project.Name) }>
+                  <a> 
+                    @components.IconC(project.Icon, project.Color, 8) 
+                    { project.Name } 
+                  </a>
+                </li>
               }
             </ul>
           </div>
@@ -34,7 +39,7 @@ templ TaskDialog(projects []model.Project, task *model.Task) {
         
         <textarea name="description" class="textarea" placeholder="Notes"></textarea>
         
-        <input name="start" type="datetime-local" class="input grow"/>
+        <input name="startTime" type="datetime-local" class="input grow" />
         
         <div class="join grow">
           <input name="duration" class="join-item input" value="0"/>

@@ -6,6 +6,7 @@ import (
 	"time"
 
 	lorem "github.com/derektata/lorem/ipsum"
+	"github.com/oklog/ulid/v2"
 	"github.com/pleimann/camel-do/model"
 )
 
@@ -30,8 +31,8 @@ func generateRandomTask() model.Task {
 	// Seed the random number generator.
 	rand.New(rand.NewSource(time.Now().UnixNano()))
 
-	color := model.Color(rand.Intn(len(model.ColorValues()) - 1))
-	icon := model.Icon(rand.Intn(len(model.IconValues()) - 1))
+	// color := model.Color(rand.Intn(len(model.ColorValues()) - 1))
+	// icon := model.Icon(rand.Intn(len(model.IconValues()) - 1))
 
 	// Generate random title.
 	titles := []string{
@@ -71,8 +72,7 @@ func generateRandomTask() model.Task {
 		Title:       title,
 		Description: description,
 		Project: model.Project{
-			Color: color,
-			Icon:  icon,
+			ID: ulid.Make().String(),
 		},
 		StartTime: startTime,
 		Duration:  duration,

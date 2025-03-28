@@ -30,6 +30,7 @@ func NewHandler(router *mux.Router, taskService *TaskService, projectsService *p
 	}
 
 	router.HandleFunc("/new", taskHandler.handleNewTask).Methods(http.MethodGet)
+	router.HandleFunc("/edit", taskHandler.handleEditTask).Methods(http.MethodGet)
 	router.HandleFunc("/", taskHandler.handleTaskCreate).Methods(http.MethodPost)
 	router.HandleFunc("/{id}", taskHandler.handleTaskDelete).Methods(http.MethodDelete)
 	router.HandleFunc("/{id}/complete", taskHandler.handleTaskComplete).Methods(http.MethodPut)
@@ -46,11 +47,38 @@ func (h *TaskHandler) handleNewTask(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	newTaskDialogTemplate := pages.TaskDialog(projects, nil)
+	newTaskDialogTemplate := pages.TaskDialog(projects, model.Task{})
 
 	if err := htmx.NewResponse().RenderTempl(r.Context(), w, newTaskDialogTemplate); err != nil {
 		h.handleError(w, r, http.StatusInternalServerError, "render template", err)
 		return
+	}
+}
+
+func (h *TaskHandler) handleEditTask(w http.ResponseWriter, r *http.Request) {
+	if task, err := h.taskService.GetTask(r.URL.Query().Get("id")); err != nil {
+		if errors.Is(err, db.NotFoundError("not found")) {
+			h.handleError(w, r, http.StatusNotFound, "getting task", err)
+			return
+		} else {
+			h.handleError(w, r, http.StatusInternalServerError, "getting task", err)
+			return
+		}
+
+	} else {
+		projects, err := h.projectService.GetProjects()
+
+		if err != nil {
+			h.handleError(w, r, http.StatusInternalServerError, "getting projects", err)
+			return
+		}
+
+		newTaskDialogTemplate := pages.TaskDialog(projects, *task)
+
+		if err := htmx.NewResponse().RenderTempl(r.Context(), w, newTaskDialogTemplate); err != nil {
+			h.handleError(w, r, http.StatusInternalServerError, "render template", err)
+			return
+		}
 	}
 }
 
@@ -64,25 +92,30 @@ func (t *TaskHandler) handleTaskCreate(w http.ResponseWriter, r *http.Request) {
 
 	slog.Debug("handleTaskCreate", "form", r.PostForm.Encode())
 
-	var task model.Task
+	var task *model.Task = &model.Task{}
 
-	if err := model.Decoder().Decode(&task, r.PostForm); err != nil {
+	if err := model.Decoder().Decode(task, r.PostForm); err != nil {
 		t.handleError(w, r, http.StatusUnprocessableEntity, "decoding form data", err)
 		return
 	}
 
 	slog.Debug("handleTaskCreate", "task", task)
 
-	if err := t.taskService.AddTask(&task); err != nil {
+	if err := t.taskService.AddTask(task); err != nil {
 		t.handleError(w, r, http.StatusInternalServerError, "adding task", err)
 		return
 	}
 
-	addedTaskTemplate := components.AddedTaskCard(&task)
+	if createdTask, err := t.taskService.GetTask(task.ID); err != nil {
+		t.handleError(w, r, http.StatusInternalServerError, "getting task after add", err)
 
-	htmx.NewResponse().
-		AddTrigger(htmx.Trigger("close-modal")).
-		RenderTempl(r.Context(), w, addedTaskTemplate)
+	} else {
+		addedTaskTemplate := components.AddedTaskCard(createdTask)
+
+		htmx.NewResponse().
+			AddTrigger(htmx.Trigger("close-modal")).
+			RenderTempl(r.Context(), w, addedTaskTemplate)
+	}
 }
 
 func (h *TaskHandler) handleTaskDelete(w http.ResponseWriter, r *http.Request) {

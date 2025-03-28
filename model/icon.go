@@ -5,7 +5,8 @@ package model
 type Icon int
 
 const (
-	Bear Icon = iota
+	Unknown Icon = iota
+	Bear
 	Bird
 	Bug
 	Butterfly

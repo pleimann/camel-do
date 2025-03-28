@@ -5,7 +5,8 @@ package model
 type Color int
 
 const (
-	Red Color = iota
+	Zinc Color = iota
+	Red
 	Orange
 	Amber
 	Yellow
@@ -20,5 +21,4 @@ const (
 	Fuchsia
 	Pink
 	Rose
-	Zinc
 )

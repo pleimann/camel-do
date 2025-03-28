@@ -26,7 +26,7 @@ func init() {
 		return reflect.ValueOf(color)
 	})
 
-	decoder.RegisterConverter(Bear, func(input string) reflect.Value {
+	decoder.RegisterConverter(Unknown, func(input string) reflect.Value {
 		if input == "" {
 			return reflect.ValueOf("")
 		}
@@ -44,5 +44,23 @@ func init() {
 		duration, _ := time.ParseDuration(input)
 
 		return reflect.ValueOf(duration)
+	})
+
+	decoder.RegisterConverter(time.Time{}, func(input string) reflect.Value {
+		time, _ := time.Parse(time.RFC3339, input)
+
+		return reflect.ValueOf(time)
+	})
+
+	decoder.RegisterConverter(Project{}, func(input string) reflect.Value {
+		if input == "" {
+			return reflect.ValueOf(nil)
+		}
+
+		project := Project{
+			ID: input,
+		}
+
+		return reflect.ValueOf(project)
 	})
 }
