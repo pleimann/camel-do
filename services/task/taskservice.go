@@ -94,10 +94,10 @@ func (t *TaskService) UpdateTask(task *model.Task) (*model.Task, error) {
 	slog.Debug("updating task", "task", task)
 
 	updateStmt := Tasks.
-		UPDATE(Tasks.AllColumns).
+		UPDATE(Tasks.MutableColumns).
 		MODEL(task).
 		WHERE(Tasks.ID.EQ(UUID(task.ID))).
-		RETURNING(Tasks.AllColumns.As(""))
+		RETURNING(Tasks.AllColumns)
 
 	var updatedTasks *m.Tasks
 

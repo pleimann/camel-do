@@ -34,7 +34,7 @@ templ ProjectItem(project model.Project) {
       // <div class="text-xs uppercase font-semibold opacity-60">Cappuccino</div>
     </div>
     <button class="btn btn-square btn-ghost" hx-get={fmt.Sprintf("/projects/edit/%s", project.ID)} hx-target="#dialog">
-      <i data-lucide="pencil-line" />
+      <i data-lucide="edit" />
     </button>
     <button class="btn btn-square btn-ghost"  hx-delete={fmt.Sprintf("/projects/%s", project.ID)} hx-target="closest li#project-item" hx-swap="delete">
       <i data-lucide="trash"/>

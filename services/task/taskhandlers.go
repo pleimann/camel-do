@@ -5,9 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"log/slog"
-	"maps"
 	"net/http"
-	"slices"
 
 	"github.com/angelofallars/htmx-go"
 	"github.com/google/uuid"
@@ -67,9 +65,7 @@ func (h *TaskHandler) handleNewTask(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	projectValues := slices.Collect(maps.Values(projectsIndex))
-
-	newTaskDialogTemplate := pages.TaskDialog(projectValues, model.Task{})
+	newTaskDialogTemplate := pages.TaskDialog(projectsIndex, model.Task{})
 
 	if err := htmx.NewResponse().RenderTempl(r.Context(), w, newTaskDialogTemplate); err != nil {
 		h.handleError(w, r, http.StatusInternalServerError, "render template", err)
@@ -97,9 +93,7 @@ func (h *TaskHandler) handleEditTask(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		projectValues := slices.Collect(maps.Values(projectsIndex))
-
-		newTaskDialogTemplate := pages.TaskDialog(projectValues, *task)
+		newTaskDialogTemplate := pages.TaskDialog(projectsIndex, *task)
 
 		if err := htmx.NewResponse().RenderTempl(r.Context(), w, newTaskDialogTemplate); err != nil {
 			h.handleError(w, r, http.StatusInternalServerError, "render template", err)
@@ -180,6 +174,8 @@ func (h *TaskHandler) handleTaskDelete(w http.ResponseWriter, r *http.Request) {
 			h.handleError(w, r, http.StatusInternalServerError, "deleting task", err)
 		}
 	}
+
+	// TODO: target backlog swap delete
 }
 
 func (h *TaskHandler) handleTaskComplete(w http.ResponseWriter, r *http.Request) {

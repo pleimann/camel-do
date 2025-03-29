@@ -2,91 +2,100 @@ package pages
 
 import (
   "fmt"
+  "slices"
+  "maps"
   "github.com/pleimann/camel-do/model"
 	"github.com/pleimann/camel-do/templates/components"
 )
 
-templ TaskDialog(projects []model.Project, task model.Task) {
+templ TaskDialog(projectsIndex model.ProjectIndex, task model.Task) {
+    {{ 
+        project := projectsIndex[task.ProjectID] 
+
+        projects := slices.Collect(maps.Values(projectsIndex))
+    }}
+
 	<dialog class="modal" hx-on:htmx:load="this.showModal(); document.querySelector('form#taskForm').title.focus();" hx-on:close-modal="this.close()">
 		<div class="modal-box w-[20rem] pt-2">
 			<button class="btn btn-circle btn-ghost absolute right-2 top-2 z-1" onclick="htmx.closest(this, 'dialog').remove()" tabindex="-1">
 				<i data-lucide="x"></i>
 			</button>
+
 			<form id="taskForm" method="dialog" class="flex flex-col gap-4" hx-post="/tasks/">
-        <label class="input input-ghost input-lg grow">
-          <i data-lucide="pencil-line" class="opacity-50 size-6 -ml-4"/>
-          <input name="title" class="w-full shrink font-semibold" type="text" placeholder="New Task..." autocomplete="off">
-        </label>
+                <label class="input input-ghost input-lg grow">
+                    <i data-lucide="pencil-line" class="opacity-50 size-6 -ml-4"/>
+                    <input name="title" class="w-full shrink font-semibold" type="text" placeholder="New Task..." autocomplete="off" value={ task.Title }>
+                </label>
 
-        <div class="join grow" x-data="{ projectId: '', projectName: '' }">
-          <input x-model="projectName" type="text" placeholder="Project"  class="join-item input input-readonly grow" 
-            readonly list="projects" @click="$refs.projectDropdown.focus()" />
-          <input name="projectId" type="hidden" x-model="projectId" />
-          <div class="dropdown dropdown-bottom dropdown-end">
-            <div tabindex="0" role="button" class="join-item btn w-4">▾</div>
-            <ul tabindex="0" x-ref="projectDropdown" class="dropdown-content menu bg-base-200 rounded-box z-1 w-52 p-2 mt-2 shadow-sm">
-              for _, project := range projects {
-                <li @click={ fmt.Sprintf("projectId = '%s'; projectName = '%s'; document.activeElement.blur();", project.ID, project.Name) }>
-                  <a> 
-                    @components.IconC(project.Icon, project.Color, 8) 
-                    { project.Name } 
-                  </a>
-                </li>
-              }
-            </ul>
-          </div>
-        </div>
-        
-        <textarea name="description" class="textarea" placeholder="Notes"></textarea>
-        
-        <input name="startTime" type="datetime-local" class="input grow" />
-        
-        <div class="join grow">
-          <input name="duration" class="join-item input" value="0"/>
-          <button class="join-item btn p-2 text-xs font-light">-15m</button>
-          <button class="join-item btn p-2 text-xs font-light">+15m</button>
-          <button class="join-item btn p-2 text-xs font-light">-1h</button>
-          <button class="join-item btn p-2 text-xs font-light">+1h</button>
-        </div>
+                <div class="join grow" x-data={ fmt.Sprintf("{ projectId: '%s' , projectName: '%s' }", project.ID, project.Name) }>
+                    <input x-model="projectName" type="text" placeholder="Project" class="join-item input input-readonly grow" 
+                        readonly list="projects" @click="$refs.projectDropdown.focus()" value={ project.Name } />
+                    <input name="projectId" type="hidden" x-model="projectId" value={ task.ProjectID.String() } />
+                    <div class="dropdown dropdown-bottom dropdown-end">
+                        <div tabindex="0" role="button" class="join-item btn w-4">▾</div>
+                        <ul tabindex="0" x-ref="projectDropdown" class="dropdown-content menu bg-base-200 rounded-box z-1 w-52 p-2 mt-2 shadow-sm">
+                        for _, project := range projects {
+                            <li @click={ fmt.Sprintf("projectId = '%s'; projectName = '%s'; document.activeElement.blur();", project.ID, project.Name) }>
+                            <a> 
+                                @components.IconC(project.Icon, project.Color, 8) 
+                                { project.Name } 
+                            </a>
+                            </li>
+                        }
+                        </ul>
+                    </div>
+                </div>
+            
+                <textarea name="description" class="textarea" placeholder="Notes" value={ task.Description }></textarea>
+                
+                <input name="startTime" type="datetime-local" class="input grow" value={ task.StartTime.String() } />
+                
+                <div class="join grow">
+                <input name="duration" class="join-item input" value={ task.Duration.String() } />
+                <button class="join-item btn p-2 text-xs font-light">-15m</button>
+                <button class="join-item btn p-2 text-xs font-light">+15m</button>
+                <button class="join-item btn p-2 text-xs font-light">-1h</button>
+                <button class="join-item btn p-2 text-xs font-light">+1h</button>
+                </div>
 
-        <div class="w-full max-w-xs">
-          <input type="range" min="0" max="300" value="0" class="range" step="15" />
-          <div class="flex justify-between px-2.5 mt-2 text-xs">
-            <span>|</span>
-            <span>|</span>
-            <span>|</span>
-            <span>&nbsp;</span>
-            <span>|</span>
-            <span>&nbsp;</span>
-            <span>|</span>
-            <span>&nbsp;</span>
-            <span>|</span>
-            <span>&nbsp;&nbsp;&nbsp;</span>
-            <span>|</span>
-            <span>&nbsp;&nbsp;&nbsp;</span>
-            <span>|</span>
-            <span>&nbsp;&nbsp;&nbsp;</span>
-          </div>
-          <div class="flex justify-between px-2.5 mt-2 text-xs">
-            <span>1m</span>
-            <span>15m</span>
-            <span>30m</span>
-            <span>&nbsp;&nbsp;</span>
-            <span></span>
-            <span>1h</span>
-            <span>&nbsp;</span>
-            <span>1.5h</span>
-            <span>&nbsp;</span>
-            <span>2h</span>
-            <span>&nbsp;&nbsp;&nbsp;</span>
-            <span>3h</span>
-            <span>&nbsp;&nbsp;&nbsp;</span>
-            <span>4h</span>
-            <span>&nbsp;&nbsp;&nbsp;</span>
-            <span>5h</span>
-            <span>&nbsp;&nbsp;&nbsp;</span>
-          </div>
-        </div>    
+                <div class="w-full max-w-xs">
+                    <input type="range" min="0" max="300" value="0" class="range" step="15" />
+                    <div class="flex justify-between px-2.5 mt-2 text-xs">
+                        <span>|</span>
+                        <span>|</span>
+                        <span>|</span>
+                        <span>&nbsp;</span>
+                        <span>|</span>
+                        <span>&nbsp;</span>
+                        <span>|</span>
+                        <span>&nbsp;</span>
+                        <span>|</span>
+                        <span>&nbsp;&nbsp;&nbsp;</span>
+                        <span>|</span>
+                        <span>&nbsp;&nbsp;&nbsp;</span>
+                        <span>|</span>
+                        <span>&nbsp;&nbsp;&nbsp;</span>
+                    </div>
+                    <div class="flex justify-between px-2.5 mt-2 text-xs">
+                        <span>1m</span>
+                        <span>15m</span>
+                        <span>30m</span>
+                        <span>&nbsp;&nbsp;</span>
+                        <span></span>
+                        <span>1h</span>
+                        <span>&nbsp;</span>
+                        <span>1.5h</span>
+                        <span>&nbsp;</span>
+                        <span>2h</span>
+                        <span>&nbsp;&nbsp;&nbsp;</span>
+                        <span>3h</span>
+                        <span>&nbsp;&nbsp;&nbsp;</span>
+                        <span>4h</span>
+                        <span>&nbsp;&nbsp;&nbsp;</span>
+                        <span>5h</span>
+                        <span>&nbsp;&nbsp;&nbsp;</span>
+                    </div>
+                </div>    
 
 				<button class="btn btn-primary">Create</button>
 			</form>

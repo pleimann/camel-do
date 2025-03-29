@@ -52,10 +52,6 @@ func (s *ProjectService) GetProject(id uuid.UUID) (*model.Project, error) {
 	return &modelProject, nil
 }
 
-func (s *ProjectService) UpdateProject(project *model.Project) {
-	panic("unimplemented")
-}
-
 func (s *ProjectService) GetProjects() (model.ProjectIndex, error) {
 	slog.Debug("ProjectService.GetProjects")
 
@@ -78,7 +74,7 @@ func (s *ProjectService) GetProjects() (model.ProjectIndex, error) {
 	return projectsMap, nil
 }
 
-func (s *ProjectService) AddProject(project *model.Project) error {
+func (s *ProjectService) AddProject(project model.Project) error {
 	slog.Debug("ProjectService.AddProject", "project", project)
 
 	project.ID = uuid.New()
@@ -93,6 +89,26 @@ func (s *ProjectService) AddProject(project *model.Project) error {
 		rows, _ := res.RowsAffected()
 
 		slog.Debug("ProjectService.AddProject: project added", "count", rows)
+	}
+
+	return nil
+}
+
+func (s *ProjectService) UpdateProject(id uuid.UUID, project model.Project) error {
+	slog.Debug("ProjectService.UpdateProject", "project", project)
+
+	updateStmt := Projects.
+		UPDATE(Projects.MutableColumns).
+		WHERE(Projects.ID.EQ(UUID(id))).
+		MODEL(project)
+
+	if res, err := updateStmt.Exec(s.db); err != nil {
+		return err
+
+	} else {
+		rows, _ := res.RowsAffected()
+
+		slog.Debug("ProjectService.UpdateProject: project updated", "count", rows)
 	}
 
 	return nil
