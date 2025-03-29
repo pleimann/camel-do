@@ -1,23 +1,28 @@
 package project
 
 import (
+	"database/sql"
+	"fmt"
 	"log/slog"
 
-	"github.com/oklog/ulid/v2"
+	"github.com/google/uuid"
+
+	. "github.com/go-jet/jet/v2/sqlite"
+	m "github.com/pleimann/camel-do/.gen/model"
+	. "github.com/pleimann/camel-do/.gen/table"
 	"github.com/pleimann/camel-do/model"
-	"github.com/pleimann/camel-do/services/db"
 )
 
-type Config struct {
+type ProjectServiceConfig struct {
 }
 
 // ProjectService is a service for managing projects to which tasks belong.
 type ProjectService struct {
-	config *Config
-	db     *db.DatabaseService
+	config *ProjectServiceConfig
+	db     *sql.DB
 }
 
-func NewService(config *Config, db *db.DatabaseService) (*ProjectService, error) {
+func NewService(config *ProjectServiceConfig, db *sql.DB) (*ProjectService, error) {
 	taskService := &ProjectService{
 		config: config,
 		db:     db,
@@ -26,48 +31,86 @@ func NewService(config *Config, db *db.DatabaseService) (*ProjectService, error)
 	return taskService, nil
 }
 
-func (s *ProjectService) GetProject(id string) (model.Project, error) {
-	var project model.Project
+func (s *ProjectService) GetProject(id uuid.UUID) (*model.Project, error) {
+	slog.Debug("ProjectService.GetProject", "id", id)
 
-	if err := s.db.First(&project, "id = ?", id).Error; err != nil {
-		return project, err
+	stmt := SELECT(Projects.AllColumns).
+		FROM(Projects).
+		WHERE(Projects.ID.EQ(UUID(id)))
+
+	var projects []m.Projects
+	if err := stmt.Query(s.db, &projects); err != nil {
+		return nil, fmt.Errorf("get project (%s): %w", id, err)
 	}
 
-	return project, nil
+	if len(projects) == 0 {
+		return nil, sql.ErrNoRows
+	}
+
+	modelProject := model.ConvertProject(&projects[0])
+
+	return &modelProject, nil
 }
 
 func (s *ProjectService) UpdateProject(project *model.Project) {
 	panic("unimplemented")
 }
 
-func (s *ProjectService) GetProjects() ([]model.Project, error) {
-	var projects []model.Project
-	if err := s.db.Find(&projects).Error; err != nil {
-		return nil, err
+func (s *ProjectService) GetProjects() (model.ProjectIndex, error) {
+	slog.Debug("ProjectService.GetProjects")
+
+	stmt := SELECT(Projects.AllColumns).
+		FROM(Projects)
+
+	var projects []m.Projects
+	err := stmt.Query(s.db, &projects) // Query directly into a slice
+	if err != nil {
+		return nil, fmt.Errorf("failed to query projects: %w", err)
 	}
 
-	return projects, nil
+	modelProjects := model.ConvertProjects(projects)
+
+	projectsMap := make(model.ProjectIndex)
+	for _, project := range modelProjects {
+		projectsMap[project.ID] = project
+	}
+
+	return projectsMap, nil
 }
 
 func (s *ProjectService) AddProject(project *model.Project) error {
-	slog.Debug("adding project", "project", project)
+	slog.Debug("ProjectService.AddProject", "project", project)
 
-	if project.ID == "" {
-		project.ID = ulid.Make().String()
-	}
+	project.ID = uuid.New()
 
-	if err := s.db.Create(project).Error; err != nil {
+	insertStmt := Projects.
+		INSERT(Projects.AllColumns).
+		MODEL(project)
+
+	if res, err := insertStmt.Exec(s.db); err != nil {
 		return err
+	} else {
+		rows, _ := res.RowsAffected()
+
+		slog.Debug("ProjectService.AddProject: project added", "count", rows)
 	}
 
 	return nil
 }
 
-func (s *ProjectService) DeleteProject(id string) error {
-	slog.Debug("deleting project", "id", id)
+func (s *ProjectService) DeleteProject(id uuid.UUID) error {
+	slog.Debug("ProjectService.DeleteProject", "id", id)
 
-	if err := s.db.Delete(&model.Project{}, "id = ?", id).Error; err != nil {
+	deleteStmt := Projects.DELETE().
+		WHERE(Projects.ID.EQ(UUID(id)))
+
+	if res, err := deleteStmt.Exec(s.db); err != nil {
 		return err
+
+	} else {
+		rows, _ := res.RowsAffected()
+
+		slog.Debug("ProjectService.DeleteProject: project deleted", "count", rows)
 	}
 
 	return nil

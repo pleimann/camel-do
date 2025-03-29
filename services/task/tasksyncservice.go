@@ -3,6 +3,7 @@ package task
 import (
 	"cmp"
 	"context"
+	"database/sql"
 	"fmt"
 	"log"
 	"log/slog"
@@ -11,7 +12,6 @@ import (
 	"strconv"
 
 	"github.com/pleimann/camel-do/model"
-	"github.com/pleimann/camel-do/services/db"
 	"google.golang.org/api/option"
 	"google.golang.org/api/tasks/v1"
 )
@@ -19,10 +19,10 @@ import (
 // TaskService is a service for managing tasks.
 type TaskSyncService struct {
 	googleTasks *tasks.Service
-	db          *db.DatabaseService
+	db          *sql.DB
 }
 
-func NewTaskSyncService(http *http.Client, db *db.DatabaseService) (*TaskSyncService, error) {
+func NewTaskSyncService(http *http.Client, db *sql.DB) (*TaskSyncService, error) {
 	service, err := tasks.NewService(context.Background(), option.WithHTTPClient(http))
 
 	if err != nil {
@@ -61,11 +61,11 @@ func (t *TaskSyncService) GetGoogleTasks() []model.Task {
 			order, _ := strconv.Atoi(gtask.Position)
 
 			tasks = append(tasks, model.Task{
-				ID:          gtask.Id,
+				GTaskId:     gtask.Id,
 				Title:       gtask.Title,
 				Description: gtask.Notes,
 				Completed:   gtask.Completed != nil,
-				Rank:        order,
+				Rank:        int32(order),
 			})
 		}
 

@@ -1,17 +1,21 @@
 package project
 
 import (
+	"database/sql"
 	"errors"
 	"fmt"
 	"log/slog"
+	"maps"
 	"net/http"
+	"slices"
 
 	"github.com/angelofallars/htmx-go"
+	"github.com/google/uuid"
 	"github.com/gorilla/mux"
 	"github.com/pleimann/camel-do/model"
-	"github.com/pleimann/camel-do/services/db"
 	"github.com/pleimann/camel-do/templates/components"
 	"github.com/pleimann/camel-do/templates/pages"
+	"github.com/pleimann/camel-do/utils"
 )
 
 type ProjectHandler struct {
@@ -19,7 +23,7 @@ type ProjectHandler struct {
 	projectService *ProjectService
 }
 
-func NewHandler(router *mux.Router, projectService *ProjectService) *ProjectHandler {
+func NewProjectHandler(router *mux.Router, projectService *ProjectService) *ProjectHandler {
 	projectHandler := &ProjectHandler{
 		Router:         router,
 		projectService: projectService,
@@ -36,8 +40,16 @@ func NewHandler(router *mux.Router, projectService *ProjectService) *ProjectHand
 	return projectHandler
 }
 
+func (h *ProjectHandler) parseId(id string) (*uuid.UUID, error) {
+	if uuid, err := uuid.Parse(id); err != nil {
+		return nil, err
+	} else {
+		return &uuid, nil
+	}
+}
+
 func (h *ProjectHandler) handleNewProject(w http.ResponseWriter, r *http.Request) {
-	newProjectDialogTemplate := pages.ProjectDialog(model.Project{})
+	newProjectDialogTemplate := pages.ProjectDialog(&model.Project{})
 
 	if err := htmx.NewResponse().RenderTempl(r.Context(), w, newProjectDialogTemplate); err != nil {
 		h.handleError(w, r, http.StatusInternalServerError, "render template", err)
@@ -48,11 +60,11 @@ func (h *ProjectHandler) handleNewProject(w http.ResponseWriter, r *http.Request
 func (h *ProjectHandler) handleEditProject(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 
-	id := vars["id"]
+	id, _ := h.parseId(vars["id"])
 	slog.Debug("handleEditProject", "projectId", id)
 
-	if project, err := h.projectService.GetProject(id); err != nil {
-		if errors.Is(err, db.NotFoundError("not found")) {
+	if project, err := h.projectService.GetProject(*id); err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
 			h.handleError(w, r, http.StatusNotFound, "getting project", err)
 
 		} else {
@@ -70,12 +82,14 @@ func (h *ProjectHandler) handleEditProject(w http.ResponseWriter, r *http.Reques
 }
 
 func (h *ProjectHandler) handleListProjects(w http.ResponseWriter, r *http.Request) {
-	projects, err := h.projectService.GetProjects()
+	projectsIndex, err := h.projectService.GetProjects()
 
 	if err != nil {
 		h.handleError(w, r, http.StatusInternalServerError, "getting projects", err)
 		return
 	}
+
+	projects := slices.Collect(maps.Values(projectsIndex))
 
 	listProjectsDialogTemplate := pages.ProjectList(projects)
 
@@ -97,7 +111,7 @@ func (h *ProjectHandler) handleProjectCreate(w http.ResponseWriter, r *http.Requ
 
 	var project model.Project
 
-	if err := model.Decoder().Decode(&project, r.PostForm); err != nil {
+	if err := utils.Decoder().Decode(&project, r.PostForm); err != nil {
 		h.handleError(w, r, http.StatusUnprocessableEntity, "decoding form data", err)
 		return
 	}
@@ -119,11 +133,11 @@ func (h *ProjectHandler) handleProjectDelete(w http.ResponseWriter, r *http.Requ
 
 	vars := mux.Vars(r)
 
-	id := vars["id"]
+	id, _ := h.parseId(vars["id"])
 	slog.Debug("handleProjectDelete", "projectId", id)
 
-	if err := h.projectService.DeleteProject(id); err != nil {
-		if errors.Is(err, db.NotFoundError("not found")) {
+	if err := h.projectService.DeleteProject(*id); err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
 			h.handleError(w, r, http.StatusNotFound, "deleting project", err)
 
 		} else {
@@ -143,7 +157,7 @@ func (h *ProjectHandler) handleProjectUpdate(w http.ResponseWriter, r *http.Requ
 	slog.Debug("handleProjectUpdate", "projectId", id)
 
 	if err := r.ParseForm(); err != nil {
-		if errors.Is(err, db.NotFoundError("not found")) {
+		if errors.Is(err, sql.ErrNoRows) {
 			h.handleError(w, r, http.StatusNotFound, "deleting project", err)
 
 		} else {

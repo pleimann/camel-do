@@ -6,7 +6,7 @@ import (
 	"time"
 
 	lorem "github.com/derektata/lorem/ipsum"
-	"github.com/oklog/ulid/v2"
+	"github.com/google/uuid"
 	"github.com/pleimann/camel-do/model"
 )
 
@@ -71,13 +71,11 @@ func generateRandomTask() model.Task {
 	return model.Task{
 		Title:       title,
 		Description: description,
-		Project: model.Project{
-			ID: ulid.Make().String(),
-		},
-		StartTime: startTime,
-		Duration:  duration,
-		Completed: completed, // default to not completed.
-		CreatedAt: createdAt, // Set the creation timestamp
-		UpdatedAt: updatedAt, // Set the update timestamp
+		ProjectID:   uuid.New(),
+		StartTime:   &startTime,
+		Duration:    duration,
+		Completed:   completed, // default to not completed.
+		CreatedAt:   createdAt, // Set the creation timestamp
+		UpdatedAt:   updatedAt, // Set the update timestamp
 	}
 }

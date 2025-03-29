@@ -1,10 +1,12 @@
-package model
+package utils
 
 import (
 	"reflect"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/gorilla/schema"
+	"github.com/pleimann/camel-do/model"
 )
 
 var decoder *schema.Decoder
@@ -16,22 +18,22 @@ func Decoder() *schema.Decoder {
 func init() {
 	decoder = schema.NewDecoder()
 
-	decoder.RegisterConverter(Zinc, func(input string) reflect.Value {
+	decoder.RegisterConverter(model.Zinc, func(input string) reflect.Value {
 		if input == "" {
-			return reflect.ValueOf(Zinc)
+			return reflect.ValueOf(model.Zinc)
 		}
 
-		color, _ := ParseColorString(input)
+		color, _ := model.ParseColorString(input)
 
 		return reflect.ValueOf(color)
 	})
 
-	decoder.RegisterConverter(Unknown, func(input string) reflect.Value {
+	decoder.RegisterConverter(model.Unknown, func(input string) reflect.Value {
 		if input == "" {
 			return reflect.ValueOf("")
 		}
 
-		color, _ := ParseIconString(input)
+		color, _ := model.ParseIconString(input)
 
 		return reflect.ValueOf(color)
 	})
@@ -52,13 +54,15 @@ func init() {
 		return reflect.ValueOf(time)
 	})
 
-	decoder.RegisterConverter(Project{}, func(input string) reflect.Value {
+	decoder.RegisterConverter(model.Project{}, func(input string) reflect.Value {
 		if input == "" {
-			return reflect.ValueOf(nil)
+			return reflect.ValueOf(model.Project{})
 		}
 
-		project := Project{
-			ID: input,
+		uuid, _ := uuid.Parse(input)
+
+		project := model.Project{
+			ID: uuid,
 		}
 
 		return reflect.ValueOf(project)

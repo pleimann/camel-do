@@ -1,6 +1,7 @@
 package pages
 
 import (
+	"github.com/google/uuid"
   "github.com/pleimann/camel-do/templates/components"
 
 	"github.com/pleimann/camel-do/model"
@@ -17,16 +18,16 @@ css styledTextStyles() {
 }
 
 // BodyContent defines HTML content.
-templ BodyContent(backlogTasks []model.Task, todaysTasks []model.Task, projects []model.Project) {
+templ BodyContent(backlogTasks []model.Task, todaysTasks []model.Task, projects map[uuid.UUID]model.Project) {
 	<div id="app">
     @components.TitleBar()
     <main class="h-[calc(100vh-(var(--spacing)*16))] max-h-[calc(100vh-(var(--spacing)*16))] w-full overflow-hidden">
       <div class="flex flex-row h-full bg-base-100">
         <div class="bg-primary/60 dark:bg-primary-content h-full w-75 min-w-75">
-          @components.Backlog(backlogTasks)
+          @components.Backlog(backlogTasks, projects)
         </div>
         <div class="grow overflow-y-auto m-1 p-8">
-          @components.Timeline(todaysTasks)
+          @components.Timeline(todaysTasks, projects)
         </div>
       </div>
       <div class="fixed bottom-4 right-4">

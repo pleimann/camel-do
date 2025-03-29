@@ -1,6 +1,7 @@
 package main
 
 import (
+	"database/sql"
 	"embed"
 	"fmt"
 	"log"
@@ -15,7 +16,7 @@ import (
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 	_ "github.com/joho/godotenv/autoload"
-	"github.com/pleimann/camel-do/services/db"
+	_ "github.com/mattn/go-sqlite3"
 	"github.com/pleimann/camel-do/services/oauth"
 	"github.com/pleimann/camel-do/services/project"
 	"github.com/pleimann/camel-do/services/task"
@@ -25,6 +26,8 @@ import (
 )
 
 func main() {
+	slog.SetLogLoggerLevel(slog.LevelDebug)
+
 	usr, err := user.Current()
 	if err != nil {
 		log.Fatalf("Failed to locate the user's home directory: %s\n", err)
@@ -36,6 +39,8 @@ func main() {
 		slog.Error("Failed to create database service!", "details", err.Error())
 		os.Exit(1)
 	}
+
+	defer db.Close()
 
 	if err = createSyncService(); err != nil {
 		slog.Error("Failed create sync service!", "details", err.Error())
@@ -54,16 +59,15 @@ func main() {
 //go:embed all:static
 var static embed.FS
 
+var db *sql.DB
 var taskService *task.TaskService
-var dbService *db.DatabaseService
 var taskSyncService *task.TaskSyncService
 var projectService *project.ProjectService
 
 func createDatabase() error {
 	var err error
 
-	dbService, err = db.NewDatabaseService("camel-do.db")
-	if err != nil {
+	if db, err = sql.Open("sqlite3", "./camel-do.db"); err != nil {
 		return err
 	}
 
@@ -74,7 +78,7 @@ func createSyncService() error {
 	httpClient := oauth.NewGoogleAuth().GetClient()
 
 	var err error
-	taskSyncService, err = task.NewTaskSyncService(httpClient, dbService)
+	taskSyncService, err = task.NewTaskSyncService(httpClient, db)
 	if err != nil {
 		return err
 	}
@@ -99,20 +103,20 @@ func runServer() error {
 	router.PathPrefix("/static/").Handler(http.FileServer(http.FS(static)))
 
 	// Add projectService sub router
-	projectService, err = project.NewService(&project.Config{}, dbService)
+	projectService, err = project.NewService(&project.ProjectServiceConfig{}, db)
 	if err != nil {
 		log.Fatalf("error creating ProjectService %s", err.Error())
 	}
 
-	project.NewHandler(router.PathPrefix("/projects").Subrouter(), projectService)
+	project.NewProjectHandler(router.PathPrefix("/projects").Subrouter(), projectService)
 
 	// Add taskService sub router
-	taskService, err = task.NewTaskService(&task.Config{}, dbService)
+	taskService, err = task.NewTaskService(&task.TaskServiceConfig{}, db)
 	if err != nil {
 		log.Fatalf("error creating TaskService %s", err.Error())
 	}
 
-	task.NewHandler(router.PathPrefix("/tasks").Subrouter(), taskService, projectService)
+	task.NewTaskHandler(router.PathPrefix("/tasks").Subrouter(), taskService, projectService)
 
 	// Create a new server instance with options from environment variables.
 	// For more information, see https://blog.cloudflare.com/the-complete-guide-to-golang-net-http-timeouts/
@@ -161,7 +165,7 @@ func indexViewHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	projects, err := projectService.GetProjects()
+	projectsMap, err := projectService.GetProjects()
 	if err != nil {
 		slog.Error("get all projects", "err", err)
 		w.WriteHeader(http.StatusInternalServerError)
@@ -178,7 +182,7 @@ func indexViewHandler(w http.ResponseWriter, r *http.Request) {
 			"camel-do, todo, tasks", // define meta keywords
 			"Welcome to Camel Do! You're here because camels are awesome and you need more of them in your life.", // define meta description
 		),
-		pages.BodyContent(backlogTasks, todaysTasks, projects), // define body content
+		pages.BodyContent(backlogTasks, todaysTasks, projectsMap), // define body content
 	)
 
 	// Render index page template.

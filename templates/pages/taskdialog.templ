@@ -21,7 +21,7 @@ templ TaskDialog(projects []model.Project, task model.Task) {
         <div class="join grow" x-data="{ projectId: '', projectName: '' }">
           <input x-model="projectName" type="text" placeholder="Project"  class="join-item input input-readonly grow" 
             readonly list="projects" @click="$refs.projectDropdown.focus()" />
-          <input name="project" type="hidden" x-model="projectId" />
+          <input name="projectId" type="hidden" x-model="projectId" />
           <div class="dropdown dropdown-bottom dropdown-end">
             <div tabindex="0" role="button" class="join-item btn w-4">▾</div>
             <ul tabindex="0" x-ref="projectDropdown" class="dropdown-content menu bg-base-200 rounded-box z-1 w-52 p-2 mt-2 shadow-sm">
