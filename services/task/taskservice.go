@@ -71,11 +71,14 @@ func (t *TaskService) GetTask(id uuid.UUID) (*model.Task, error) {
 	return &modelTask, nil
 }
 
-func (t *TaskService) CompleteTask(id uuid.UUID, completed bool) error {
-	slog.Debug("completing task", "id", id, "completed", completed)
+func (t *TaskService) CompleteToggleTask(id uuid.UUID) error {
+	slog.Debug("completing task", "id", id)
 
 	updateStmt := Tasks.UPDATE(Tasks.Completed).
-		SET(Tasks.Completed.SET(Bool(true))).
+		SET(CASE().
+			WHEN(Tasks.Completed.IS_TRUE()).
+			THEN(Bool(false)).
+			ELSE(Bool(true))).
 		WHERE(Tasks.ID.EQ(UUID(id)))
 
 	if res, err := updateStmt.Exec(t.db); err != nil {

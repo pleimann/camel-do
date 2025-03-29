@@ -185,7 +185,7 @@ func (h *TaskHandler) handleTaskComplete(w http.ResponseWriter, r *http.Request)
 
 	slog.Debug("TaskHandler.handleTaskComplete", "taskId", taskId)
 
-	if err := h.taskService.CompleteTask(*taskId, true); err != nil {
+	if err := h.taskService.CompleteToggleTask(*taskId); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			h.handleError(w, r, http.StatusNotFound, "updating task", err)
 
