@@ -35,7 +35,7 @@ func ConvertTasks(tasks []m.Tasks) []Task {
 
 func ConvertTask(t *m.Tasks) Task {
 	id, _ := uuid.Parse(*t.ID)
-	duration := time.Duration(*t.Duration)
+	duration := time.Duration(*t.Duration).Round(time.Minute)
 
 	var startTime *time.Time = nil
 	if t.StartTime != nil && t.StartTime.Valid {

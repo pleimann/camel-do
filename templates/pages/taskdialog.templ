@@ -4,14 +4,13 @@ import (
   "fmt"
   "slices"
   "maps"
+  "reflect"
   "github.com/pleimann/camel-do/model"
 	"github.com/pleimann/camel-do/templates/components"
 )
 
 templ TaskDialog(projectsIndex model.ProjectIndex, task model.Task) {
     {{ 
-        project := projectsIndex[task.ProjectID] 
-
         projects := slices.Collect(maps.Values(projectsIndex))
     }}
 
@@ -27,18 +26,24 @@ templ TaskDialog(projectsIndex model.ProjectIndex, task model.Task) {
                     <input name="title" class="w-full shrink font-semibold" type="text" placeholder="New Task..." autocomplete="off" value={ task.Title }>
                 </label>
 
-                <div class="join grow" x-data={ fmt.Sprintf("{ projectId: '%s' , projectName: '%s' }", project.ID, project.Name) }>
+                <div class="join grow" 
+                    if reflect.ValueOf(&task.ProjectID).Elem().IsZero() {
+                        x-data="{ projectId: '' , projectName: '' }"
+                    } else {
+                        x-data={ fmt.Sprintf("{ projectId: '%s' , projectName: '%s' }", task.ProjectID, projectsIndex[task.ProjectID].Name) }
+                    }
+                >
                     <input x-model="projectName" type="text" placeholder="Project" class="join-item input input-readonly grow" 
-                        readonly list="projects" @click="$refs.projectDropdown.focus()" value={ project.Name } />
+                        readonly list="projects" @click="$refs.projectDropdown.focus()" value={ projectsIndex[task.ProjectID].Name } />
                     <input name="projectId" type="hidden" x-model="projectId" value={ task.ProjectID.String() } />
                     <div class="dropdown dropdown-bottom dropdown-end">
                         <div tabindex="0" role="button" class="join-item btn w-4">▾</div>
                         <ul tabindex="0" x-ref="projectDropdown" class="dropdown-content menu bg-base-200 rounded-box z-1 w-52 p-2 mt-2 shadow-sm">
-                        for _, project := range projects {
-                            <li @click={ fmt.Sprintf("projectId = '%s'; projectName = '%s'; document.activeElement.blur();", project.ID, project.Name) }>
+                        for _, p := range projects {
+                            <li @click={ fmt.Sprintf("projectId = '%s'; projectName = '%s'; document.activeElement.blur();", p.ID, p.Name) }>
                             <a> 
-                                @components.IconC(project.Icon, project.Color, 8) 
-                                { project.Name } 
+                                @components.IconC(p.Icon, p.Color, 8) 
+                                { p.Name } 
                             </a>
                             </li>
                         }
@@ -48,14 +53,14 @@ templ TaskDialog(projectsIndex model.ProjectIndex, task model.Task) {
             
                 <textarea name="description" class="textarea" placeholder="Notes" value={ task.Description }></textarea>
                 
-                <input name="startTime" type="datetime-local" class="input grow" value={ task.StartTime.String() } />
+                <input name="startTime" type="datetime-local" class="input grow" value={ fmt.Sprintf("%s", task.StartTime) } />
                 
                 <div class="join grow">
-                <input name="duration" class="join-item input" value={ task.Duration.String() } />
-                <button class="join-item btn p-2 text-xs font-light">-15m</button>
-                <button class="join-item btn p-2 text-xs font-light">+15m</button>
-                <button class="join-item btn p-2 text-xs font-light">-1h</button>
-                <button class="join-item btn p-2 text-xs font-light">+1h</button>
+                    <input name="duration" class="join-item input" value={ fmt.Sprintf("%s", task.Duration) } />
+                    <button class="join-item btn p-2 text-xs font-light">-15m</button>
+                    <button class="join-item btn p-2 text-xs font-light">+15m</button>
+                    <button class="join-item btn p-2 text-xs font-light">-1h</button>
+                    <button class="join-item btn p-2 text-xs font-light">+1h</button>
                 </div>
 
                 <div class="w-full max-w-xs">

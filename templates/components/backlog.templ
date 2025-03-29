@@ -1,17 +1,23 @@
 package components
 
 import (
-  "github.com/google/uuid"
-  "github.com/pleimann/camel-do/model"
+    "reflect"
+    "github.com/pleimann/camel-do/model"
 )
 
-templ Backlog(tasks []model.Task, projects map[uuid.UUID]model.Project) {
-  // padding being defined in Backlog component rather than parent (App) prevents drop shadows from being clipped
-  <div id="backlog" class={"p-4 flex flex-col gap-2 h-full w-full overflow-y-scroll"}>
+templ Backlog(tasks []model.Task, projects model.ProjectIndex) {
+    // padding being defined in Backlog component rather than parent (App) prevents drop shadows from being clipped
+    <div id="backlog" class={"p-4 flex flex-col gap-2 h-full w-full overflow-y-scroll"}>
         for _, task := range tasks {
-            {{ project := projects[task.ProjectID] }}
+            {{ 
+                project := model.Project{}
+                
+                if !reflect.ValueOf(&task.ProjectID).Elem().IsZero() {
+                    project = projects[task.ProjectID] 
+                }
+            }}
 
             @TaskCard(&task, &project)
         }
-  </div>
+    </div>
 }
