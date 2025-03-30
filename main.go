@@ -17,6 +17,7 @@ import (
 	"github.com/gorilla/mux"
 	_ "github.com/joho/godotenv/autoload"
 	_ "github.com/mattn/go-sqlite3"
+	database "github.com/pleimann/camel-do/db"
 	"github.com/pleimann/camel-do/services/oauth"
 	"github.com/pleimann/camel-do/services/project"
 	"github.com/pleimann/camel-do/services/task"
@@ -59,6 +60,8 @@ func main() {
 //go:embed all:static
 var static embed.FS
 
+const databasePath = "./camel-do.db"
+
 var db *sql.DB
 var taskService *task.TaskService
 var taskSyncService *task.TaskSyncService
@@ -67,8 +70,12 @@ var projectService *project.ProjectService
 func createDatabase() error {
 	var err error
 
-	if db, err = sql.Open("sqlite3", "./camel-do.db"); err != nil {
+	if db, err = sql.Open("sqlite3", databasePath); err != nil {
 		return err
+	}
+
+	if err = database.Migrate(db); err != nil {
+		log.Fatal(err)
 	}
 
 	return nil
