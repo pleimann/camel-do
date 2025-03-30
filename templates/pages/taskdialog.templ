@@ -4,14 +4,18 @@ import (
   "fmt"
   "slices"
   "maps"
-  "reflect"
   "github.com/pleimann/camel-do/model"
 	"github.com/pleimann/camel-do/templates/components"
 )
 
-templ TaskDialog(projectsIndex model.ProjectIndex, task model.Task) {
+templ TaskDialog(projectsIndex model.ProjectIndex, task *model.Task) {
     {{ 
         projects := slices.Collect(maps.Values(projectsIndex))
+        var project *model.Project
+        if task != nil && task.ProjectID != nil {
+            p := projectsIndex[*task.ProjectID]
+            project = &p
+        }
     }}
 
 	<dialog class="modal" hx-on:htmx:load="this.showModal(); document.querySelector('form#taskForm').title.focus();" hx-on:close-modal="this.close()">
@@ -23,19 +27,31 @@ templ TaskDialog(projectsIndex model.ProjectIndex, task model.Task) {
 			<form id="taskForm" method="dialog" class="flex flex-col gap-4" hx-post="/tasks/">
                 <label class="input input-ghost input-lg grow">
                     <i data-lucide="pencil-line" class="opacity-50 size-6 -ml-4"/>
-                    <input name="title" class="w-full shrink font-semibold" type="text" placeholder="New Task..." autocomplete="off" value={ task.Title }>
+                    <input name="title" class="w-full shrink font-semibold" type="text" placeholder="New Task..." autocomplete="off" 
+                        if task != nil {
+                            value={ task.Title }
+                        }
+                    >
                 </label>
 
                 <div class="join grow" 
-                    if reflect.ValueOf(&task.ProjectID).Elem().IsZero() {
-                        x-data="{ projectId: '' , projectName: '' }"
+                    if project != nil {
+                        x-data={ fmt.Sprintf("{ projectId: '%s' , projectName: '%s' }", project.ID, project.Name) }
                     } else {
-                        x-data={ fmt.Sprintf("{ projectId: '%s' , projectName: '%s' }", task.ProjectID, projectsIndex[task.ProjectID].Name) }
+                        x-data="{ projectId: '' , projectName: '' }"
                     }
                 >
                     <input x-model="projectName" type="text" placeholder="Project" class="join-item input input-readonly grow" 
-                        readonly list="projects" @click="$refs.projectDropdown.focus()" value={ projectsIndex[task.ProjectID].Name } />
-                    <input name="projectId" type="hidden" x-model="projectId" value={ task.ProjectID.String() } />
+                        readonly list="projects" @click="$refs.projectDropdown.focus()" 
+                        if project != nil {
+                            value={ project.Name }
+                        }
+                    />
+                    <input name="projectId" type="hidden" x-model="projectId" 
+                        if project != nil {
+                            value={ project.ID.String() } 
+                        }
+                    />
                     <div class="dropdown dropdown-bottom dropdown-end">
                         <div tabindex="0" role="button" class="join-item btn w-4">▾</div>
                         <ul tabindex="0" x-ref="projectDropdown" class="dropdown-content menu bg-base-200 rounded-box z-1 w-52 p-2 mt-2 shadow-sm">
@@ -51,58 +67,78 @@ templ TaskDialog(projectsIndex model.ProjectIndex, task model.Task) {
                     </div>
                 </div>
             
-                <textarea name="description" class="textarea" placeholder="Notes" value={ task.Description }></textarea>
+                <textarea name="description" class="textarea" placeholder="Notes" 
+                    if task != nil {
+                        value={ task.Description }   
+                    }
+                ></textarea>
                 
-                <input name="startTime" type="datetime-local" class="input grow" value={ fmt.Sprintf("%s", task.StartTime) } />
+                <input name="startTime" type="datetime-local" class="input grow" 
+                    if task != nil {
+                        value={ fmt.Sprintf("%s", task.StartTime) }
+                    }
+                />
                 
                 <div class="join grow">
-                    <input name="duration" class="join-item input" value={ fmt.Sprintf("%s", task.Duration) } />
+                    <input name="duration" class="join-item input" 
+                        if task != nil {
+                            value={ fmt.Sprintf("%s", task.Duration) }        
+                        } else {
+                            value="0m"
+                        }
+                    />
                     <button class="join-item btn p-2 text-xs font-light">-15m</button>
                     <button class="join-item btn p-2 text-xs font-light">+15m</button>
                     <button class="join-item btn p-2 text-xs font-light">-1h</button>
                     <button class="join-item btn p-2 text-xs font-light">+1h</button>
                 </div>
 
-                <div class="w-full max-w-xs">
-                    <input type="range" min="0" max="300" value="0" class="range" step="15" />
-                    <div class="flex justify-between px-2.5 mt-2 text-xs">
-                        <span>|</span>
-                        <span>|</span>
-                        <span>|</span>
-                        <span>&nbsp;</span>
-                        <span>|</span>
-                        <span>&nbsp;</span>
-                        <span>|</span>
-                        <span>&nbsp;</span>
-                        <span>|</span>
-                        <span>&nbsp;&nbsp;&nbsp;</span>
-                        <span>|</span>
-                        <span>&nbsp;&nbsp;&nbsp;</span>
-                        <span>|</span>
-                        <span>&nbsp;&nbsp;&nbsp;</span>
-                    </div>
-                    <div class="flex justify-between px-2.5 mt-2 text-xs">
-                        <span>1m</span>
-                        <span>15m</span>
-                        <span>30m</span>
-                        <span>&nbsp;&nbsp;</span>
-                        <span></span>
-                        <span>1h</span>
-                        <span>&nbsp;</span>
-                        <span>1.5h</span>
-                        <span>&nbsp;</span>
-                        <span>2h</span>
-                        <span>&nbsp;&nbsp;&nbsp;</span>
-                        <span>3h</span>
-                        <span>&nbsp;&nbsp;&nbsp;</span>
-                        <span>4h</span>
-                        <span>&nbsp;&nbsp;&nbsp;</span>
-                        <span>5h</span>
-                        <span>&nbsp;&nbsp;&nbsp;</span>
-                    </div>
-                </div>    
+            //     <div class="w-full max-w-xs">
+            //         <input type="range" min="0" max="300" value="0" class="range" step="15" />
+            //         <div class="flex justify-between px-2.5 mt-2 text-xs">
+            //             <span>|</span>
+            //             <span>|</span>
+            //             <span>|</span>
+            //             <span>&nbsp;</span>
+            //             <span>|</span>
+            //             <span>&nbsp;</span>
+            //             <span>|</span>
+            //             <span>&nbsp;</span>
+            //             <span>|</span>
+            //             <span>&nbsp;&nbsp;&nbsp;</span>
+            //             <span>|</span>
+            //             <span>&nbsp;&nbsp;&nbsp;</span>
+            //             <span>|</span>
+            //             <span>&nbsp;&nbsp;&nbsp;</span>
+            //         </div>
+            //         <div class="flex justify-between px-2.5 mt-2 text-xs">
+            //             <span>1m</span>
+            //             <span>15m</span>
+            //             <span>30m</span>
+            //             <span>&nbsp;&nbsp;</span>
+            //             <span></span>
+            //             <span>1h</span>
+            //             <span>&nbsp;</span>
+            //             <span>1.5h</span>
+            //             <span>&nbsp;</span>
+            //             <span>2h</span>
+            //             <span>&nbsp;&nbsp;&nbsp;</span>
+            //             <span>3h</span>
+            //             <span>&nbsp;&nbsp;&nbsp;</span>
+            //             <span>4h</span>
+            //             <span>&nbsp;&nbsp;&nbsp;</span>
+            //             <span>5h</span>
+            //             <span>&nbsp;&nbsp;&nbsp;</span>
+            //         </div>
+            //     </div>    
 
-				<button class="btn btn-primary">Create</button>
+                {{
+                    submitLabel := "Create"
+                    if task != nil {
+                        submitLabel = "Save"
+                    }
+                }}
+				<button class="btn btn-primary">{ submitLabel }</button>
 			</form>
 		</div>
 	</dialog>

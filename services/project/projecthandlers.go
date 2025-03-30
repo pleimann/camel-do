@@ -57,7 +57,7 @@ func (h *ProjectHandler) extractTaskId(r *http.Request, w http.ResponseWriter) *
 }
 
 func (h *ProjectHandler) handleNewProject(w http.ResponseWriter, r *http.Request) {
-	newProjectDialogTemplate := pages.ProjectDialog(&model.Project{})
+	newProjectDialogTemplate := pages.ProjectDialog(nil)
 
 	if err := htmx.NewResponse().RenderTempl(r.Context(), w, newProjectDialogTemplate); err != nil {
 		h.handleError(w, r, http.StatusInternalServerError, "render template", err)

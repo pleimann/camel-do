@@ -20,9 +20,9 @@ type Tasks struct {
 	UpdatedAt   *time.Time
 	Title       *string
 	Description *string
-	StartTime   *sql.NullTime
+	StartTime   *sql.NullTime `sql:"type:timestamptz"`
 	Duration    *int32
 	Completed   *bool
 	Rank        *int32
-	ProjectId     *uuid.UUID
+	ProjectId   *uuid.UUID
 }

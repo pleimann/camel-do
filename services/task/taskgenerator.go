@@ -6,7 +6,6 @@ import (
 	"time"
 
 	lorem "github.com/derektata/lorem/ipsum"
-	"github.com/google/uuid"
 	"github.com/pleimann/camel-do/model"
 )
 
@@ -71,7 +70,7 @@ func generateRandomTask() model.Task {
 	return model.Task{
 		Title:       title,
 		Description: description,
-		ProjectID:   uuid.New(),
+		ProjectID:   nil,
 		StartTime:   &startTime,
 		Duration:    duration,
 		Completed:   completed, // default to not completed.

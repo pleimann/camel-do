@@ -8,8 +8,8 @@ import (
 	"github.com/google/uuid"
 
 	. "github.com/go-jet/jet/v2/sqlite"
-	m "github.com/pleimann/camel-do/.gen/model"
-	. "github.com/pleimann/camel-do/.gen/table"
+	m "github.com/pleimann/camel-do/db/model"
+	. "github.com/pleimann/camel-do/db/table"
 	"github.com/pleimann/camel-do/model"
 )
 
@@ -75,9 +75,9 @@ func (s *ProjectService) GetProjects() (model.ProjectIndex, error) {
 }
 
 func (s *ProjectService) AddProject(project model.Project) error {
-	slog.Debug("ProjectService.AddProject", "project", project)
-
 	project.ID = uuid.New()
+
+	slog.Debug("ProjectService.AddProject", "project", project)
 
 	insertStmt := Projects.
 		INSERT(Projects.AllColumns).

@@ -15,7 +15,7 @@ type Projects struct {
 	ID        *string `sql:"primary_key"`
 	CreatedAt *time.Time
 	UpdatedAt *time.Time
-	Name      *string
+	Name      *string `sql:"unique"`
 	Color     *string
 	Icon      *string
 }

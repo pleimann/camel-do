@@ -5,23 +5,23 @@ import (
 
 	"github.com/google/uuid"
 
-	m "github.com/pleimann/camel-do/.gen/model"
+	m "github.com/pleimann/camel-do/db/model"
 )
 
 // Task represents a task in the task tracking application.
 type Task struct {
-	ID        uuid.UUID `db:"id"`
-	CreatedAt time.Time `db:"created_at"`
-	UpdatedAt time.Time `db:"updated_at"`
+	ID        uuid.UUID
+	CreatedAt time.Time
+	UpdatedAt time.Time
 
-	Title       string        `schema:"title,required" db:"title"`               // Title of the task
-	Description string        `schema:"description" db:"description"`            // Description of the task
-	StartTime   *time.Time    `schema:"startTime" db:"start_time"`               // Start time of the task
-	Duration    time.Duration `schema:"duration,default:0s" sql:"duration"`      // Duration of the task
-	Completed   bool          `schema:"completed,default:false" sql:"completed"` // Status of task completion
-	GTaskId     string        `db:"gtask_id"`
-	Rank        int32         `db:"rank"`                          // Sort order
-	ProjectID   uuid.UUID     `schema:"projectId" db:"project_id"` // Foreign key referencing the project associated with the task.
+	Title       string        `schema:"title,required"`          // Title of the task
+	Description string        `schema:"description"`             // Description of the task
+	StartTime   *time.Time    `schema:"startTime,default:nil"`   // Start time of the task
+	Duration    time.Duration `schema:"duration,default:0s"`     // Duration of the task
+	Completed   bool          `schema:"completed,default:false"` // Status of task completion
+	GTaskId     string
+	Rank        int32      // Sort order
+	ProjectID   *uuid.UUID `schema:"projectId"` // Foreign key referencing the project associated with the task.
 }
 
 func ConvertTasks(tasks []m.Tasks) []Task {
@@ -52,7 +52,7 @@ func ConvertTask(t *m.Tasks) Task {
 		Duration:    duration,
 		Completed:   *t.Completed,
 		Rank:        *t.Rank,
-		ProjectID:   *t.ProjectId,
+		ProjectID:   t.ProjectId,
 	}
 
 	return task

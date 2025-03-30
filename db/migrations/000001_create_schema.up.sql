@@ -15,7 +15,7 @@ CREATE TABLE `tasks` (
     `updated_at` datetime,
     `title` text,
     `description` text,
-    `start_time` datetime,
+    `start_time` datetime DEFAULT NULL,
     `duration` integer DEFAULT 0,
     `completed` numeric,
     `rank` integer,

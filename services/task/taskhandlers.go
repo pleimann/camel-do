@@ -65,7 +65,7 @@ func (h *TaskHandler) handleNewTask(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	newTaskDialogTemplate := pages.TaskDialog(projectsIndex, model.Task{})
+	newTaskDialogTemplate := pages.TaskDialog(projectsIndex, nil)
 
 	if err := htmx.NewResponse().RenderTempl(r.Context(), w, newTaskDialogTemplate); err != nil {
 		h.handleError(w, r, http.StatusInternalServerError, "render template", err)
@@ -93,7 +93,7 @@ func (h *TaskHandler) handleEditTask(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		newTaskDialogTemplate := pages.TaskDialog(projectsIndex, *task)
+		newTaskDialogTemplate := pages.TaskDialog(projectsIndex, task)
 
 		if err := htmx.NewResponse().RenderTempl(r.Context(), w, newTaskDialogTemplate); err != nil {
 			h.handleError(w, r, http.StatusInternalServerError, "render template", err)
@@ -139,7 +139,7 @@ func (h *TaskHandler) handleTaskCreate(w http.ResponseWriter, r *http.Request) {
 	} else {
 		slog.Debug("TaskHandler.handleTaskCreate: get project", "projectId", task.ProjectID)
 
-		if project, err := h.projectService.GetProject(task.ProjectID); err != nil {
+		if project, err := h.projectService.GetProject(*task.ProjectID); err != nil {
 			if errors.Is(err, sql.ErrNoRows) {
 				h.handleError(w, r, http.StatusNotFound, "getting project", err)
 
@@ -205,7 +205,7 @@ func (h *TaskHandler) handleTaskComplete(w http.ResponseWriter, r *http.Request)
 		}
 
 	} else {
-		if project, err := h.projectService.GetProject(task.ProjectID); err != nil {
+		if project, err := h.projectService.GetProject(*task.ProjectID); err != nil {
 			if errors.Is(err, sql.ErrNoRows) {
 				h.handleError(w, r, http.StatusNotFound, "getting project", err)
 

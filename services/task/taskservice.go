@@ -8,9 +8,9 @@ import (
 
 	. "github.com/go-jet/jet/v2/sqlite"
 	"github.com/google/uuid"
-	. "github.com/pleimann/camel-do/.gen/table"
+	. "github.com/pleimann/camel-do/db/table"
 
-	m "github.com/pleimann/camel-do/.gen/model"
+	m "github.com/pleimann/camel-do/db/model"
 
 	"github.com/pleimann/camel-do/model"
 )
@@ -63,7 +63,7 @@ func (t *TaskService) GetTask(id uuid.UUID) (*model.Task, error) {
 
 	var tasks []m.Tasks
 	if err := stmt.Query(t.db, &tasks); err != nil {
-		return nil, fmt.Errorf("get tasks: %w", err)
+		return nil, fmt.Errorf("TaskService.GetTask (%s): %w", id, err)
 	}
 
 	modelTask := model.ConvertTask(&tasks[0])
@@ -72,7 +72,7 @@ func (t *TaskService) GetTask(id uuid.UUID) (*model.Task, error) {
 }
 
 func (t *TaskService) CompleteToggleTask(id uuid.UUID) error {
-	slog.Debug("completing task", "id", id)
+	slog.Debug("TaskService.CompleteToggleTask", "id", id)
 
 	updateStmt := Tasks.UPDATE(Tasks.Completed).
 		SET(CASE().
@@ -82,7 +82,7 @@ func (t *TaskService) CompleteToggleTask(id uuid.UUID) error {
 		WHERE(Tasks.ID.EQ(UUID(id)))
 
 	if res, err := updateStmt.Exec(t.db); err != nil {
-		return fmt.Errorf("complete task (%s): %w", id, err)
+		return fmt.Errorf("TaskService.CompleteToggleTask (%s): %w", id, err)
 
 	} else {
 		rows, _ := res.RowsAffected()
@@ -94,7 +94,7 @@ func (t *TaskService) CompleteToggleTask(id uuid.UUID) error {
 }
 
 func (t *TaskService) UpdateTask(task *model.Task) (*model.Task, error) {
-	slog.Debug("updating task", "task", task)
+	slog.Debug("TaskService.UpdateTask", "task", task)
 
 	updateStmt := Tasks.
 		UPDATE(Tasks.MutableColumns).
@@ -105,7 +105,7 @@ func (t *TaskService) UpdateTask(task *model.Task) (*model.Task, error) {
 	var updatedTasks *m.Tasks
 
 	if err := updateStmt.Query(t.db, updatedTasks); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("TaskService.UpdateTask(%s): %w", task.ID, err)
 	}
 
 	updatedTask := model.ConvertTask(updatedTasks)
@@ -114,13 +114,13 @@ func (t *TaskService) UpdateTask(task *model.Task) (*model.Task, error) {
 }
 
 func (t *TaskService) DeleteTask(id uuid.UUID) error {
-	slog.Debug("deleting task", "id", id)
+	slog.Debug("TaskService.DeleteTask", "id", id)
 
 	deleteStmt := Tasks.DELETE().
 		WHERE(Tasks.ID.EQ(UUID(id)))
 
 	if res, err := deleteStmt.Exec(t.db); err != nil {
-		return fmt.Errorf("delete task (%s): %w", id, err)
+		return fmt.Errorf("TaskService.DeleteTask (%s): %w", id, err)
 
 	} else {
 		rows, _ := res.RowsAffected()
@@ -132,6 +132,8 @@ func (t *TaskService) DeleteTask(id uuid.UUID) error {
 }
 
 func (t *TaskService) GetBacklogTasks() ([]model.Task, error) {
+	slog.Debug("TaskService.GetBacklogTasks")
+
 	stmt := SELECT(Tasks.AllColumns).
 		FROM(Tasks).
 		WHERE(Tasks.StartTime.IS_NULL()).
@@ -140,7 +142,7 @@ func (t *TaskService) GetBacklogTasks() ([]model.Task, error) {
 
 	var tasks []m.Tasks
 	if err := stmt.Query(t.db, &tasks); err != nil {
-		return nil, fmt.Errorf("get backlog tasks: %w", err)
+		return nil, fmt.Errorf("TaskService.GetBacklogTasks: %w", err)
 	}
 
 	modelTasks := model.ConvertTasks(tasks)
@@ -149,6 +151,8 @@ func (t *TaskService) GetBacklogTasks() ([]model.Task, error) {
 }
 
 func (t *TaskService) GetTodaysTasks() ([]model.Task, error) {
+	slog.Debug("TaskService.GetTodaysTasks")
+
 	year, month, day := time.Now().Date()
 
 	start := time.Date(year, month, day, 0, 0, 0, 0, time.Now().Location())
@@ -162,7 +166,7 @@ func (t *TaskService) GetTodaysTasks() ([]model.Task, error) {
 
 	tasks := []m.Tasks{}
 	if err := stmt.Query(t.db, &tasks); err != nil {
-		return nil, fmt.Errorf("get todays tasks (%s - %s): %w", start, end, err)
+		return nil, fmt.Errorf("TaskService.GetTodaysTasks (%s - %s): %w", start, end, err)
 	}
 
 	modelTasks := model.ConvertTasks(tasks)

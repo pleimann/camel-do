@@ -5,7 +5,7 @@ import (
 
 	"github.com/google/uuid"
 
-	m "github.com/pleimann/camel-do/.gen/model"
+	m "github.com/pleimann/camel-do/db/model"
 )
 
 // Project represents a project in the task tracking application.
