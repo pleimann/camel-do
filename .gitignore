@@ -14,7 +14,6 @@ model/*_enum.go
 
 # IDE files.
 .idea/
-.vscode/
 
 # Go workflow files.
 go.work
