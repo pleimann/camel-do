@@ -95,6 +95,8 @@ func (h *TaskHandler) handleEditTask(w http.ResponseWriter, r *http.Request) {
 
 		newTaskDialogTemplate := pages.TaskDialog(projectsIndex, task)
 
+		// TODO replace task card rather than adding a new one
+
 		if err := htmx.NewResponse().RenderTempl(r.Context(), w, newTaskDialogTemplate); err != nil {
 			h.handleError(w, r, http.StatusInternalServerError, "render template", err)
 			return

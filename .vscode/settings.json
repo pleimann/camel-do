@@ -1,0 +1,7 @@
+{
+    "[templ]": {
+        "editor.tabSize": 4,
+    },
+    "files.autoSaveWhenNoErrors": true,
+    "files.autoSave": "afterDelay"
+}

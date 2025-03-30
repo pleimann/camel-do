@@ -1,11 +1,11 @@
 package pages
 
 import (
-  "fmt"
-  "slices"
-  "maps"
-  "github.com/pleimann/camel-do/model"
-	"github.com/pleimann/camel-do/templates/components"
+    "fmt"
+    "slices"
+    "maps"
+    "github.com/pleimann/camel-do/model"
+    "github.com/pleimann/camel-do/templates/components"
 )
 
 templ TaskDialog(projectsIndex model.ProjectIndex, task *model.Task) {
@@ -24,6 +24,7 @@ templ TaskDialog(projectsIndex model.ProjectIndex, task *model.Task) {
 				<i data-lucide="x"></i>
 			</button>
 
+            // TODO call update task (hx-put) rather than adding a new one when editing
 			<form id="taskForm" method="dialog" class="flex flex-col gap-4" hx-post="/tasks/">
                 <label class="input input-ghost input-lg grow">
                     <i data-lucide="pencil-line" class="opacity-50 size-6 -ml-4"/>
@@ -58,8 +59,8 @@ templ TaskDialog(projectsIndex model.ProjectIndex, task *model.Task) {
                         for _, p := range projects {
                             <li @click={ fmt.Sprintf("projectId = '%s'; projectName = '%s'; document.activeElement.blur();", p.ID, p.Name) }>
                             <a> 
-                                @components.IconC(p.Icon, p.Color, 8) 
-                                { p.Name } 
+                                @components.IconC(p.Icon, p.Color, 4)
+                                { p.Name }
                             </a>
                             </li>
                         }
