@@ -9,7 +9,7 @@ const BacklogSelector = "#backlog"
 
 templ Backlog(tasks []model.Task, projects model.ProjectIndex) {
     // padding being defined in Backlog component rather than parent (App) prevents drop shadows from being clipped
-    <div id="backlog" class={"p-4 flex flex-col gap-2 h-full w-full overflow-y-scroll"}>
+    <div id="backlog" class={"m-4 flex flex-col gap-2 h-full overflow-y-auto overflow-x-hidden"}>
         for _, task := range tasks {
             {{ 
                 project := model.Project{}
