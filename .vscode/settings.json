@@ -3,5 +3,18 @@
         "editor.tabSize": 4,
     },
     "files.autoSaveWhenNoErrors": true,
-    "files.autoSave": "afterDelay"
+    "files.autoSave": "afterDelay",
+
+    "explorer.fileNesting.enabled": true,
+    "explorer.fileNesting.expand": false,
+    "explorer.fileNesting.patterns": {
+      "*.ts": "${capture}.js",
+      "*.js": "${capture}.js.map, ${capture}.min.js, ${capture}.d.ts",
+      "*.jsx": "${capture}.js",
+      "*.tsx": "${capture}.ts",
+      "tsconfig.json": "tsconfig.*.json",
+      "package.json": "package-lock.json, yarn.lock, pnpm-lock.yaml, bun.lockb, bun.lock",
+      "*.templ": "${capture}_templ.go,${capture}_templ.txt",
+      "*.go": "${capture}_enum.go"
+    }
 }
