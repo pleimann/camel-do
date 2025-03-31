@@ -25,6 +25,7 @@ import {
   PackageOpen,
   PackagePlus,
   PackageMinus,
+  NotepadText,
 
   Cat,
   Rabbit,
@@ -86,6 +87,7 @@ import {
     PackageOpen,
     PackagePlus,
     PackageMinus,
+    NotepadText,
     
     Cat,
     Rabbit,

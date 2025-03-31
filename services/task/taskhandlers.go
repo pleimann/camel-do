@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"html/template"
 	"log/slog"
 	"net/http"
 
@@ -150,15 +151,23 @@ func (h *TaskHandler) handleTaskCreate(w http.ResponseWriter, r *http.Request) {
 			}
 
 		} else {
-			if task.StartTime == nil {
+			if task.StartTime.Valid {
 				slog.Debug("TaskHandler.handleTaskCreate: render AddedTaskCard", "task", task)
 
 				addedTaskTemplate := components.AddedTaskCard(task, project)
 
 				htmx.NewResponse().
 					AddTrigger(htmx.Trigger("close-modal")).
+					Retarget(components.BacklogSelector).
+					Reswap(htmx.SwapAfterBegin).
 					RenderTempl(r.Context(), w, addedTaskTemplate)
-			} // TODO Else it might belong on today's timeline
+			} else {
+				// TODO Else it might belong on today's timeline but just close the dialog for now
+				htmx.NewResponse().
+					AddTrigger(htmx.Trigger("close-modal")).
+					Reswap(htmx.SwapNone).
+					RenderHTML(w, template.HTML(""))
+			}
 		}
 	}
 }

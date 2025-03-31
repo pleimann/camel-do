@@ -16,8 +16,8 @@ type Task struct {
 	UpdatedAt time.Time
 
 	Title       string        `schema:"title,required"`          // Title of the task
-	Description string        `schema:"description"`             // Description of the task
-	StartTime   *zero.Time    `schema:"startTime"`               // Start time of the task
+	Description zero.String   `schema:"description"`             // Description of the task
+	StartTime   zero.Time     `schema:"startTime"`               // Start time of the task
 	Duration    time.Duration `schema:"duration,default:0s"`     // Duration of the task
 	Completed   bool          `schema:"completed,default:false"` // Status of task completion
 	GTaskId     string
@@ -43,7 +43,7 @@ func ConvertTask(t *m.Tasks) Task {
 		CreatedAt:   *t.CreatedAt,
 		UpdatedAt:   *t.UpdatedAt,
 		Title:       *t.Title,
-		Description: *t.Description,
+		Description: t.Description,
 		StartTime:   t.StartTime,
 		Duration:    duration,
 		Completed:   *t.Completed,

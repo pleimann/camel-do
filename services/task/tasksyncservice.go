@@ -11,6 +11,7 @@ import (
 	"slices"
 	"strconv"
 
+	"github.com/guregu/null/v6/zero"
 	"github.com/pleimann/camel-do/model"
 	"google.golang.org/api/option"
 	"google.golang.org/api/tasks/v1"
@@ -63,7 +64,7 @@ func (t *TaskSyncService) GetGoogleTasks() []model.Task {
 			tasks = append(tasks, model.Task{
 				GTaskId:     gtask.Id,
 				Title:       gtask.Title,
-				Description: gtask.Notes,
+				Description: zero.StringFrom(gtask.Notes),
 				Completed:   gtask.Completed != nil,
 				Rank:        int32(order),
 			})

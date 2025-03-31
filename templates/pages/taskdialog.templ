@@ -42,7 +42,7 @@ templ TaskDialog(projectsIndex model.ProjectIndex, task *model.Task) {
                         x-data="{ projectId: '' , projectName: '' }"
                     }
                 >
-                    <input x-model="projectName" type="text" placeholder="Project" class="join-item input input-readonly grow" 
+                    <input x-model="projectName" type="text" tabindex="-1" placeholder="Project" class="join-item input input-readonly grow" 
                         readonly list="projects" @click="$refs.projectDropdown.focus()" 
                         if project != nil {
                             value={ project.Name }
@@ -53,6 +53,7 @@ templ TaskDialog(projectsIndex model.ProjectIndex, task *model.Task) {
                             value={ project.ID.String() } 
                         }
                     />
+                    // TODO: Allow selecting from dropdown with arrow keys
                     <div class="dropdown dropdown-bottom dropdown-end">
                         <div tabindex="0" role="button" class="join-item btn w-4">▾</div>
                         <ul tabindex="0" x-ref="projectDropdown" class="dropdown-content menu bg-base-200 rounded-box z-1 w-52 p-2 mt-2 shadow-sm">
@@ -68,15 +69,15 @@ templ TaskDialog(projectsIndex model.ProjectIndex, task *model.Task) {
                     </div>
                 </div>
             
-                <textarea name="description" class="textarea" placeholder="Notes" 
-                    if task != nil {
-                        value={ task.Description }   
+                <textarea name="description" class="textarea" placeholder="Notes">
+                    if task != nil && task.Description.Valid {
+                        { task.Description.String }
                     }
-                ></textarea>
+                </textarea>
                 
                 <input name="startTime" type="datetime-local" class="input grow" 
-                    if task != nil {
-                        value={ fmt.Sprintf("%s", task.StartTime) }
+                    if task != nil && task.StartTime.Valid {
+                        value={ task.StartTime.Time.Format("HH:mm") }
                     }
                 />
                 

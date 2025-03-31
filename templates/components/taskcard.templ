@@ -40,9 +40,14 @@ templ TaskCard(task *model.Task, project *model.Project) {
 			<i data-lucide={ icon } class="size-7" />
 		</figure>
 		<div class="card-body grid grid-cols-2 justify-center items-center">
-        <div class="text-sm font-medium col-span-2">{ task.Title }</div>
-        <div class="text-sm font-light">{ project.Name }</div>
+            <div class="text-sm font-medium">{ task.Title }</div>
             <time class="italic justify-self-end">{ task.Duration.String() }</time>
+            <div class="text-sm font-light row-start-2 grow">{ project.Name }</div>
+            if task.Description.Valid {
+                <div class="justify-self-end tooltip tooltip-bottom" data-tip={ task.Description.String }>
+                    <i data-lucide="notepad-text" class="size-4" />
+                </div>
+            }
         </div>
 		<div class="card-actions rounded-e-2xl bg-base-200 p-2">
 			<div class="flex flex-col justify-between">

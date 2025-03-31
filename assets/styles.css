@@ -2,7 +2,7 @@
 
 @plugin "daisyui" {
   themes: light --default, dark --prefersdark;
-  exclude: scrollbar;
+  exclude: scrollbar, rootscrollgutter;
 }
 
 @plugin "daisyui/theme" {

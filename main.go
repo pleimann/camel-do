@@ -10,7 +10,6 @@ import (
 	"os"
 	"os/user"
 	"strconv"
-	"time"
 
 	"github.com/angelofallars/htmx-go"
 	"github.com/gorilla/handlers"
@@ -125,16 +124,16 @@ func runServer() error {
 
 	task.NewTaskHandler(router.PathPrefix("/tasks").Subrouter(), taskService, projectService)
 
+	router.Use(handlers.RecoveryHandler(handlers.PrintRecoveryStack(true)))
+
 	// Create a new server instance with options from environment variables.
 	// For more information, see https://blog.cloudflare.com/the-complete-guide-to-golang-net-http-timeouts/
 	// Note: The ReadTimeout and WriteTimeout settings may interfere with SSE (Server-Sent Event) or WS (WebSocket) connections.
 	// For SSE or WS, these timeouts can cause the connection to reset after 10 or 5 seconds due to the ReadTimeout and WriteTimeout settings.
 	// If you plan to use SSE or WS, consider commenting out or removing the ReadTimeout and WriteTimeout key-value pairs.
 	server := &http.Server{
-		Addr:         fmt.Sprintf(":%d", port),
-		ReadTimeout:  5 * time.Second,
-		WriteTimeout: 10 * time.Second,
-		Handler:      handlers.RecoveryHandler()(router),
+		Addr:    fmt.Sprintf(":%d", port),
+		Handler: router,
 	}
 
 	// Send log message.

@@ -19,8 +19,8 @@ type Tasks struct {
 	CreatedAt   *time.Time
 	UpdatedAt   *time.Time
 	Title       *string
-	Description *string
-	StartTime   *zero.Time `sql:"type:timestamptz"`
+	Description zero.String
+	StartTime   zero.Time `sql:"type:timestamptz"`
 	Duration    *int32
 	Completed   *bool
 	Rank        *int32

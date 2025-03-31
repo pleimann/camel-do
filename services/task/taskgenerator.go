@@ -51,7 +51,7 @@ func generateRandomTask() model.Task {
 	title := titles[rand.Intn(len(titles))]
 
 	// Generate random description.
-	description := loremGen.Generate(rand.Intn(20) + 5)
+	description := zero.StringFrom(loremGen.Generate(rand.Intn(20) + 5))
 
 	// Generate random start time within the past week.
 	startTime := zero.TimeFrom(time.Now().Add(time.Duration(-rand.Intn(7*24)) * time.Hour))
@@ -72,7 +72,7 @@ func generateRandomTask() model.Task {
 		Title:       title,
 		Description: description,
 		ProjectID:   nil,
-		StartTime:   &startTime,
+		StartTime:   startTime,
 		Duration:    duration,
 		Completed:   completed, // default to not completed.
 		CreatedAt:   createdAt, // Set the creation timestamp
