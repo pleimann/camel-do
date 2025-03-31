@@ -8,10 +8,10 @@
 package model
 
 import (
-	"database/sql"
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/guregu/null/v6/zero"
 )
 
 type Tasks struct {
@@ -20,7 +20,7 @@ type Tasks struct {
 	UpdatedAt   *time.Time
 	Title       *string
 	Description *string
-	StartTime   *sql.NullTime `sql:"type:timestamptz"`
+	StartTime   *zero.Time `sql:"type:timestamptz"`
 	Duration    *int32
 	Completed   *bool
 	Rank        *int32

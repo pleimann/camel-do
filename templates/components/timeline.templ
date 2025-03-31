@@ -12,8 +12,8 @@ templ Timeline(tasks []model.Task, projects model.ProjectIndex) {
                     <hr />
                 }
                 <div class="timeline-start">
-                    <time class="font-medium" dateTime={task.StartTime.Format("HH:mm")}>
-                        {task.StartTime.Format("HH:mm")}
+                    <time class="font-medium" dateTime={task.StartTime.Time.Format("HH:mm")}>
+                        {task.StartTime.Time.Format("HH:mm")}
                     </time>
                     <div class="font-light italic">{task.Duration.String()}</div>
                 </div>

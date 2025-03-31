@@ -150,13 +150,15 @@ func (h *TaskHandler) handleTaskCreate(w http.ResponseWriter, r *http.Request) {
 			}
 
 		} else {
-			slog.Debug("TaskHandler.handleTaskCreate: render AddedTaskCard", "task", task)
+			if task.StartTime == nil {
+				slog.Debug("TaskHandler.handleTaskCreate: render AddedTaskCard", "task", task)
 
-			addedTaskTemplate := components.AddedTaskCard(task, project)
+				addedTaskTemplate := components.AddedTaskCard(task, project)
 
-			htmx.NewResponse().
-				AddTrigger(htmx.Trigger("close-modal")).
-				RenderTempl(r.Context(), w, addedTaskTemplate)
+				htmx.NewResponse().
+					AddTrigger(htmx.Trigger("close-modal")).
+					RenderTempl(r.Context(), w, addedTaskTemplate)
+			} // TODO Else it might belong on today's timeline
 		}
 	}
 }

@@ -6,6 +6,7 @@ import (
 	"time"
 
 	lorem "github.com/derektata/lorem/ipsum"
+	"github.com/guregu/null/v6/zero"
 	"github.com/pleimann/camel-do/model"
 )
 
@@ -53,7 +54,7 @@ func generateRandomTask() model.Task {
 	description := loremGen.Generate(rand.Intn(20) + 5)
 
 	// Generate random start time within the past week.
-	startTime := time.Now().Add(time.Duration(-rand.Intn(7*24)) * time.Hour)
+	startTime := zero.TimeFrom(time.Now().Add(time.Duration(-rand.Intn(7*24)) * time.Hour))
 
 	// Generate random duration between 15 minutes and 4 hours.
 	duration := time.Duration(rand.Intn(4*60-15) + 15)
