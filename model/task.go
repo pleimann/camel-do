@@ -3,7 +3,6 @@ package model
 import (
 	"time"
 
-	"github.com/google/uuid"
 	"github.com/guregu/null/v6/zero"
 
 	m "github.com/pleimann/camel-do/db/model"
@@ -11,7 +10,7 @@ import (
 
 // Task represents a task in the task tracking application.
 type Task struct {
-	ID        uuid.UUID
+	ID        string
 	CreatedAt time.Time
 	UpdatedAt time.Time
 
@@ -21,8 +20,8 @@ type Task struct {
 	Duration    time.Duration `schema:"duration,default:0s"`     // Duration of the task
 	Completed   bool          `schema:"completed,default:false"` // Status of task completion
 	GTaskId     string
-	Rank        int32      // Sort order
-	ProjectID   *uuid.UUID `schema:"projectId"` // Foreign key referencing the project associated with the task.
+	Rank        int32   // Sort order
+	ProjectID   *string `schema:"projectId"` // Foreign key referencing the project associated with the task.
 }
 
 func ConvertTasks(tasks []m.Tasks) []Task {
@@ -35,7 +34,7 @@ func ConvertTasks(tasks []m.Tasks) []Task {
 }
 
 func ConvertTask(t *m.Tasks) Task {
-	id, _ := uuid.Parse(*t.ID)
+	id := *t.ID
 	duration := time.Duration(*t.Duration).Round(time.Minute)
 
 	task := Task{
@@ -48,7 +47,7 @@ func ConvertTask(t *m.Tasks) Task {
 		Duration:    duration,
 		Completed:   *t.Completed,
 		Rank:        *t.Rank,
-		ProjectID:   t.ProjectId,
+		ProjectID:   t.ProjectId.Ptr(),
 	}
 
 	return task

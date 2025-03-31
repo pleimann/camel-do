@@ -4,8 +4,8 @@ import (
 	"reflect"
 	"time"
 
-	"github.com/google/uuid"
 	"github.com/gorilla/schema"
+	"github.com/oklog/ulid/v2"
 	"github.com/pleimann/camel-do/model"
 )
 
@@ -59,10 +59,10 @@ func init() {
 			return reflect.ValueOf(model.Project{})
 		}
 
-		uuid, _ := uuid.Parse(input)
+		ulid, _ := ulid.Parse(input)
 
 		project := model.Project{
-			ID: uuid,
+			ID: ulid.String(),
 		}
 
 		return reflect.ValueOf(project)

@@ -9,7 +9,6 @@ import (
 	"net/http"
 
 	"github.com/angelofallars/htmx-go"
-	"github.com/google/uuid"
 	"github.com/gorilla/mux"
 
 	"github.com/pleimann/camel-do/model"
@@ -35,27 +34,22 @@ func NewTaskHandler(router *mux.Router, taskService *TaskService, projectsServic
 	router.HandleFunc("/new", taskHandler.handleNewTask).Methods(http.MethodGet)
 	router.HandleFunc("/edit/{id}", taskHandler.handleEditTask).Methods(http.MethodGet)
 	router.HandleFunc("/", taskHandler.handleTaskCreate).Methods(http.MethodPost)
+	router.HandleFunc("/{id}", taskHandler.handleTaskUpdate).Methods(http.MethodPut)
 	router.HandleFunc("/{id}", taskHandler.handleTaskDelete).Methods(http.MethodDelete)
 	router.HandleFunc("/{id}/complete", taskHandler.handleTaskComplete).Methods(http.MethodPut)
-	// router.HandleFunc("/{id}", taskHandler.handleTaskUpdate).Methods(http.MethodPut)
 
 	return taskHandler
 }
 
-func (h *TaskHandler) extractTaskId(r *http.Request, w http.ResponseWriter) *uuid.UUID {
-	var taskIdString string
+func extractTaskId(r *http.Request) string {
+	var idString string
 	if r.URL.Query().Has("id") {
-		taskIdString = r.URL.Query().Get("id")
+		idString = r.URL.Query().Get("id")
 	} else {
-		taskIdString = mux.Vars(r)["id"]
+		idString = mux.Vars(r)["id"]
 	}
 
-	if uuid, err := uuid.Parse(taskIdString); err != nil {
-		return nil
-
-	} else {
-		return &uuid
-	}
+	return idString
 }
 
 func (h *TaskHandler) handleNewTask(w http.ResponseWriter, r *http.Request) {
@@ -75,9 +69,9 @@ func (h *TaskHandler) handleNewTask(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *TaskHandler) handleEditTask(w http.ResponseWriter, r *http.Request) {
-	taskId := h.extractTaskId(r, w)
+	taskId := extractTaskId(r)
 
-	if task, err := h.taskService.GetTask(*taskId); err != nil {
+	if task, err := h.taskService.GetTask(taskId); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			h.handleError(w, r, http.StatusNotFound, "getting task", err)
 			return
@@ -136,7 +130,7 @@ func (h *TaskHandler) handleTaskCreate(w http.ResponseWriter, r *http.Request) {
 			h.handleError(w, r, http.StatusNotFound, "getting updated task", err)
 
 		} else {
-			h.handleError(w, r, http.StatusUnprocessableEntity, "getting updated task", err)
+			h.handleError(w, r, http.StatusInternalServerError, "getting updated task", err)
 		}
 
 	} else {
@@ -147,26 +141,90 @@ func (h *TaskHandler) handleTaskCreate(w http.ResponseWriter, r *http.Request) {
 				h.handleError(w, r, http.StatusNotFound, "getting project", err)
 
 			} else {
-				h.handleError(w, r, http.StatusUnprocessableEntity, "getting project", err)
+				h.handleError(w, r, http.StatusInternalServerError, "getting project", err)
 			}
 
 		} else {
 			if task.StartTime.Valid {
+				// TODO Else it might belong on today's timeline but just close the dialog for now
+				htmx.NewResponse().
+					AddTrigger(htmx.Trigger("close-modal")).
+					Reswap(htmx.SwapNone).
+					RenderHTML(w, template.HTML(""))
+
+			} else {
 				slog.Debug("TaskHandler.handleTaskCreate: render AddedTaskCard", "task", task)
 
-				addedTaskTemplate := components.AddedTaskCard(task, project)
+				addedTaskTemplate := components.TaskCard(task, project)
 
 				htmx.NewResponse().
 					AddTrigger(htmx.Trigger("close-modal")).
 					Retarget(components.BacklogSelector).
 					Reswap(htmx.SwapAfterBegin).
 					RenderTempl(r.Context(), w, addedTaskTemplate)
+			}
+		}
+	}
+}
+
+func (h *TaskHandler) handleTaskUpdate(w http.ResponseWriter, r *http.Request) {
+	defer r.Body.Close()
+
+	if err := r.ParseForm(); err != nil {
+		h.handleError(w, r, http.StatusUnprocessableEntity, "parsing form data", err)
+		return
+	}
+
+	slog.Debug("TaskHandler.handleTaskUpdate", "form", r.PostForm.Encode())
+
+	taskId := extractTaskId(r)
+
+	task := &model.Task{
+		ID: taskId,
+	}
+
+	if err := utils.Decoder().Decode(task, r.PostForm); err != nil {
+		h.handleError(w, r, http.StatusUnprocessableEntity, "decoding form data", err)
+		return
+	}
+
+	slog.Debug("TaskHandler.handleTaskUpdate", "task", task)
+
+	if task, err := h.taskService.UpdateTask(task); err != nil {
+		h.handleError(w, r, http.StatusInternalServerError, "adding task", err)
+		return
+
+	} else {
+		slog.Debug("TaskHandler.handleTaskUpdate: get project", "projectId", task.ProjectID)
+
+		if project, err := h.projectService.GetProject(*task.ProjectID); err != nil {
+			if errors.Is(err, sql.ErrNoRows) {
+				h.handleError(w, r, http.StatusNotFound, "getting project", err)
+
 			} else {
+				h.handleError(w, r, http.StatusInternalServerError, "getting project", err)
+			}
+
+		} else {
+			if task.StartTime.Valid {
 				// TODO Else it might belong on today's timeline but just close the dialog for now
+				slog.Debug("TaskHandler.handleTaskUpdate: closing task dialog", "task", task)
+
 				htmx.NewResponse().
 					AddTrigger(htmx.Trigger("close-modal")).
 					Reswap(htmx.SwapNone).
 					RenderHTML(w, template.HTML(""))
+
+			} else {
+				slog.Debug("TaskHandler.handleTaskUpdate: render TaskCard", "task", task)
+
+				taskTemplate := components.TaskCard(task, project)
+
+				htmx.NewResponse().
+					AddTrigger(htmx.Trigger("close-modal")).
+					Retarget(fmt.Sprintf("%s > #task-card-%s", components.BacklogSelector, task.ID)).
+					Reswap(htmx.SwapOuterHTML).
+					RenderTempl(r.Context(), w, taskTemplate)
 			}
 		}
 	}
@@ -175,11 +233,11 @@ func (h *TaskHandler) handleTaskCreate(w http.ResponseWriter, r *http.Request) {
 func (h *TaskHandler) handleTaskDelete(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 
-	taskId := h.extractTaskId(r, w)
+	taskId := extractTaskId(r)
 
 	slog.Debug("TaskHandler.handleTaskDelete", "taskId", taskId)
 
-	if err := h.taskService.DeleteTask(*taskId); err != nil {
+	if err := h.taskService.DeleteTask(taskId); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			h.handleError(w, r, http.StatusNotFound, "deleting task", err)
 
@@ -188,17 +246,19 @@ func (h *TaskHandler) handleTaskDelete(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	// TODO: target backlog swap delete
+	htmx.NewResponse().
+		StatusCode(http.StatusNoContent).
+		RenderHTML(w, template.HTML(""))
 }
 
 func (h *TaskHandler) handleTaskComplete(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 
-	taskId := h.extractTaskId(r, w)
+	taskId := extractTaskId(r)
 
 	slog.Debug("TaskHandler.handleTaskComplete", "taskId", taskId)
 
-	if err := h.taskService.CompleteToggleTask(*taskId); err != nil {
+	if err := h.taskService.CompleteToggleTask(taskId); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			h.handleError(w, r, http.StatusNotFound, "updating task", err)
 
@@ -209,7 +269,7 @@ func (h *TaskHandler) handleTaskComplete(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	if task, err := h.taskService.GetTask(*taskId); err != nil {
+	if task, err := h.taskService.GetTask(taskId); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			h.handleError(w, r, http.StatusNotFound, "getting updated task", err)
 

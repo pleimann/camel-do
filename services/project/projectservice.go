@@ -5,9 +5,8 @@ import (
 	"fmt"
 	"log/slog"
 
-	"github.com/google/uuid"
-
 	. "github.com/go-jet/jet/v2/sqlite"
+	"github.com/oklog/ulid/v2"
 	m "github.com/pleimann/camel-do/db/model"
 	. "github.com/pleimann/camel-do/db/table"
 	"github.com/pleimann/camel-do/model"
@@ -31,12 +30,12 @@ func NewService(config *ProjectServiceConfig, db *sql.DB) (*ProjectService, erro
 	return taskService, nil
 }
 
-func (s *ProjectService) GetProject(id uuid.UUID) (*model.Project, error) {
+func (s *ProjectService) GetProject(id string) (*model.Project, error) {
 	slog.Debug("ProjectService.GetProject", "id", id)
 
 	stmt := SELECT(Projects.AllColumns).
 		FROM(Projects).
-		WHERE(Projects.ID.EQ(UUID(id)))
+		WHERE(Projects.ID.EQ(String(id)))
 
 	var projects []m.Projects
 	if err := stmt.Query(s.db, &projects); err != nil {
@@ -75,7 +74,7 @@ func (s *ProjectService) GetProjects() (model.ProjectIndex, error) {
 }
 
 func (s *ProjectService) AddProject(project model.Project) error {
-	project.ID = uuid.New()
+	project.ID = ulid.Make().String()
 
 	slog.Debug("ProjectService.AddProject", "project", project)
 
@@ -94,12 +93,12 @@ func (s *ProjectService) AddProject(project model.Project) error {
 	return nil
 }
 
-func (s *ProjectService) UpdateProject(id uuid.UUID, project model.Project) error {
+func (s *ProjectService) UpdateProject(id string, project model.Project) error {
 	slog.Debug("ProjectService.UpdateProject", "project", project)
 
 	updateStmt := Projects.
 		UPDATE(Projects.MutableColumns).
-		WHERE(Projects.ID.EQ(UUID(id))).
+		WHERE(Projects.ID.EQ(String(id))).
 		MODEL(project)
 
 	if res, err := updateStmt.Exec(s.db); err != nil {
@@ -114,11 +113,11 @@ func (s *ProjectService) UpdateProject(id uuid.UUID, project model.Project) erro
 	return nil
 }
 
-func (s *ProjectService) DeleteProject(id uuid.UUID) error {
+func (s *ProjectService) DeleteProject(id string) error {
 	slog.Debug("ProjectService.DeleteProject", "id", id)
 
 	deleteStmt := Projects.DELETE().
-		WHERE(Projects.ID.EQ(UUID(id)))
+		WHERE(Projects.ID.EQ(String(id)))
 
 	if res, err := deleteStmt.Exec(s.db); err != nil {
 		return err

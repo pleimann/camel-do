@@ -7,7 +7,7 @@ import (
 	"time"
 
 	. "github.com/go-jet/jet/v2/sqlite"
-	"github.com/google/uuid"
+	"github.com/oklog/ulid/v2"
 	. "github.com/pleimann/camel-do/db/table"
 
 	m "github.com/pleimann/camel-do/db/model"
@@ -34,7 +34,7 @@ func NewTaskService(config *TaskServiceConfig, db *sql.DB) (*TaskService, error)
 }
 
 func (t *TaskService) AddTask(task *model.Task) error {
-	task.ID = uuid.New()
+	task.ID = ulid.Make().String()
 
 	slog.Debug("TaskService.AddTask", "task", task)
 
@@ -53,12 +53,12 @@ func (t *TaskService) AddTask(task *model.Task) error {
 	return nil
 }
 
-func (t *TaskService) GetTask(id uuid.UUID) (*model.Task, error) {
+func (t *TaskService) GetTask(id string) (*model.Task, error) {
 	slog.Debug("TaskService.GetTask", "id", id)
 
 	stmt := SELECT(Tasks.AllColumns).
 		FROM(Tasks).
-		WHERE(Tasks.ID.EQ(UUID(id))).
+		WHERE(Tasks.ID.EQ(String(id))).
 		LIMIT(1)
 
 	var tasks []m.Tasks
@@ -71,15 +71,16 @@ func (t *TaskService) GetTask(id uuid.UUID) (*model.Task, error) {
 	return &modelTask, nil
 }
 
-func (t *TaskService) CompleteToggleTask(id uuid.UUID) error {
+func (t *TaskService) CompleteToggleTask(id string) error {
 	slog.Debug("TaskService.CompleteToggleTask", "id", id)
 
-	updateStmt := Tasks.UPDATE(Tasks.Completed).
+	updateStmt := Tasks.
+		UPDATE(Tasks.Completed).
 		SET(CASE().
 			WHEN(Tasks.Completed.IS_TRUE()).
 			THEN(Bool(false)).
 			ELSE(Bool(true))).
-		WHERE(Tasks.ID.EQ(UUID(id)))
+		WHERE(Tasks.ID.EQ(String(id)))
 
 	if res, err := updateStmt.Exec(t.db); err != nil {
 		return fmt.Errorf("TaskService.CompleteToggleTask (%s): %w", id, err)
@@ -99,25 +100,25 @@ func (t *TaskService) UpdateTask(task *model.Task) (*model.Task, error) {
 	updateStmt := Tasks.
 		UPDATE(Tasks.MutableColumns).
 		MODEL(task).
-		WHERE(Tasks.ID.EQ(UUID(task.ID))).
+		WHERE(Tasks.ID.EQ(String(task.ID))).
 		RETURNING(Tasks.AllColumns)
 
-	var updatedTasks *m.Tasks
+	updatedTasks := m.Tasks{}
 
-	if err := updateStmt.Query(t.db, updatedTasks); err != nil {
+	if err := updateStmt.Query(t.db, &updatedTasks); err != nil {
 		return nil, fmt.Errorf("TaskService.UpdateTask(%s): %w", task.ID, err)
 	}
 
-	updatedTask := model.ConvertTask(updatedTasks)
+	updatedTask := model.ConvertTask(&updatedTasks)
 
 	return &updatedTask, nil
 }
 
-func (t *TaskService) DeleteTask(id uuid.UUID) error {
+func (t *TaskService) DeleteTask(id string) error {
 	slog.Debug("TaskService.DeleteTask", "id", id)
 
 	deleteStmt := Tasks.DELETE().
-		WHERE(Tasks.ID.EQ(UUID(id)))
+		WHERE(Tasks.ID.EQ(String(id)))
 
 	if res, err := deleteStmt.Exec(t.db); err != nil {
 		return fmt.Errorf("TaskService.DeleteTask (%s): %w", id, err)

@@ -10,7 +10,6 @@ package model
 import (
 	"time"
 
-	"github.com/google/uuid"
 	"github.com/guregu/null/v6/zero"
 )
 
@@ -24,5 +23,5 @@ type Tasks struct {
 	Duration    *int32
 	Completed   *bool
 	Rank        *int32
-	ProjectId   *uuid.UUID
+	ProjectId   zero.String
 }

@@ -10,7 +10,6 @@ import (
 	"slices"
 
 	"github.com/angelofallars/htmx-go"
-	"github.com/google/uuid"
 	"github.com/gorilla/mux"
 	"github.com/pleimann/camel-do/model"
 	"github.com/pleimann/camel-do/templates/components"
@@ -40,20 +39,15 @@ func NewProjectHandler(router *mux.Router, projectService *ProjectService) *Proj
 	return projectHandler
 }
 
-func (h *ProjectHandler) extractTaskId(r *http.Request, w http.ResponseWriter) *uuid.UUID {
-	var taskIdString string
+func extractTaskId(r *http.Request) string {
+	var idString string
 	if r.URL.Query().Has("id") {
-		taskIdString = r.URL.Query().Get("id")
+		idString = r.URL.Query().Get("id")
 	} else {
-		taskIdString = mux.Vars(r)["id"]
+		idString = mux.Vars(r)["id"]
 	}
 
-	if uuid, err := uuid.Parse(taskIdString); err != nil {
-		return nil
-
-	} else {
-		return &uuid
-	}
+	return idString
 }
 
 func (h *ProjectHandler) handleNewProject(w http.ResponseWriter, r *http.Request) {
@@ -66,11 +60,11 @@ func (h *ProjectHandler) handleNewProject(w http.ResponseWriter, r *http.Request
 }
 
 func (h *ProjectHandler) handleEditProject(w http.ResponseWriter, r *http.Request) {
-	id := h.extractTaskId(r, w)
+	id := extractTaskId(r)
 
 	slog.Debug("ProjectHandler.handleEditProject", "projectId", id)
 
-	if project, err := h.projectService.GetProject(*id); err != nil {
+	if project, err := h.projectService.GetProject(id); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			h.handleError(w, r, http.StatusNotFound, "getting project", err)
 
@@ -138,13 +132,13 @@ func (h *ProjectHandler) handleProjectCreate(w http.ResponseWriter, r *http.Requ
 func (h *ProjectHandler) handleProjectDelete(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 
-	id := h.extractTaskId(r, w)
+	id := extractTaskId(r)
 
 	slog.Debug("ProjectHandler.handleProjectDelete", "projectId", id)
 
 	// TODO: remove projectID from linked tasks
 
-	if err := h.projectService.DeleteProject(*id); err != nil {
+	if err := h.projectService.DeleteProject(id); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			h.handleError(w, r, http.StatusNotFound, "deleting project", err)
 
@@ -159,7 +153,7 @@ func (h *ProjectHandler) handleProjectDelete(w http.ResponseWriter, r *http.Requ
 func (h *ProjectHandler) handleProjectUpdate(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 
-	id := h.extractTaskId(r, w)
+	id := extractTaskId(r)
 
 	slog.Debug("ProjectHandler.handleProjectUpdate", "projectId", id)
 
@@ -185,7 +179,7 @@ func (h *ProjectHandler) handleProjectUpdate(w http.ResponseWriter, r *http.Requ
 
 	slog.Debug("ProjectHandler.handleProjectUpdate", "project", project)
 
-	if err := h.projectService.UpdateProject(*id, project); err != nil {
+	if err := h.projectService.UpdateProject(id, project); err != nil {
 		h.handleError(w, r, http.StatusInternalServerError, "adding project", err)
 		return
 	}

@@ -25,7 +25,13 @@ templ TaskDialog(projectsIndex model.ProjectIndex, task *model.Task) {
 			</button>
 
             // TODO call update task (hx-put) rather than adding a new one when editing
-			<form id="taskForm" method="dialog" class="flex flex-col gap-4" hx-post="/tasks/">
+			<form id="taskForm" method="dialog" class="flex flex-col gap-4" 
+                if task == nil {
+                    hx-post="/tasks/"
+                } else {
+                    hx-put={ fmt.Sprintf("/tasks/%s", task.ID) }
+                }
+            >
                 <label class="input input-ghost input-lg grow">
                     <i data-lucide="pencil-line" class="opacity-50 size-6 -ml-4"/>
                     <input name="title" class="w-full shrink font-semibold" type="text" placeholder="New Task..." autocomplete="off" 
@@ -50,7 +56,7 @@ templ TaskDialog(projectsIndex model.ProjectIndex, task *model.Task) {
                     />
                     <input name="projectId" type="hidden" x-model="projectId" 
                         if project != nil {
-                            value={ project.ID.String() } 
+                            value={ project.ID } 
                         }
                     />
                     // TODO: Allow selecting from dropdown with arrow keys

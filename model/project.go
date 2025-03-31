@@ -3,14 +3,12 @@ package model
 import (
 	"time"
 
-	"github.com/google/uuid"
-
 	m "github.com/pleimann/camel-do/db/model"
 )
 
 // Project represents a project in the task tracking application.
 type Project struct {
-	ID        uuid.UUID `jet:"column:id"`
+	ID        string    `jet:"column:id"`
 	CreatedAt time.Time `jet:"column:created_at"`
 	UpdatedAt time.Time `jet:"column:updated_at"`
 
@@ -19,7 +17,7 @@ type Project struct {
 	Icon  Icon   `schema:"icon,default:Unknown" jet:"column:icon"` // Icon to identify project
 }
 
-type ProjectIndex = map[uuid.UUID]Project
+type ProjectIndex = map[string]Project
 
 func ConvertProjects(projects []m.Projects) (modelProject []Project) {
 	modelProjects := make([]Project, len(projects))
@@ -31,7 +29,7 @@ func ConvertProjects(projects []m.Projects) (modelProject []Project) {
 }
 
 func ConvertProject(p *m.Projects) Project {
-	id, _ := uuid.Parse(*p.ID)
+	id := p.ID
 	color, _ := ParseColorString(*p.Color)
 	icon, _ := ParseIconString(*p.Icon)
 

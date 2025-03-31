@@ -12,7 +12,7 @@ import (
 )
 
 type Projects struct {
-	ID        *string `sql:"primary_key"`
+	ID        string `sql:"primary_key"`
 	CreatedAt *time.Time
 	UpdatedAt *time.Time
 	Name      *string `sql:"unique"`

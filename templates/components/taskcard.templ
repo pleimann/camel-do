@@ -35,7 +35,11 @@ templ TaskCard(task *model.Task, project *model.Project) {
         }
     }}
 
-	<div class="card card-side card-xs bg-base-100 shadow-md text-sm select-none rounded-2xl">
+	<div class="card card-side card-xs bg-base-100 shadow-md text-sm select-none rounded-2xl"
+        if task != nil {
+            id={ fmt.Sprintf("task-card-%s", task.ID) }
+        }
+    >
 		<figure class={ "w-12", bgColor, txColor, bgColorDark, txColorDark }>
 			<i data-lucide={ icon } class="size-7" />
 		</figure>
@@ -82,12 +86,6 @@ templ TaskCard(task *model.Task, project *model.Project) {
 			</div>
 		</div>
 	</div>
-}
-
-templ AddedTaskCard(task *model.Task, project *model.Project) {
-   <div hx-swap-oob="afterbegin:#backlog">
-       @TaskCard(task, project)
-   </div>
 }
 
 // The code dynamically generates these names so tailwind can't pick them up
