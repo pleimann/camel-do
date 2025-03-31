@@ -13,7 +13,7 @@
 				"golang.go"
 			]
 		}
-	}
+	},
 
 	// Features to add to the dev container. More info: https://containers.dev/features.
 	// "features": {},
@@ -22,7 +22,9 @@
 	// "forwardPorts": [],
 
 	// Use 'postCreateCommand' to run commands after the container is created.
-	// "postCreateCommand": "go version",
+	"postCreateCommand": [
+    "go mod tidy"
+  ]
 
 	// Configure tool-specific properties.
 	// "customizations": {},

@@ -24,6 +24,7 @@
   "devDependencies": {
     "@parcel/transformer-css": "^2.14.2",
     "@tailwindcss/postcss": "^4.0.17",
+    "cypress": "^14.2.1",
     "parcel": "^2.14.2",
     "postcss": "^8.5.3",
     "prettier": "latest",
