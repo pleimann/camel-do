@@ -110,7 +110,7 @@ func (h *ProjectHandler) handleProjectCreate(w http.ResponseWriter, r *http.Requ
 
 	slog.Debug("ProjectHandler.handleProjectCreate", "form", r.PostForm.Encode())
 
-	var project model.Project
+	project := model.Project{}
 
 	if err := utils.Decoder().Decode(&project, r.PostForm); err != nil {
 		h.handleError(w, r, http.StatusUnprocessableEntity, "decoding form data", err)

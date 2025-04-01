@@ -12,8 +12,8 @@ templ TaskDialog(projectsIndex model.ProjectIndex, task *model.Task) {
     {{ 
         projects := slices.Collect(maps.Values(projectsIndex))
         var project *model.Project
-        if task != nil && task.ProjectID != nil {
-            p := projectsIndex[*task.ProjectID]
+        if task != nil && task.ProjectID.Valid {
+            p := projectsIndex[task.ProjectID.String]
             project = &p
         }
     }}
@@ -24,7 +24,6 @@ templ TaskDialog(projectsIndex model.ProjectIndex, task *model.Task) {
 				<i data-lucide="x"></i>
 			</button>
 
-            // TODO call update task (hx-put) rather than adding a new one when editing
 			<form id="taskForm" method="dialog" class="flex flex-col gap-4" 
                 if task == nil {
                     hx-post="/tasks/"

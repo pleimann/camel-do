@@ -90,8 +90,6 @@ func (h *TaskHandler) handleEditTask(w http.ResponseWriter, r *http.Request) {
 
 		newTaskDialogTemplate := pages.TaskDialog(projectsIndex, task)
 
-		// TODO replace task card rather than adding a new one
-
 		if err := htmx.NewResponse().RenderTempl(r.Context(), w, newTaskDialogTemplate); err != nil {
 			h.handleError(w, r, http.StatusInternalServerError, "render template", err)
 			return
@@ -118,52 +116,47 @@ func (h *TaskHandler) handleTaskCreate(w http.ResponseWriter, r *http.Request) {
 
 	slog.Debug("TaskHandler.handleTaskCreate", "task", task)
 
-	if err := h.taskService.AddTask(task); err != nil {
+	var err error
+	if task, err = h.taskService.AddTask(task); err != nil {
 		h.handleError(w, r, http.StatusInternalServerError, "adding task", err)
 		return
 	}
 
-	slog.Debug("TaskHandler.handleTaskCreate: get created task", "task", task)
+	slog.Debug("TaskHandler.handleTaskCreate: get project", "projectId", task.ProjectID)
 
-	if task, err := h.taskService.GetTask(task.ID); err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
-			h.handleError(w, r, http.StatusNotFound, "getting updated task", err)
+	var project *model.Project
+	if task.ProjectID.Valid {
+		project, err = h.projectService.GetProject(task.ProjectID.ValueOrZero())
 
-		} else {
-			h.handleError(w, r, http.StatusInternalServerError, "getting updated task", err)
-		}
-
-	} else {
-		slog.Debug("TaskHandler.handleTaskCreate: get project", "projectId", task.ProjectID)
-
-		if project, err := h.projectService.GetProject(*task.ProjectID); err != nil {
+		if err != nil {
 			if errors.Is(err, sql.ErrNoRows) {
 				h.handleError(w, r, http.StatusNotFound, "getting project", err)
+				return
 
 			} else {
 				h.handleError(w, r, http.StatusInternalServerError, "getting project", err)
-			}
-
-		} else {
-			if task.StartTime.Valid {
-				// TODO Else it might belong on today's timeline but just close the dialog for now
-				htmx.NewResponse().
-					AddTrigger(htmx.Trigger("close-modal")).
-					Reswap(htmx.SwapNone).
-					RenderHTML(w, template.HTML(""))
-
-			} else {
-				slog.Debug("TaskHandler.handleTaskCreate: render AddedTaskCard", "task", task)
-
-				addedTaskTemplate := components.TaskCard(task, project)
-
-				htmx.NewResponse().
-					AddTrigger(htmx.Trigger("close-modal")).
-					Retarget(components.BacklogSelector).
-					Reswap(htmx.SwapAfterBegin).
-					RenderTempl(r.Context(), w, addedTaskTemplate)
+				return
 			}
 		}
+	}
+
+	if task.StartTime.Valid {
+		// TODO Else it might belong on today's timeline but just close the dialog for now
+		htmx.NewResponse().
+			AddTrigger(htmx.Trigger("close-modal")).
+			Reswap(htmx.SwapNone).
+			RenderHTML(w, template.HTML(""))
+
+	} else {
+		slog.Debug("TaskHandler.handleTaskCreate: render AddedTaskCard", "task", task)
+
+		addedTaskTemplate := components.TaskCard(*task, project)
+
+		htmx.NewResponse().
+			AddTrigger(htmx.Trigger("close-modal")).
+			Retarget(components.BacklogSelector).
+			Reswap(htmx.SwapAfterBegin).
+			RenderTempl(r.Context(), w, addedTaskTemplate)
 	}
 }
 
@@ -197,35 +190,41 @@ func (h *TaskHandler) handleTaskUpdate(w http.ResponseWriter, r *http.Request) {
 	} else {
 		slog.Debug("TaskHandler.handleTaskUpdate: get project", "projectId", task.ProjectID)
 
-		if project, err := h.projectService.GetProject(*task.ProjectID); err != nil {
-			if errors.Is(err, sql.ErrNoRows) {
-				h.handleError(w, r, http.StatusNotFound, "getting project", err)
+		var project *model.Project
+		if task.ProjectID.Valid {
+			project, err = h.projectService.GetProject(task.ProjectID.ValueOrZero())
 
-			} else {
-				h.handleError(w, r, http.StatusInternalServerError, "getting project", err)
+			if err != nil {
+				if errors.Is(err, sql.ErrNoRows) {
+					h.handleError(w, r, http.StatusNotFound, "getting project", err)
+					return
+
+				} else {
+					h.handleError(w, r, http.StatusInternalServerError, "getting project", err)
+					return
+				}
 			}
+		}
+
+		if task.StartTime.Valid {
+			// TODO Else it might belong on today's timeline but just close the dialog for now
+			slog.Debug("TaskHandler.handleTaskUpdate: closing task dialog", "task", task)
+
+			htmx.NewResponse().
+				AddTrigger(htmx.Trigger("close-modal")).
+				Reswap(htmx.SwapNone).
+				RenderHTML(w, template.HTML(""))
 
 		} else {
-			if task.StartTime.Valid {
-				// TODO Else it might belong on today's timeline but just close the dialog for now
-				slog.Debug("TaskHandler.handleTaskUpdate: closing task dialog", "task", task)
+			slog.Debug("TaskHandler.handleTaskUpdate: render TaskCard", "task", task)
 
-				htmx.NewResponse().
-					AddTrigger(htmx.Trigger("close-modal")).
-					Reswap(htmx.SwapNone).
-					RenderHTML(w, template.HTML(""))
+			taskTemplate := components.TaskCard(*task, project)
 
-			} else {
-				slog.Debug("TaskHandler.handleTaskUpdate: render TaskCard", "task", task)
-
-				taskTemplate := components.TaskCard(task, project)
-
-				htmx.NewResponse().
-					AddTrigger(htmx.Trigger("close-modal")).
-					Retarget(fmt.Sprintf("%s > #task-card-%s", components.BacklogSelector, task.ID)).
-					Reswap(htmx.SwapOuterHTML).
-					RenderTempl(r.Context(), w, taskTemplate)
-			}
+			htmx.NewResponse().
+				AddTrigger(htmx.Trigger("close-modal")).
+				Retarget(fmt.Sprintf("%s > #task-card-%s", components.BacklogSelector, task.ID)).
+				Reswap(htmx.SwapOuterHTML).
+				RenderTempl(r.Context(), w, taskTemplate)
 		}
 	}
 }
@@ -247,7 +246,6 @@ func (h *TaskHandler) handleTaskDelete(w http.ResponseWriter, r *http.Request) {
 	}
 
 	htmx.NewResponse().
-		StatusCode(http.StatusNoContent).
 		RenderHTML(w, template.HTML(""))
 }
 
@@ -278,20 +276,26 @@ func (h *TaskHandler) handleTaskComplete(w http.ResponseWriter, r *http.Request)
 		}
 
 	} else {
-		if project, err := h.projectService.GetProject(*task.ProjectID); err != nil {
-			if errors.Is(err, sql.ErrNoRows) {
-				h.handleError(w, r, http.StatusNotFound, "getting project", err)
+		var project *model.Project
+		if task.ProjectID.Valid {
+			project, err = h.projectService.GetProject(task.ProjectID.ValueOrZero())
 
-			} else {
-				h.handleError(w, r, http.StatusUnprocessableEntity, "getting project", err)
+			if err != nil {
+				if errors.Is(err, sql.ErrNoRows) {
+					h.handleError(w, r, http.StatusNotFound, "getting project", err)
+					return
+
+				} else {
+					h.handleError(w, r, http.StatusInternalServerError, "getting project", err)
+					return
+				}
 			}
-
-		} else {
-			taskTemplate := components.TaskCard(task, project)
-
-			htmx.NewResponse().
-				RenderTempl(r.Context(), w, taskTemplate)
 		}
+
+		taskTemplate := components.TaskCard(*task, project)
+
+		htmx.NewResponse().
+			RenderTempl(r.Context(), w, taskTemplate)
 	}
 }
 

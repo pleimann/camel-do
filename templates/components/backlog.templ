@@ -15,11 +15,11 @@ templ Backlog(tasks []model.Task, projects model.ProjectIndex) {
                 project := model.Project{}
                 
                 if !reflect.ValueOf(&task.ProjectID).Elem().IsZero() {
-                    project = projects[*task.ProjectID] 
+                    project = projects[task.ProjectID.String] 
                 }
             }}
 
-            @TaskCard(&task, &project)
+            @TaskCard(task, &project)
         }
     </div>
 }

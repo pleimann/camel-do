@@ -20,8 +20,8 @@ type Task struct {
 	Duration    time.Duration `schema:"duration,default:0s"`     // Duration of the task
 	Completed   bool          `schema:"completed,default:false"` // Status of task completion
 	GTaskId     string
-	Rank        int32   // Sort order
-	ProjectID   *string `schema:"projectId"` // Foreign key referencing the project associated with the task.
+	Rank        int32       // Sort order
+	ProjectID   zero.String `schema:"projectId"` // Foreign key referencing the project associated with the task.
 }
 
 func ConvertTasks(tasks []m.Tasks) []Task {
@@ -47,7 +47,7 @@ func ConvertTask(t *m.Tasks) Task {
 		Duration:    duration,
 		Completed:   *t.Completed,
 		Rank:        *t.Rank,
-		ProjectID:   t.ProjectId.Ptr(),
+		ProjectID:   t.ProjectId,
 	}
 
 	return task

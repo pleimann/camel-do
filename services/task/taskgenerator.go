@@ -71,7 +71,7 @@ func generateRandomTask() model.Task {
 	return model.Task{
 		Title:       title,
 		Description: description,
-		ProjectID:   nil,
+		ProjectID:   zero.StringFromPtr(nil),
 		StartTime:   startTime,
 		Duration:    duration,
 		Completed:   completed, // default to not completed.

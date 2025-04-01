@@ -33,24 +33,20 @@ func NewTaskService(config *TaskServiceConfig, db *sql.DB) (*TaskService, error)
 	return taskService, nil
 }
 
-func (t *TaskService) AddTask(task *model.Task) error {
+func (t *TaskService) AddTask(task *model.Task) (*model.Task, error) {
 	task.ID = ulid.Make().String()
 
 	slog.Debug("TaskService.AddTask", "task", task)
 
 	insertStmt := Tasks.INSERT(Tasks.AllColumns).
-		MODEL(task)
+		MODEL(task).
+		RETURNING(Tasks.AllColumns)
 
-	if res, err := insertStmt.Exec(t.db); err != nil {
-		return fmt.Errorf("insert new task: %w", err)
-
-	} else {
-		rows, _ := res.RowsAffected()
-
-		slog.Debug("TaskService.AddTask: record inserted", "count", rows)
+	if err := insertStmt.Query(t.db, task); err != nil {
+		return nil, fmt.Errorf("insert new task: %w", err)
 	}
 
-	return nil
+	return task, nil
 }
 
 func (t *TaskService) GetTask(id string) (*model.Task, error) {
