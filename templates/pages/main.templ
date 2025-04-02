@@ -24,6 +24,7 @@ templ BodyContent(backlogTasks []model.Task, todaysTasks []model.Task, projects 
       <div class="flex flex-row h-full bg-base-100">
         <div class="bg-primary/60 dark:bg-primary-content h-full w-75 min-w-75">
           @components.Backlog(backlogTasks, projects)
+          <div class="bg-primary pointer-events-none sticky bottom-0 -mt-6 flex h-16 [mask-image:linear-gradient(transparent,#000000)]"></div>
         </div>
         <div class="grow overflow-y-auto m-1 p-8">
           @components.Timeline(todaysTasks, projects)

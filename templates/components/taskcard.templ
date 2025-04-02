@@ -46,8 +46,26 @@ templ TaskCard(task model.Task, project *model.Project) {
             <div class="text-sm font-medium col-span-2">{ task.Title }</div>
             <time class="italic">{ task.Duration.String() }</time>
             if task.Description.Valid {
-                <div class="justify-self-end tooltip tooltip-bottom" data-tip={ task.Description.String }>
-                    <i data-lucide="notepad-text" class="size-4" />
+                <div class="justify-self-end" x-data="{ isOpen: false }">
+                    <div
+                        @mouseover="isOpen = true"
+                        @mouseleave="isOpen = false"
+                        class="font-bold transition-colors duration-300"
+                    >
+                        <i data-lucide="notepad-text" class="size-4" />
+                    </div>
+
+                    <div x-show="isOpen"
+                        x-transition:enter="transition ease-out duration-300"
+                        x-transition:enter-start="opacity-0 transform scale-95"
+                        x-transition:enter-end="opacity-100 transform scale-100"
+                        x-transition:leave="transition ease-in duration-200"
+                        x-transition:leave-start="opacity-100 transform scale-100"
+                        x-transition:leave-end="opacity-0 transform scale-95"
+                        class="popover absolute bg-base-100 shadow-md rounded-lg w-64 -ml-48 mt-4 p-2"
+                    >
+                        { task.Description.String }
+                    </div>
                 </div>
             }
         </div>
