@@ -12,10 +12,6 @@ templ MetaTags(keywords, description string) {
 	<meta name="description" content={ description }/>
 }
 
-// styledTextStyles defines CSS styles for component.
-css styledTextStyles() {
-}
-
 // BodyContent defines HTML content.
 templ BodyContent(backlogTasks []model.Task, todaysTasks []model.Task, projects model.ProjectIndex) {
 	<div id="app">
@@ -27,6 +23,20 @@ templ BodyContent(backlogTasks []model.Task, todaysTasks []model.Task, projects 
           <div class="bg-primary pointer-events-none sticky bottom-0 -mt-6 flex h-16 [mask-image:linear-gradient(transparent,#000000)]"></div>
         </div>
         <div class="grow overflow-y-auto m-1 p-8">
+        
+        <button id="custom-user-button" popovertarget="profile" style="anchor-name: --profile-button;">
+          <img class="profile-image" src="https://ui-avatars.com/api/name=KP?background=0D8ABC&color=fff" alt="" />
+        </button>
+
+        <div popover id="profile" class="popover-menu popover-right-top" style="position-anchor: --profile-button;">
+          <div class="profile grid-flow">
+            <span class="profile-name"><strong>UserName838</strong></span>
+            <span class="profile-email">email@address.com</span>
+          </div>
+          <button id="manage">Manage Account</button>
+          <button id="signout">Sign out</button>
+        </div>
+
           @components.Timeline(todaysTasks, projects)
         </div>
       </div>

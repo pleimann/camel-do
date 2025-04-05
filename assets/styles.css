@@ -105,3 +105,47 @@ body {
 [x-cloak] {
   display: none !important;
 }
+
+.popover-menu {
+  display: none;
+  position: absolute;
+  margin: 0;
+  inset: auto;
+  opacity: 0;
+  transition: opacity 0.25s, display 0.25s, overlay 0.25s;
+  transition-behavior: allow-discrete;
+  
+  &:popover-open {
+    display: grid;
+    opacity: 1;
+    
+    @starting-style {
+      display: grid;
+      opacity: 0;
+    }
+  }
+}
+
+.popover-right-top {
+  top: anchor(top);
+  left: anchor(right);
+  position-try-fallbacks: --bottom;
+}
+
+.popover-bottom-right {
+  top: anchor(bottom);
+  right: anchor(right);
+  position-try-fallbacks: --top;
+}
+
+@position-try --top {
+  inset: auto;
+  bottom: anchor(top);
+  right: anchor(right);
+}
+
+@position-try --bottom {
+  inset: auto;
+  top: anchor(bottom);
+  right: anchor(right);
+}

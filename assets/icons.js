@@ -26,6 +26,9 @@ import {
   PackagePlus,
   PackageMinus,
   NotepadText,
+  Clock,
+  CircleHelp as Unknown,
+  ChevronDown,
 
   Cat,
   Rabbit,
@@ -37,7 +40,6 @@ import {
   Fish,
   Rat,
   Worm,
-  CircleHelp as Unknown,
 } from 'lucide';
 
 import { 
@@ -66,6 +68,7 @@ import {
     Unknown,
     Menu,
     ArrowRight,
+    ChevronDown,
     Globe,
     Moon,
     Bell,
@@ -88,6 +91,7 @@ import {
     PackagePlus,
     PackageMinus,
     NotepadText,
+    Clock,
     
     Cat,
     Rabbit,

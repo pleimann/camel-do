@@ -20,7 +20,9 @@ templ TaskDialog(projectsIndex model.ProjectIndex, task *model.Task) {
 
 	<dialog class="modal" hx-on:htmx:load="this.showModal(); document.querySelector('form#taskForm').title.focus();" hx-on:close-modal="this.close()">
 		<div class="modal-box w-[20rem] pt-2">
-			<button class="btn btn-circle btn-ghost absolute right-2 top-2 z-1" onclick="htmx.closest(this, 'dialog').remove()" tabindex="-1">
+			<button class="btn btn-circle btn-ghost absolute right-2 top-2 z-1" 
+                @click="htmx.closest(this, 'dialog').remove()" tabindex="-1"
+            >
 				<i data-lucide="x"></i>
 			</button>
 
@@ -58,16 +60,19 @@ templ TaskDialog(projectsIndex model.ProjectIndex, task *model.Task) {
                             value={ project.ID } 
                         }
                     />
+
                     // TODO: Allow selecting from dropdown with arrow keys
-                    <div class="dropdown dropdown-bottom dropdown-end">
-                        <div tabindex="0" role="button" class="join-item btn w-4">▾</div>
+                    <div class="dropdown dropdown-bottom dropdown-end" aria-haspopup="menu">
+                        <div tabindex="0" role="button" class="join-item btn px-1">
+                            <i data-lucide="chevron-down" />
+                        </div>
                         <ul tabindex="0" x-ref="projectDropdown" class="dropdown-content menu bg-base-200 rounded-box z-1 w-52 p-2 mt-2 shadow-sm">
                         for _, p := range projects {
                             <li @click={ fmt.Sprintf("projectId = '%s'; projectName = '%s'; document.activeElement.blur();", p.ID, p.Name) }>
-                            <a> 
-                                @components.IconC(p.Icon, p.Color, 4)
-                                { p.Name }
-                            </a>
+                                <span>
+                                    @components.IconC(p.Icon, p.Color, 4) 
+                                    { p.Name } 
+                                </span>
                             </li>
                         }
                         </ul>
@@ -79,12 +84,21 @@ templ TaskDialog(projectsIndex model.ProjectIndex, task *model.Task) {
                         { task.Description.String }
                     }
                 </textarea>
-                
-                <input name="startTime" type="datetime-local" class="input grow" 
-                    if task != nil && task.StartTime.Valid {
-                        value={ task.StartTime.Time.Format("HH:mm") }
-                    }
-                />
+
+                <div class="flex gap-2">
+                    <input name="startTime" type="date" class="input grow" 
+                        if task != nil && task.StartTime.Valid {
+                            value={ task.StartTime.Time.Format("yyyy-MM-dd") }
+                        }
+                    />
+
+                    <input name="startTime" type="time" class="input grow" 
+                        min="06:00" max="18:00" step="900"
+                        if task != nil && task.StartTime.Valid {
+                            value={ task.StartTime.Time.Format("HH:mm") }
+                        }
+                    />
+                </div>
                 
                 <div class="join grow">
                     <input name="duration" class="join-item input" 
@@ -98,46 +112,7 @@ templ TaskDialog(projectsIndex model.ProjectIndex, task *model.Task) {
                     <button class="join-item btn p-2 text-xs font-light">+15m</button>
                     <button class="join-item btn p-2 text-xs font-light">-1h</button>
                     <button class="join-item btn p-2 text-xs font-light">+1h</button>
-                </div>
-
-            //     <div class="w-full max-w-xs">
-            //         <input type="range" min="0" max="300" value="0" class="range" step="15" />
-            //         <div class="flex justify-between px-2.5 mt-2 text-xs">
-            //             <span>|</span>
-            //             <span>|</span>
-            //             <span>|</span>
-            //             <span>&nbsp;</span>
-            //             <span>|</span>
-            //             <span>&nbsp;</span>
-            //             <span>|</span>
-            //             <span>&nbsp;</span>
-            //             <span>|</span>
-            //             <span>&nbsp;&nbsp;&nbsp;</span>
-            //             <span>|</span>
-            //             <span>&nbsp;&nbsp;&nbsp;</span>
-            //             <span>|</span>
-            //             <span>&nbsp;&nbsp;&nbsp;</span>
-            //         </div>
-            //         <div class="flex justify-between px-2.5 mt-2 text-xs">
-            //             <span>1m</span>
-            //             <span>15m</span>
-            //             <span>30m</span>
-            //             <span>&nbsp;&nbsp;</span>
-            //             <span></span>
-            //             <span>1h</span>
-            //             <span>&nbsp;</span>
-            //             <span>1.5h</span>
-            //             <span>&nbsp;</span>
-            //             <span>2h</span>
-            //             <span>&nbsp;&nbsp;&nbsp;</span>
-            //             <span>3h</span>
-            //             <span>&nbsp;&nbsp;&nbsp;</span>
-            //             <span>4h</span>
-            //             <span>&nbsp;&nbsp;&nbsp;</span>
-            //             <span>5h</span>
-            //             <span>&nbsp;&nbsp;&nbsp;</span>
-            //         </div>
-            //     </div>    
+                </div>  
 
                 {{
                     submitLabel := "Create"
