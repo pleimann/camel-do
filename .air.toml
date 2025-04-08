@@ -8,7 +8,7 @@ tmp_dir = "tmp"
 pre_cmd = ["bun install", "bun run build"]
 cmd = "go generate ./model && go tool templ generate && go build -o ./tmp/gowebly_gorilla ."
 bin = "tmp/gowebly_gorilla"
-include_ext = ["go", "templ", "html", "json", "js", "ts", "css", "scss"]
+include_ext = ["go", "templ", "html", "js", "ts", "css", "scss"]
 exclude_dir = [".parcel-cache", "bin", "dist", "node_modules", "static", "tmp", "tests", "vendor"]
 exclude_regex = ["_test\\.go", "_templ\\.go", "_enum\\.go"]
 exclude_unchanged = false
@@ -39,3 +39,9 @@ clean_on_exit = true
 [screen]
 clear_on_rebuild = true
 keep_scroll = true
+
+[proxy]
+# Enable live-reloading on the browser.
+enabled = true
+proxy_port = 8090
+app_port = 4000
