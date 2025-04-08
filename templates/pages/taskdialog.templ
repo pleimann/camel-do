@@ -6,7 +6,6 @@ import (
     "maps"
     "github.com/pleimann/camel-do/model"
     "github.com/pleimann/camel-do/templates/components"
-	"time"
 )
 
 templ TaskDialog(projectsIndex model.ProjectIndex, task *model.Task) {
@@ -85,80 +84,6 @@ templ TaskDialog(projectsIndex model.ProjectIndex, task *model.Task) {
                         { task.Description.String }
                     }
                 </textarea>
-
-                <div class="flex gap-2">
-                    <input name="startDate" type="date" class="input grow" 
-                        if task != nil && task.StartTime.Valid {
-                            value={ task.StartTime.Time.Format("yyyy-MM-dd") }
-                        } else {
-                            value={ time.Now().Format("yyyy-MM-dd") }
-                        }
-                    />
-
-                    <input name="startTime" type="time" class="input grow" 
-                        min="06:00" max="18:00" list="times"
-                        if task != nil && task.StartTime.Valid {
-                            value={ task.StartTime.Time.Format("HH:mm") }
-                        } else {
-                            value="06:00"
-                        }
-                    />
-
-                    <datalist id="times">
-                        <option value="06:00:00" />
-                        <option value="06:15:00" />
-                        <option value="06:30:00" />
-                        <option value="06:45:00" />
-                        <option value="07:00:00" />
-                        <option value="07:15:00" />
-                        <option value="07:30:00" />
-                        <option value="07:45:00" />
-                        <option value="08:00:00" />
-                        <option value="08:15:00" />
-                        <option value="08:30:00" />
-                        <option value="08:45:00" />
-                        <option value="09:00:00" />
-                        <option value="09:15:00" />
-                        <option value="09:30:00" />
-                        <option value="09:45:00" />
-                        <option value="10:00:00" />
-                        <option value="10:15:00" />
-                        <option value="10:30:00" />
-                        <option value="10:45:00" />
-                        <option value="11:00:00" />
-                        <option value="11:15:00" />
-                        <option value="11:30:00" />
-                        <option value="11:45:00" />
-                        <option value="12:00:00" />
-                        <option value="12:15:00" />
-                        <option value="12:30:00" />
-                        <option value="12:45:00" />
-                        <option value="13:00:00" />
-                        <option value="13:15:00" />
-                        <option value="13:30:00" />
-                        <option value="13:45:00" />
-                        <option value="14:00:00" />
-                        <option value="14:15:00" />
-                        <option value="14:30:00" />
-                        <option value="14:45:00" />
-                        <option value="15:00:00" />
-                        <option value="15:15:00" />
-                        <option value="15:30:00" />
-                        <option value="15:45:00" />
-                        <option value="16:00:00" />
-                        <option value="16:15:00" />
-                        <option value="16:30:00" />
-                        <option value="16:45:00" />
-                        <option value="17:00:00" />
-                        <option value="17:15:00" />
-                        <option value="17:30:00" />
-                        <option value="17:45:00" />
-                        <option value="18:00:00" />
-                        <option value="18:15:00" />
-                        <option value="18:30:00" />
-                        <option value="18:45:00" />
-                    </datalist>
-                </div>
 
                 <label class="input grow" x-data="{ duration: 0 }">
                     <input name="duration" type="text" min="0" step="max" x-model.number="duration"
