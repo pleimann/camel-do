@@ -3,9 +3,11 @@ package main
 import (
 	"database/sql"
 	"embed"
+	"flag"
 	"fmt"
 	"log"
 	"log/slog"
+	"math/rand"
 	"net/http"
 	"os"
 	"os/user"
@@ -14,6 +16,7 @@ import (
 	"github.com/angelofallars/htmx-go"
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
+	"github.com/guregu/null/v6/zero"
 	_ "github.com/joho/godotenv/autoload"
 	_ "github.com/mattn/go-sqlite3"
 	database "github.com/pleimann/camel-do/db"
@@ -25,7 +28,12 @@ import (
 	"github.com/pleimann/camel-do/utils"
 )
 
+var seed bool
+
 func main() {
+	flag.BoolVar(&seed, "seed", false, "seed database with some data")
+	flag.Parse()
+
 	slog.SetLogLoggerLevel(slog.LevelDebug)
 
 	usr, err := user.Current()
@@ -124,6 +132,10 @@ func runServer() error {
 
 	task.NewTaskHandler(router.PathPrefix("/tasks").Subrouter(), taskService, projectService)
 
+	if seed {
+		seedData(20)
+	}
+
 	router.Use(handlers.RecoveryHandler(handlers.PrintRecoveryStack(true)))
 
 	// Create a new server instance with options from environment variables.
@@ -201,4 +213,35 @@ func indexViewHandler(w http.ResponseWriter, r *http.Request) {
 
 	// Send log message.
 	slog.Info("render page", "method", r.Method, "status", http.StatusOK, "path", r.URL.Path)
+}
+
+func seedData(count int) {
+	projects, err := project.GenerateRandomProjects()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	tasks, err := task.GenerateRandomTasks(count)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	keys := make([]string, len(projects))
+	i := 0
+	for k := range projects {
+		projectService.AddProject(projects[k])
+
+		keys[i] = k
+		i++
+	}
+
+	for _, task := range tasks {
+		randProjectIndex := keys[rand.Intn(len(keys))]
+
+		task.ProjectID = zero.StringFrom(projects[randProjectIndex].ID)
+
+		if _, err := taskService.AddTask(&task); err != nil {
+			log.Fatal(err)
+		}
+	}
 }

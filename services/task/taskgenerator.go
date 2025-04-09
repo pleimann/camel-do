@@ -2,7 +2,7 @@ package task
 
 import (
 	"fmt"
-	"math/rand"
+	"math/rand/v2"
 	"time"
 
 	lorem "github.com/derektata/lorem/ipsum"
@@ -11,14 +11,14 @@ import (
 )
 
 // GenerateRandomTasks generates a slice of Task with random data.
-func (t *TaskService) generateRandomTasks(count int) ([]model.Task, error) {
+func GenerateRandomTasks(count int) ([]model.Task, error) {
 	if count < 1 || count > 50 {
 		return nil, fmt.Errorf("task count must be between 1 and 50, got %d", count)
 	}
 
 	tasks := make([]model.Task, count)
 	for i := 0; i < count; i++ {
-		tasks[i] = generateRandomTask()
+		tasks[i] = GenerateRandomTask()
 	}
 
 	return tasks, nil
@@ -27,12 +27,9 @@ func (t *TaskService) generateRandomTasks(count int) ([]model.Task, error) {
 var loremGen = lorem.NewGenerator()
 
 // generateRandomTask generates a single task with random data.
-func generateRandomTask() model.Task {
+func GenerateRandomTask() model.Task {
 	// Seed the random number generator.
-	rand.New(rand.NewSource(time.Now().UnixNano()))
-
-	// color := model.Color(rand.Intn(len(model.ColorValues()) - 1))
-	// icon := model.Icon(rand.Intn(len(model.IconValues()) - 1))
+	rand.New(rand.NewPCG(uint64(time.Now().UnixNano()), uint64(time.Now().UnixNano())))
 
 	// Generate random title.
 	titles := []string{
@@ -48,22 +45,25 @@ func generateRandomTask() model.Task {
 		"Debug issue",
 		"Review code",
 	}
-	title := titles[rand.Intn(len(titles))]
+	title := titles[rand.IntN(len(titles))]
 
 	// Generate random description.
-	description := zero.StringFrom(loremGen.Generate(rand.Intn(20) + 5))
+	description := zero.StringFrom(loremGen.Generate(rand.IntN(20) + 5))
 
 	// Generate random start time within the past week.
-	startTime := zero.TimeFrom(time.Now().Add(time.Duration(-rand.Intn(7*24)) * time.Hour))
+	var startTime zero.Time
+	if rand.IntN(5) == 1 {
+		startTime = zero.TimeFrom(time.Now().Add(time.Duration(-rand.IntN(7*24)) * time.Hour))
+	}
 
 	// Generate random duration between 15 minutes and 4 hours.
-	duration := time.Duration(rand.Intn(4*60-15) + 15)
+	duration := time.Duration(time.Minute * time.Duration(rand.IntN(4*60-15)+15))
 
 	// Generate random completed status.
-	completed := rand.Intn(2) == 1
+	completed := rand.IntN(3) == 1
 
-	createdAt := time.Now().Add(time.Duration(-rand.Intn(7*24)) * time.Hour)
-	updatedAt := createdAt.Add(time.Duration(rand.Intn(72)) * time.Hour)
+	createdAt := time.Now().Add(time.Duration(-rand.IntN(7*24)) * time.Hour)
+	updatedAt := createdAt.Add(time.Duration(rand.IntN(72)) * time.Hour)
 	if updatedAt.After(time.Now()) {
 		updatedAt = time.Now()
 	}
