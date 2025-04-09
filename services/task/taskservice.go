@@ -134,7 +134,7 @@ func (t *TaskService) GetBacklogTasks() ([]model.Task, error) {
 	stmt := SELECT(Tasks.AllColumns).
 		FROM(Tasks).
 		WHERE(Tasks.StartTime.IS_NULL()).
-		ORDER_BY(Tasks.UpdatedAt.DESC()).
+		ORDER_BY(Tasks.Rank, Tasks.UpdatedAt).
 		LIMIT(100)
 
 	var tasks []m.Tasks
