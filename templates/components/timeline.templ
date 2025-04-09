@@ -1,37 +1,89 @@
 package components
 
 import (
+    "fmt"
     "github.com/pleimann/camel-do/model"
 )
 
+css taskPosition(row, col int) {
+    grid-row: { fmt.Sprintf("%d / span %d", row, col) };
+}
+
 templ Timeline(tasks []model.Task, projects model.ProjectIndex) {
-    <ul class="timeline timeline-vertical timeline-compact timeline-snap-icon">
-        for i, task := range tasks {
-            <li>
-                if i < 0 { 
-                    <hr />
-                }
-                <div class="timeline-start">
-                    <time class="font-medium" dateTime={task.StartTime.Time.Format("HH:mm")}>
-                        {task.StartTime.Time.Format("HH:mm")}
-                    </time>
-                    <div class="font-light italic">{task.Duration.String()}</div>
-                </div>
-                <div class="timeline-middle mb-2">
-                    if task.Completed {
-                        <i data-lucide="circle-checked" class="size-8" />
-                    } else {
-                        <i data-lucide="circle" class="size-8" />
-                    }
-                </div>
-                <div class="pt-1 mb-4 timeline-end">
-                    <div class="font-bold">{task.Title}</div>
-                    <p>{task.Description.String}</p>
-                </div>
-                if i < len(tasks) { 
-                    <hr />
-                }
-            </li>
+    <style type="text/css">
+        .time {
+            font-variant-numeric: tabular-nums;
+            justify-self: end;
+            padding: 3px 5px;
+            grid-column-start: 1;
+            grid-row: span 4;
+            border-width: 1px 1px 0 0;
+            border-style: solid;
+            border-color: lightgray;
+            font-size: var(--text-xs);
+            user-select: none;
+            cursor: default;
         }
-    </ul>
+
+        .tick {
+            grid-column-start: 2;
+            border-top: 1px solid lightgray;
+        }
+
+        .time-bar {
+            margin-left: calc(var(--spacing) * 2);
+            grid-column-start: 3;
+            border-radius: var(--radius-xl); 
+            display: flex;
+            flex-direction: row;
+            column-gap: calc(var(--spacing) * 2);
+        }
+    </style>
+
+    <div class="static w-full lg:w-1/2 mb-4 md:mb-8 flex flex-row gap-4 justify-center">
+        <button class="btn btn-soft rounded-full">Mo</button>
+        <button class="btn btn-soft rounded-full">Tu</button>
+        <button class="btn btn-soft rounded-full btn-accent">We</button>
+        <button class="btn btn-dash rounded-full">Th</button>
+        <button class="btn btn-dash rounded-full">Fr</button>
+    </div>
+
+    <div class="overflow-y-scroll max-h-[100%]" style="scrollbar-width: none;">
+        <div class="w-full lg:w-1/2 grid grid-rows-52 grid-cols-[40px_10px_1fr] gap-y-2">
+            for i := 6; i < 18; i++ {
+                {{
+                    h := i
+                    if i > 12 {
+                        h = i - 12
+                    }
+                }}
+
+                <span class="time">{ fmt.Sprintf("%02d:00", h) }</span>
+
+                for j := 0; j < 4; j++ {
+                    <span class="tick" />
+                }
+            }
+
+            <div class={ "time-bar", "bg-red-50", "dark:bg-red-900", "border", "shadow-md", "border-red-100", taskPosition(1, 4) }>
+                <div class="tooltip tooltip-top bg-red-100 text-red-800 h-full p-2 rounded-s-xl" data-tip="MCP">@Icon(model.Bear, 16)</div>
+                <div class={ "col-start-3", "p-2", taskPosition(1, 4) }>Task1</div>
+            </div>
+
+            <div class={ "time-bar", "bg-yellow-50", "dark:bg-yellow-900", "border", "shadow-md", "border-yellow-100", taskPosition(8, 8) }>
+                <div class="tooltip tooltip-top bg-yellow-100 text-yellow-800 p-2 h-full rounded-s-xl" data-tip="STS">@Icon(model.Bug, 16)</div>
+                <div class={ "col-start-3", "p-2" }>Task2</div>
+            </div>
+
+            <div class={ "time-bar", "bg-blue-50", "dark:bg-blue-900", "border", "shadow-md", "border-blue-100", taskPosition(30, 2) }>
+                <div class="tooltip tooltip-top border-blue-100 text-blue-800 p-2 h-full rounded-s-xl" data-tip="Lobbies">@Icon(model.Bird, 16)</div>
+                <div class={ "col-start-3", "p-2" }>Task3</div>
+            </div>
+
+            <div class={ "time-bar", "bg-red-50", "dark:bg-red-900", "border", "shadow-md", "border-red-100", taskPosition(32, 4) }>
+                <div class="tooltip tooltip-top border-red-100 text-red-800 p-2 h-full rounded-s-xl" data-tip="MCP">@Icon(model.Bear, 16)</div>
+                <div class={ "col-start-3", "p-2" }>Task4</div>
+            </div>
+        </div>
+    </div>
 }
