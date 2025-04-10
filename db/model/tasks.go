@@ -14,14 +14,14 @@ import (
 )
 
 type Tasks struct {
-	ID          *string `sql:"primary_key"`
-	CreatedAt   *time.Time
-	UpdatedAt   *time.Time
-	Title       *string
+	ID          string `sql:"primary_key"`
+	CreatedAt   time.Time
+	UpdatedAt   time.Time
+	Title       string
 	Description zero.String
 	StartTime   zero.Time `sql:"type:timestamptz"`
-	Duration    *int32
-	Completed   *bool
-	Rank        *int32
-	ProjectId   zero.String
+	Duration    zero.Int32
+	Completed   bool
+	Rank        zero.Int32
+	ProjectID   zero.String `sql:"project_id"`
 }

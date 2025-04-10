@@ -81,6 +81,11 @@ body {
   outline-style: none;
 }
 
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-base-300) transparent;
+}
+
 ::-webkit-scrollbar {
   width: var(--spacing);
   height: var(--spacing);

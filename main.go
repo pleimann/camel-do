@@ -7,10 +7,12 @@ import (
 	"fmt"
 	"log"
 	"log/slog"
+	"maps"
 	"math/rand"
 	"net/http"
 	"os"
 	"os/user"
+	"slices"
 	"strconv"
 
 	"github.com/angelofallars/htmx-go"
@@ -226,21 +228,20 @@ func seedData(count int) {
 		log.Fatal(err)
 	}
 
-	keys := make([]string, len(projects))
-	i := 0
-	for k := range projects {
-		projectService.AddProject(projects[k])
-
-		keys[i] = k
-		i++
+	for i := range projects {
+		projectService.AddProject(projects[i])
 	}
 
+	projectsIndex, _ := projectService.GetProjects()
+
+	projects = slices.Collect(maps.Values(projectsIndex))
+
 	for _, task := range tasks {
-		randProjectIndex := keys[rand.Intn(len(keys))]
+		randProject := projects[rand.Intn(len(projects))]
 
-		task.ProjectID = zero.StringFrom(projects[randProjectIndex].ID)
+		task.ProjectID = zero.StringFrom(randProject.ID)
 
-		if _, err := taskService.AddTask(&task); err != nil {
+		if err := taskService.AddTask(&task); err != nil {
 			log.Fatal(err)
 		}
 	}

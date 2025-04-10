@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 	"github.com/pleimann/camel-do/model"
+	"github.com/pleimann/camel-do/utils"
 )
 
 const LightLevel = 200
@@ -44,7 +45,7 @@ templ TaskCard(task model.Task, project *model.Project) {
 		</figure>
 		<div class="card-body grid grid-cols-2 justify-center items-center">
             <div class="text-sm font-medium col-span-2">{ task.Title }</div>
-            <time class="italic">{ task.Duration.String() }</time>
+            <time class="italic">{ utils.FormatTaskDuration(task.Duration.Int32) }</time>
             if task.Description.Valid {
                 <div class="justify-self-end" x-data="{ isOpen: false }">
                     <div
@@ -72,7 +73,9 @@ templ TaskCard(task model.Task, project *model.Project) {
 		<div class="card-actions rounded-e-2xl bg-base-200 dark:bg-base-200 p-2">
 			<div class="flex flex-col justify-between">
 				<div class="dropdown dropdown-hover dropdown-left dropdown-center">
-                    <button class="btn btn-circle btn-ghost">
+                    <button class="btn btn-circle btn-ghost" 
+                        hx-put={ fmt.Sprintf("/tasks/%s", task.ID) } 
+                        hx-vals='{ "startTime": "2025-04-07T07:15:00Z", "duration": "45m" }'>
                         <i data-lucide="schedule" class="size-5"></i>
                     </button>
                     <ul class="dropdown-content p-2 z-1 gap-2 flex flex-row-reverse rounded-s-full bg-base-200/90 bg-blend-overlay" tabIndex="0">

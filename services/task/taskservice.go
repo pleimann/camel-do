@@ -33,20 +33,21 @@ func NewTaskService(config *TaskServiceConfig, db *sql.DB) (*TaskService, error)
 	return taskService, nil
 }
 
-func (t *TaskService) AddTask(task *model.Task) (*model.Task, error) {
+func (t *TaskService) AddTask(task *model.Task) error {
 	task.ID = ulid.Make().String()
 
 	slog.Debug("TaskService.AddTask", "task", task)
 
-	insertStmt := Tasks.INSERT(Tasks.AllColumns).
-		MODEL(task).
-		RETURNING(Tasks.AllColumns)
+	tableTask := toTableTask(task)
 
-	if err := insertStmt.Query(t.db, task); err != nil {
-		return nil, fmt.Errorf("insert new task: %w", err)
+	insertStmt := Tasks.INSERT(Tasks.AllColumns).
+		MODEL(tableTask)
+
+	if _, err := insertStmt.Exec(t.db); err != nil {
+		return fmt.Errorf("insert new task: %w", err)
 	}
 
-	return task, nil
+	return nil
 }
 
 func (t *TaskService) GetTask(id string) (*model.Task, error) {
@@ -62,7 +63,7 @@ func (t *TaskService) GetTask(id string) (*model.Task, error) {
 		return nil, fmt.Errorf("TaskService.GetTask (%s): %w", id, err)
 	}
 
-	modelTask := model.ConvertTask(&tasks[0])
+	modelTask := toModelTask(&tasks[0])
 
 	return &modelTask, nil
 }
@@ -90,24 +91,22 @@ func (t *TaskService) CompleteToggleTask(id string) error {
 	return nil
 }
 
-func (t *TaskService) UpdateTask(task *model.Task) (*model.Task, error) {
+func (t *TaskService) UpdateTask(task *model.Task) error {
 	slog.Debug("TaskService.UpdateTask", "task", task)
+
+	tableTask := toTableTask(task)
 
 	updateStmt := Tasks.
 		UPDATE(Tasks.MutableColumns).
-		MODEL(task).
-		WHERE(Tasks.ID.EQ(String(task.ID))).
-		RETURNING(Tasks.AllColumns)
+		MODEL(tableTask).
+		WHERE(Tasks.ID.EQ(String(task.ID)))
 
-	updatedTasks := m.Tasks{}
+	if _, err := updateStmt.Exec(t.db); err != nil {
+		return fmt.Errorf("TaskService.UpdateTask(%s): %w", task.ID, err)
 
-	if err := updateStmt.Query(t.db, &updatedTasks); err != nil {
-		return nil, fmt.Errorf("TaskService.UpdateTask(%s): %w", task.ID, err)
+	} else {
+		return nil
 	}
-
-	updatedTask := model.ConvertTask(&updatedTasks)
-
-	return &updatedTask, nil
 }
 
 func (t *TaskService) DeleteTask(id string) error {
@@ -142,7 +141,7 @@ func (t *TaskService) GetBacklogTasks() ([]model.Task, error) {
 		return nil, fmt.Errorf("TaskService.GetBacklogTasks: %w", err)
 	}
 
-	modelTasks := model.ConvertTasks(tasks)
+	modelTasks := toModelTasks(tasks)
 
 	return modelTasks, nil
 }
@@ -155,7 +154,7 @@ func (t *TaskService) GetTodaysTasks() ([]model.Task, error) {
 	start := time.Date(year, month, day, 0, 0, 0, 0, time.Now().Location())
 	end := start.Add(time.Hour * 24)
 
-	stmt := SELECT(Tasks.AllColumns.As("")).
+	stmt := SELECT(Tasks.AllColumns).
 		FROM(Tasks).
 		WHERE(Tasks.StartTime.BETWEEN(DATETIME(start), DATETIME(end))).
 		ORDER_BY(Tasks.UpdatedAt.DESC()).
@@ -166,7 +165,52 @@ func (t *TaskService) GetTodaysTasks() ([]model.Task, error) {
 		return nil, fmt.Errorf("TaskService.GetTodaysTasks (%s - %s): %w", start, end, err)
 	}
 
-	modelTasks := model.ConvertTasks(tasks)
+	modelTasks := toModelTasks(tasks)
 
 	return modelTasks, nil
+}
+
+func toTableTask(task *model.Task) m.Tasks {
+	tasks := m.Tasks{
+		ID:          task.ID,
+		CreatedAt:   task.CreatedAt,
+		UpdatedAt:   task.UpdatedAt,
+		Title:       task.Title,
+		Description: task.Description,
+		StartTime:   task.StartTime,
+		Duration:    task.Duration,
+		Completed:   task.Completed,
+		Rank:        task.Rank,
+		ProjectID:   task.ProjectID,
+	}
+
+	return tasks
+}
+
+func toModelTasks(tasks []m.Tasks) []model.Task {
+	modelTasks := make([]model.Task, len(tasks))
+	for i, t := range tasks {
+		modelTasks[i] = toModelTask(&t)
+	}
+
+	return modelTasks
+}
+
+func toModelTask(t *m.Tasks) model.Task {
+	id := t.ID
+
+	task := model.Task{
+		ID:          id,
+		CreatedAt:   t.CreatedAt,
+		UpdatedAt:   t.UpdatedAt,
+		Title:       t.Title,
+		Description: t.Description,
+		StartTime:   t.StartTime,
+		Duration:    t.Duration,
+		Completed:   t.Completed,
+		Rank:        t.Rank,
+		ProjectID:   t.ProjectID,
+	}
+
+	return task
 }

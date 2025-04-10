@@ -59,19 +59,19 @@ func (t *TaskSyncService) GetGoogleTasks() []model.Task {
 
 			fmt.Printf("%d gtask: %v\n", i, string(b))
 
-			order, _ := strconv.Atoi(gtask.Position)
+			order, _ := strconv.ParseInt(gtask.Position, 10, 32)
 
 			tasks = append(tasks, model.Task{
 				GTaskId:     gtask.Id,
 				Title:       gtask.Title,
 				Description: zero.StringFrom(gtask.Notes),
 				Completed:   gtask.Completed != nil,
-				Rank:        int32(order),
+				Rank:        zero.Int32From(int32(order)),
 			})
 		}
 
 		slices.SortStableFunc(tasks, func(a, b model.Task) int {
-			return cmp.Compare(a.Rank, b.Rank)
+			return cmp.Compare(a.Rank.Int32, b.Rank.Int32)
 		})
 
 		return tasks

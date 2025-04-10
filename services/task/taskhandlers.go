@@ -24,7 +24,9 @@ type TaskHandler struct {
 	projectService *project.ProjectService
 }
 
-func NewTaskHandler(router *mux.Router, taskService *TaskService, projectsService *project.ProjectService) *TaskHandler {
+func NewTaskHandler(
+	router *mux.Router, taskService *TaskService, projectsService *project.ProjectService,
+) *TaskHandler {
 	taskHandler := &TaskHandler{
 		Router:         router,
 		taskService:    taskService,
@@ -116,14 +118,14 @@ func (h *TaskHandler) handleTaskCreate(w http.ResponseWriter, r *http.Request) {
 
 	slog.Debug("TaskHandler.handleTaskCreate", "task", task)
 
-	var err error
-	if task, err = h.taskService.AddTask(task); err != nil {
+	if err := h.taskService.AddTask(task); err != nil {
 		h.handleError(w, r, http.StatusInternalServerError, "adding task", err)
 		return
 	}
 
 	slog.Debug("TaskHandler.handleTaskCreate: get project", "projectId", task.ProjectID)
 
+	var err error
 	var project *model.Project
 	if task.ProjectID.Valid {
 		project, err = h.projectService.GetProject(task.ProjectID.ValueOrZero())
@@ -183,49 +185,49 @@ func (h *TaskHandler) handleTaskUpdate(w http.ResponseWriter, r *http.Request) {
 
 	slog.Debug("TaskHandler.handleTaskUpdate", "task", task)
 
-	if task, err := h.taskService.UpdateTask(task); err != nil {
+	if err := h.taskService.UpdateTask(task); err != nil {
 		h.handleError(w, r, http.StatusInternalServerError, "adding task", err)
 		return
+	}
 
-	} else {
-		slog.Debug("TaskHandler.handleTaskUpdate: get project", "projectId", task.ProjectID)
+	slog.Debug("TaskHandler.handleTaskUpdate: get project", "projectId", task.ProjectID)
 
-		var project *model.Project
-		if task.ProjectID.Valid {
-			project, err = h.projectService.GetProject(task.ProjectID.ValueOrZero())
+	var err error
+	var project *model.Project
+	if task.ProjectID.Valid {
+		project, err = h.projectService.GetProject(task.ProjectID.ValueOrZero())
 
-			if err != nil {
-				if errors.Is(err, sql.ErrNoRows) {
-					h.handleError(w, r, http.StatusNotFound, "getting project", err)
-					return
+		if err != nil {
+			if errors.Is(err, sql.ErrNoRows) {
+				h.handleError(w, r, http.StatusNotFound, "getting project", err)
+				return
 
-				} else {
-					h.handleError(w, r, http.StatusInternalServerError, "getting project", err)
-					return
-				}
+			} else {
+				h.handleError(w, r, http.StatusInternalServerError, "getting project", err)
+				return
 			}
 		}
+	}
 
-		if task.StartTime.Valid {
-			// TODO Else it might belong on today's timeline but just close the dialog for now
-			slog.Debug("TaskHandler.handleTaskUpdate: closing task dialog", "task", task)
+	if task.StartTime.Valid {
+		// TODO Else it might belong on today's timeline but just close the dialog for now
+		slog.Debug("TaskHandler.handleTaskUpdate: closing task dialog", "task", task)
 
-			htmx.NewResponse().
-				AddTrigger(htmx.Trigger("close-modal")).
-				Reswap(htmx.SwapNone).
-				RenderHTML(w, template.HTML(""))
+		htmx.NewResponse().
+			AddTrigger(htmx.Trigger("close-modal")).
+			Reswap(htmx.SwapNone).
+			RenderHTML(w, template.HTML(""))
 
-		} else {
-			slog.Debug("TaskHandler.handleTaskUpdate: render TaskCard", "task", task)
+	} else {
+		slog.Debug("TaskHandler.handleTaskUpdate: render TaskCard", "task", task)
 
-			taskTemplate := components.TaskCard(*task, project)
+		taskTemplate := components.TaskCard(*task, project)
 
-			htmx.NewResponse().
-				AddTrigger(htmx.Trigger("close-modal")).
-				Retarget(fmt.Sprintf("%s > #task-card-%s", components.BacklogSelector, task.ID)).
-				Reswap(htmx.SwapOuterHTML).
-				RenderTempl(r.Context(), w, taskTemplate)
-		}
+		htmx.NewResponse().
+			AddTrigger(htmx.Trigger("close-modal")).
+			Retarget(fmt.Sprintf("%s > #task-card-%s", components.BacklogSelector, task.ID)).
+			Reswap(htmx.SwapOuterHTML).
+			RenderTempl(r.Context(), w, taskTemplate)
 	}
 }
 
@@ -302,13 +304,7 @@ func (h *TaskHandler) handleTaskComplete(w http.ResponseWriter, r *http.Request)
 func (t *TaskHandler) handleError(w http.ResponseWriter, r *http.Request, code int, location string, err error) {
 	slog.Error(location, "error", err.Error())
 
-	var errorMessage string
-
-	if err != nil {
-		errorMessage = fmt.Sprintf("Error %s: %s", location, err.Error())
-	} else {
-		errorMessage = location
-	}
+	errorMessage := fmt.Sprintf("Error %s: %s", location, err.Error())
 
 	messageTemplate := components.ErrorMessage(errorMessage)
 

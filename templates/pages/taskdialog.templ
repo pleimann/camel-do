@@ -78,20 +78,19 @@ templ TaskDialog(projectsIndex model.ProjectIndex, task *model.Task) {
                         </ul>
                     </div>
                 </div>
-            
-                <textarea name="description" class="textarea" placeholder="Notes">
-                    if task != nil && task.Description.Valid {
-                        { task.Description.String }
-                    }
-                </textarea>
 
-                <label class="input grow" x-data="{ duration: 0 }">
-                    <input name="duration" type="text" min="0" step="max" x-model.number="duration"
-                        if task != nil {
-                            value={ fmt.Sprintf("%s", task.Duration) }
-                        } else {
-                            value="0"
-                        }
+                {{
+                    var durationMinutes int32 = 0
+                    if task != nil {
+                        durationMinutes = task.Duration.ValueOrZero()
+                     }
+                }}
+                <label class="input grow"
+                    x-data={ fmt.Sprintf("{ duration: %d }", task.Duration.ValueOrZero()) }
+
+                >
+                    <input name="duration" type="text" min="0" step="15" x-model.number="duration"
+                        value={ fmt.Sprintf("%d", durationMinutes) }
                     />
 
                     <div class="flex flex-row select-none cursor-default">
@@ -104,7 +103,13 @@ templ TaskDialog(projectsIndex model.ProjectIndex, task *model.Task) {
                         1h
                         <div class="cursor-pointer font-light text-center leading-none" @click="duration += 60"><i data-lucide="chevron-up" /></div>
                     </div>
-                </label>  
+                </label>
+            
+                <textarea name="description" class="textarea" placeholder="Notes">
+                    if task != nil && task.Description.Valid {
+                        { task.Description.String }
+                    }
+                </textarea>
                                                                                                                                                                     
                 {{
                     submitLabel := "Create"

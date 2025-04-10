@@ -10,16 +10,16 @@ import (
 )
 
 // GenerateRandomProjects generates a slice of Project with random data.
-func GenerateRandomProjects() (map[string]model.Project, error) {
+func GenerateRandomProjects() ([]model.Project, error) {
 	count := rand.IntN(5) + 1
 	if count < 1 || count > 5 {
 		return nil, fmt.Errorf("project count must be between 1 and 5, got %d", count)
 	}
 
-	projects := make(map[string]model.Project)
+	projects := []model.Project{}
 	for i := 0; i < count; i++ {
 		project := GenerateRandomProject()
-		projects[project.ID] = project
+		projects = append(projects, project)
 	}
 
 	return projects, nil
@@ -32,8 +32,7 @@ func GenerateRandomProject() model.Project {
 	// Seed the random number generator.
 	rand.New(rand.NewPCG(uint64(time.Now().UnixNano()), uint64(time.Now().UnixNano())))
 
-	// Generate random title.
-	name := loremGen.Words[0]
+	name := loremGen.Words[rand.IntN(len(loremGen.Words))]
 
 	icon := model.IconValues()[rand.IntN(len(model.IconValues()))]
 
