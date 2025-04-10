@@ -7,9 +7,11 @@ import (
 	"html/template"
 	"log/slog"
 	"net/http"
+	"time"
 
 	"github.com/angelofallars/htmx-go"
 	"github.com/gorilla/mux"
+	"github.com/guregu/null/v6/zero"
 
 	"github.com/pleimann/camel-do/model"
 	"github.com/pleimann/camel-do/services/project"
@@ -35,6 +37,7 @@ func NewTaskHandler(
 
 	router.HandleFunc("/new", taskHandler.handleNewTask).Methods(http.MethodGet)
 	router.HandleFunc("/edit/{id}", taskHandler.handleEditTask).Methods(http.MethodGet)
+	router.HandleFunc("/schedule/{id}", taskHandler.handleScheduleTask).Methods(http.MethodPut)
 	router.HandleFunc("/", taskHandler.handleTaskCreate).Methods(http.MethodPost)
 	router.HandleFunc("/{id}", taskHandler.handleTaskUpdate).Methods(http.MethodPut)
 	router.HandleFunc("/{id}", taskHandler.handleTaskDelete).Methods(http.MethodDelete)
@@ -97,6 +100,29 @@ func (h *TaskHandler) handleEditTask(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	}
+}
+
+func (h *TaskHandler) handleScheduleTask(w http.ResponseWriter, r *http.Request) {
+	taskId := extractTaskId(r)
+
+	task := &model.Task{
+		ID:        taskId,
+		StartTime: zero.TimeFrom(time.Now().Truncate(15 * time.Minute).Add(15 * time.Minute)),
+	}
+
+	// TODO figure out when next open slot is
+	if err := h.taskService.UpdateTask(task); err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			h.handleError(w, r, http.StatusNotFound, "scheduling task", err)
+
+		} else {
+			h.handleError(w, r, http.StatusInternalServerError, "scheduling task", err)
+		}
+	}
+
+	// TODO Add out of band swap to insert task into timeline
+	htmx.NewResponse().
+		RenderHTML(w, template.HTML(""))
 }
 
 func (h *TaskHandler) handleTaskCreate(w http.ResponseWriter, r *http.Request) {
