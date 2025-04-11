@@ -15,6 +15,6 @@
       "tsconfig.json": "tsconfig.*.json",
       "package.json": "package-lock.json, yarn.lock, pnpm-lock.yaml, bun.lockb, bun.lock",
       "*.templ": "${capture}_templ.go,${capture}_templ_test.go,${capture}_templ.txt",
-      "*.go": "${capture}_enum.go"
+      "*.go": "${capture}_enum.go,${capture}_test.go"
     }
 }

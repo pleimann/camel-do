@@ -14,6 +14,7 @@ import (
 	"os/user"
 	"slices"
 	"strconv"
+	"time"
 
 	"github.com/angelofallars/htmx-go"
 	"github.com/gorilla/handlers"
@@ -185,12 +186,14 @@ func indexViewHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	projectsMap, err := projectService.GetProjects()
+	projectIndex, err := projectService.GetProjects()
 	if err != nil {
 		slog.Error("get all projects", "err", err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
+
+	weekday := time.Now().Weekday()
 
 	// Define template layout for index page.
 	indexTemplate := templates.Layout(
@@ -202,7 +205,7 @@ func indexViewHandler(w http.ResponseWriter, r *http.Request) {
 			"camel-do, todo, tasks", // define meta keywords
 			"Welcome to Camel Do! You're here because camels are awesome and you need more of them in your life.", // define meta description
 		),
-		pages.BodyContent(backlogTasks, todaysTasks, projectsMap), // define body content
+		pages.BodyContent(backlogTasks, weekday, todaysTasks, projectIndex), // define body content
 	)
 
 	// Render index page template.

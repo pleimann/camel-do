@@ -160,7 +160,7 @@ func (t *TaskService) GetTodaysTasks() ([]model.Task, error) {
 		ORDER_BY(Tasks.UpdatedAt.DESC()).
 		LIMIT(100)
 
-	tasks := []m.Tasks{}
+	var tasks []m.Tasks
 	if err := stmt.Query(t.db, &tasks); err != nil {
 		return nil, fmt.Errorf("TaskService.GetTodaysTasks (%s - %s): %w", start, end, err)
 	}

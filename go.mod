@@ -1,14 +1,15 @@
 module github.com/pleimann/camel-do
 
-go 1.24.1
+go 1.24.2
 
 require (
 	github.com/a-h/templ v0.3.857
 	github.com/angelofallars/htmx-go v0.5.0
 	github.com/derektata/lorem v0.0.2
 	github.com/gorilla/mux v1.8.1
+	github.com/guregu/null/v6 v6.0.0
 	github.com/joho/godotenv v1.5.1
-	github.com/mattn/go-sqlite3 v1.14.24
+	github.com/mattn/go-sqlite3 v1.14.27
 )
 
 require github.com/google/uuid v1.6.0 // indirect
@@ -57,7 +58,6 @@ require (
 	github.com/gorilla/handlers v1.5.2
 	github.com/gorilla/schema v1.4.1
 	github.com/gowebly/gowebly/v3 v3.0.0 // indirect
-	github.com/guregu/null/v6 v6.0.0
 	github.com/hashicorp/errwrap v1.1.0 // indirect
 	github.com/hashicorp/go-multierror v1.1.1 // indirect
 	github.com/lucasb-eyer/go-colorful v1.2.0 // indirect
@@ -80,7 +80,7 @@ require (
 	github.com/searKing/golang/tools/go-enum v1.2.121 // indirect
 	github.com/spf13/afero v1.11.0 // indirect
 	github.com/spf13/cast v1.7.0 // indirect
-	github.com/stretchr/testify v1.10.0 // indirect
+	github.com/stretchr/testify v1.10.0
 	github.com/tdewolff/parse/v2 v2.7.15 // indirect
 	go.opentelemetry.io/auto/sdk v1.1.0 // indirect
 	go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp v0.59.0 // indirect

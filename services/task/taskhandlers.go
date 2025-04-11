@@ -105,6 +105,7 @@ func (h *TaskHandler) handleEditTask(w http.ResponseWriter, r *http.Request) {
 func (h *TaskHandler) handleScheduleTask(w http.ResponseWriter, r *http.Request) {
 	taskId := extractTaskId(r)
 
+	// TODO Ensure duration is at least 15
 	task := &model.Task{
 		ID:        taskId,
 		StartTime: zero.TimeFrom(time.Now().Truncate(15 * time.Minute).Add(15 * time.Minute)),
@@ -122,7 +123,7 @@ func (h *TaskHandler) handleScheduleTask(w http.ResponseWriter, r *http.Request)
 
 	// TODO Add out of band swap to insert task into timeline
 	htmx.NewResponse().
-		RenderHTML(w, template.HTML(""))
+		RenderHTML(w, "")
 }
 
 func (h *TaskHandler) handleTaskCreate(w http.ResponseWriter, r *http.Request) {

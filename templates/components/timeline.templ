@@ -2,50 +2,64 @@ package components
 
 import (
     "fmt"
+    "time"
+    "strings"
     "github.com/pleimann/camel-do/model"
 )
 
-css taskPosition(row, col int) {
-    grid-row: { fmt.Sprintf("%d / span %d", row, col) };
+var offsetHours = 6
+var slotMinutes = 15
+
+func taskPosition(row, spanRows int) map[string]string {
+    return map[string]string{
+        "grid-row": fmt.Sprintf(" %d / span %d", row, spanRows),
+        "max-height": fmt.Sprintf(" %drem", 3 * spanRows),
+    }
 }
 
-templ Timeline(tasks []model.Task, projects model.ProjectIndex) {
-    <style type="text/css">
-        .time {
-            font-variant-numeric: tabular-nums;
-            justify-self: end;
-            padding: 3px 5px;
-            grid-column-start: 1;
-            grid-row: span 4;
-            border-width: 1px 1px 0 0;
-            border-style: solid;
-            border-color: lightgray;
-            font-size: var(--text-xs);
-            user-select: none;
-            cursor: default;
-        }
+func slot(t time.Time) int {
+    return (t.Hour() - offsetHours) * int(60/slotMinutes) + (t.Minute() / slotMinutes) + 1
+}
 
-        .tick {
-            grid-column-start: 2;
-            border-top: 1px solid lightgray;
-        }
+func slotSpan(duration int32) int {
+    return max(int(duration), slotMinutes) / slotMinutes
+}
 
-        .time-bar {
-            margin-left: calc(var(--spacing) * 2);
-            grid-column-start: 3;
-            border-radius: var(--radius-xl); 
-            display: flex;
-            flex-direction: row;
-            column-gap: calc(var(--spacing) * 2);
-        }
-    </style>
+css timeBarClass() {
+    margin-left: calc(var(--spacing) * 2);
+    grid-column-start: 3;
+    border-radius: var(--radius-xl);
+    display: flex;
+    flex-direction: row;
+    column-gap: calc(var(--spacing) * 2);
+}
 
+css timeClass() {
+    font-variant-numeric: tabular-nums;
+    justify-self: end;
+    padding: 3px 5px;
+    grid-column-start: 1;
+    grid-row: span 4;
+    border-width: 1px 1px 0 0;
+    border-style: solid;
+    border-color: lightgray;
+    font-size: var(--text-xs);
+    user-select: none;
+    cursor: default;
+}
+
+css tickClass() {
+    grid-column-start: 2;
+    border-top: 1px solid lightgray;
+    min-height: 1em;
+}
+
+templ Timeline(weekday time.Weekday, tasks []model.Task, projects model.ProjectIndex) {
     <div class="static w-full lg:w-1/2 mb-4 md:mb-8 flex flex-row gap-4 justify-center">
-        <button class="btn btn-soft rounded-full">Mo</button>
-        <button class="btn btn-soft rounded-full">Tu</button>
-        <button class="btn btn-soft rounded-full btn-accent">We</button>
-        <button class="btn btn-dash rounded-full">Th</button>
-        <button class="btn btn-dash rounded-full">Fr</button>
+        for i := 1; i <= 7; i++ {
+            {{ w := time.Weekday(i % 7)}}
+            <button class={ "btn", "rounded-full", templ.KV("btn-dash", weekday > 0 && weekday < w), templ.KV("btn-accent", weekday==w) }>{ w.String()[0:2] }</button>
+        }
     </div>
 
     <div class="overflow-y-scroll max-h-[100%]" style="scrollbar-width: none;">
@@ -58,32 +72,32 @@ templ Timeline(tasks []model.Task, projects model.ProjectIndex) {
                     }
                 }}
 
-                <span class="time">{ fmt.Sprintf("%02d:00", h) }</span>
+                <span class={ timeClass() }>{ fmt.Sprintf("%02d:00", h) }</span>
 
                 for j := 0; j < 4; j++ {
-                    <span class="tick" />
+                    <span class={ tickClass() }></span>
                 }
             }
 
-            <div class={ "time-bar", "bg-red-50", "dark:bg-red-900", "border", "shadow-md", "border-red-100", taskPosition(1, 4) }>
-                <div class="tooltip tooltip-top bg-red-100 text-red-800 h-full p-2 rounded-s-xl" data-tip="MCP">@Icon(model.Bear, 16)</div>
-                <div class={ "col-start-3", "p-2", taskPosition(1, 4) }>Task1</div>
-            </div>
+            for _, task := range tasks {
+                {{
+                    project := projects[task.ProjectID.String]
+                    color := strings.ToLower(project.Color.String())
 
-            <div class={ "time-bar", "bg-yellow-50", "dark:bg-yellow-900", "border", "shadow-md", "border-yellow-100", taskPosition(8, 8) }>
-                <div class="tooltip tooltip-top bg-yellow-100 text-yellow-800 p-2 h-full rounded-s-xl" data-tip="STS">@Icon(model.Bug, 16)</div>
-                <div class={ "col-start-3", "p-2" }>Task2</div>
-            </div>
+                    position := taskPosition(
+                        slot(task.StartTime.Time),
+                        slotSpan(task.Duration.Int32),
+                    )
+                }}
 
-            <div class={ "time-bar", "bg-blue-50", "dark:bg-blue-900", "border", "shadow-md", "border-blue-100", taskPosition(30, 2) }>
-                <div class="tooltip tooltip-top border-blue-100 text-blue-800 p-2 h-full rounded-s-xl" data-tip="Lobbies">@Icon(model.Bird, 16)</div>
-                <div class={ "col-start-3", "p-2" }>Task3</div>
-            </div>
-
-            <div class={ "time-bar", "bg-red-50", "dark:bg-red-900", "border", "shadow-md", "border-red-100", taskPosition(32, 4) }>
-                <div class="tooltip tooltip-top border-red-100 text-red-800 p-2 h-full rounded-s-xl" data-tip="MCP">@Icon(model.Bear, 16)</div>
-                <div class={ "col-start-3", "p-2" }>Task4</div>
-            </div>
+                <div class={ timeBarClass(), fmt.Sprintf("bg-%s-50", color), fmt.Sprintf("dark:bg-%s-900", color), fmt.Sprintf("border-%s-100", color), "border", "shadow-md", "text-sm", "mt-1" } style={ position }>
+                    <div class={ "tooltip", "tooltip-top", fmt.Sprintf("bg-%s-100", color), fmt.Sprintf("text-%s-800", color), "h-full", "p-2", "rounded-s-xl" } data-tip={ project.Name }>@Icon(project.Icon, 16)</div>
+                    <div class={ "col-start-3", "p-2", position }>
+                        { task.Title }
+                        <span class="italic">{ fmt.Sprintf("%02d:%02d", task.StartTime.Time.Hour(), task.StartTime.Time.Minute()) }</span>
+                    </div>
+                </div>
+            }
         </div>
     </div>
 }

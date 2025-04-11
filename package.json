@@ -11,6 +11,8 @@
     "watch": "parcel watch ./assets/scripts.js ./assets/styles.css --dist-dir ./static --no-optimize"
   },
   "dependencies": {
+    "@alpinejs/anchor": "^3.14.9",
+    "@alpinejs/focus": "^3.14.9",
     "@lucide/lab": "^0.1.2",
     "alpinejs": "^3.14.9",
     "daisyui": "^5.0.9",
