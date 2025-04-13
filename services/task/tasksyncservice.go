@@ -45,7 +45,7 @@ func (t *TaskSyncService) GetGoogleTasks() []model.Task {
 		log.Fatalf("Unable to retrieve task lists. %v", err)
 	}
 
-	tasks := []model.Task{}
+	modelTasks := []model.Task{}
 
 	if len(r.Items) > 0 {
 		taskList := r.Items[0]
@@ -61,24 +61,24 @@ func (t *TaskSyncService) GetGoogleTasks() []model.Task {
 
 			order, _ := strconv.ParseInt(gtask.Position, 10, 32)
 
-			tasks = append(tasks, model.Task{
-				GTaskId:     gtask.Id,
-				Title:       gtask.Title,
+			modelTasks = append(modelTasks, model.Task{
+				GTaskID:     zero.StringFrom(gtask.Id),
+				Title:       zero.StringFrom(gtask.Title),
 				Description: zero.StringFrom(gtask.Notes),
-				Completed:   gtask.Completed != nil,
+				Completed:   zero.BoolFrom(gtask.Completed != nil),
 				Rank:        zero.Int32From(int32(order)),
 			})
 		}
 
-		slices.SortStableFunc(tasks, func(a, b model.Task) int {
+		slices.SortStableFunc(modelTasks, func(a, b model.Task) int {
 			return cmp.Compare(a.Rank.Int32, b.Rank.Int32)
 		})
 
-		return tasks
+		return modelTasks
 
 	} else {
 		fmt.Print("No task lists found.")
 	}
 
-	return tasks
+	return modelTasks
 }

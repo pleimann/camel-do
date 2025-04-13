@@ -17,11 +17,12 @@ type Tasks struct {
 	ID          string `sql:"primary_key"`
 	CreatedAt   time.Time
 	UpdatedAt   time.Time
-	Title       string
+	Title       zero.String
 	Description zero.String
 	StartTime   zero.Time `sql:"type:timestamptz"`
 	Duration    zero.Int32
-	Completed   bool
+	Completed   zero.Bool
 	Rank        zero.Int32
 	ProjectID   zero.String `sql:"project_id"`
+	GTaskID     zero.String `sql:"g_task_id"`
 }

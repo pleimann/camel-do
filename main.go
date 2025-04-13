@@ -232,19 +232,22 @@ func seedData(count int) {
 	}
 
 	for i := range projects {
-		projectService.AddProject(projects[i])
+		err := projectService.AddProject(projects[i])
+		if err != nil {
+			return
+		}
 	}
 
 	projectsIndex, _ := projectService.GetProjects()
 
 	projects = slices.Collect(maps.Values(projectsIndex))
 
-	for _, task := range tasks {
+	for _, t := range tasks {
 		randProject := projects[rand.Intn(len(projects))]
 
-		task.ProjectID = zero.StringFrom(randProject.ID)
+		t.ProjectID = zero.StringFrom(randProject.ID)
 
-		if err := taskService.AddTask(&task); err != nil {
+		if err := taskService.AddTask(&t); err != nil {
 			log.Fatal(err)
 		}
 	}

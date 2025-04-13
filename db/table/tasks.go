@@ -27,6 +27,7 @@ type tasksTable struct {
 	Completed   sqlite.ColumnBool
 	Rank        sqlite.ColumnInteger
 	ProjectID   sqlite.ColumnString
+	GTaskID     sqlite.ColumnString
 
 	AllColumns     sqlite.ColumnList
 	MutableColumns sqlite.ColumnList
@@ -78,8 +79,9 @@ func newTasksTableImpl(schemaName, tableName, alias string) tasksTable {
 		CompletedColumn   = sqlite.BoolColumn("completed")
 		RankColumn        = sqlite.IntegerColumn("rank")
 		ProjectIDColumn   = sqlite.StringColumn("project_id")
-		allColumns        = sqlite.ColumnList{IDColumn, CreatedAtColumn, UpdatedAtColumn, TitleColumn, DescriptionColumn, StartTimeColumn, DurationColumn, CompletedColumn, RankColumn, ProjectIDColumn}
-		mutableColumns    = sqlite.ColumnList{CreatedAtColumn, UpdatedAtColumn, TitleColumn, DescriptionColumn, StartTimeColumn, DurationColumn, CompletedColumn, RankColumn, ProjectIDColumn}
+		GTaskIDColumn     = sqlite.StringColumn("g_task_id")
+		allColumns        = sqlite.ColumnList{IDColumn, CreatedAtColumn, UpdatedAtColumn, TitleColumn, DescriptionColumn, StartTimeColumn, DurationColumn, CompletedColumn, RankColumn, ProjectIDColumn, GTaskIDColumn}
+		mutableColumns    = sqlite.ColumnList{CreatedAtColumn, UpdatedAtColumn, TitleColumn, DescriptionColumn, StartTimeColumn, DurationColumn, CompletedColumn, RankColumn, ProjectIDColumn, GTaskIDColumn}
 		defaultColumns    = sqlite.ColumnList{DurationColumn}
 	)
 
@@ -97,6 +99,7 @@ func newTasksTableImpl(schemaName, tableName, alias string) tasksTable {
 		Completed:   CompletedColumn,
 		Rank:        RankColumn,
 		ProjectID:   ProjectIDColumn,
+		GTaskID:     GTaskIDColumn,
 
 		AllColumns:     allColumns,
 		MutableColumns: mutableColumns,

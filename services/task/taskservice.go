@@ -94,10 +94,12 @@ func (t *TaskService) CompleteToggleTask(id string) error {
 func (t *TaskService) UpdateTask(task *model.Task) error {
 	slog.Debug("TaskService.UpdateTask", "task", task)
 
+	columns := detectUpdatedColumns(task)
+
 	tableTask := toTableTask(task)
 
 	updateStmt := Tasks.
-		UPDATE(Tasks.MutableColumns).
+		UPDATE(columns).
 		MODEL(tableTask).
 		WHERE(Tasks.ID.EQ(String(task.ID)))
 
@@ -182,6 +184,7 @@ func toTableTask(task *model.Task) m.Tasks {
 		Completed:   task.Completed,
 		Rank:        task.Rank,
 		ProjectID:   task.ProjectID,
+		GTaskID:     task.GTaskID,
 	}
 
 	return tasks
@@ -210,7 +213,54 @@ func toModelTask(t *m.Tasks) model.Task {
 		Completed:   t.Completed,
 		Rank:        t.Rank,
 		ProjectID:   t.ProjectID,
+		GTaskID:     t.GTaskID,
 	}
 
 	return task
+}
+
+func detectUpdatedColumns(task *model.Task) ColumnList {
+	columns := ColumnList{}
+
+	if !task.CreatedAt.IsZero() {
+		columns = append(columns, Tasks.CreatedAt)
+	}
+
+	if !task.UpdatedAt.IsZero() {
+		columns = append(columns, Tasks.UpdatedAt)
+	}
+
+	if !task.Title.IsZero() {
+		columns = append(columns, Tasks.Title)
+	}
+
+	if !task.Description.IsZero() {
+		columns = append(columns, Tasks.Description)
+	}
+
+	if !task.StartTime.IsZero() {
+		columns = append(columns, Tasks.StartTime)
+	}
+
+	if !task.Duration.IsZero() {
+		columns = append(columns, Tasks.Duration)
+	}
+
+	if !task.Completed.IsZero() {
+		columns = append(columns, Tasks.Completed)
+	}
+
+	if !task.GTaskID.IsZero() {
+		columns = append(columns, Tasks.GTaskID)
+	}
+
+	if !task.Rank.IsZero() {
+		columns = append(columns, Tasks.Rank)
+	}
+
+	if !task.ProjectID.IsZero() {
+		columns = append(columns, Tasks.ProjectID)
+	}
+
+	return columns
 }

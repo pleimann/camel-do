@@ -37,7 +37,7 @@ templ TaskDialog(projectsIndex model.ProjectIndex, task *model.Task) {
                     <i data-lucide="pencil-line" class="opacity-50 size-6 -ml-4"/>
                     <input name="title" class="w-full shrink font-semibold" type="text" placeholder="New Task..." autocomplete="off" 
                         if task != nil {
-                            value={ task.Title }
+                            value={ task.Title.String }
                         }
                     >
                 </label>

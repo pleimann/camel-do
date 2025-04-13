@@ -3,8 +3,8 @@ CREATE TABLE `projects` (
     `created_at` datetime,
     `updated_at` datetime,
     `name` text,
-    `color` text DEFAULT "Zinc",
-    `icon` text DEFAULT "Unknown",
+    `color` text,
+    `icon` text,
     PRIMARY KEY (`id`),
     CONSTRAINT `uni_projects_name` UNIQUE (`name`)
 );
@@ -20,6 +20,7 @@ CREATE TABLE `tasks` (
     `completed` numeric,
     `rank` integer,
     `project_id` text,
+    `g_task_id` text,
     PRIMARY KEY (`id`),
     CONSTRAINT `fk_project-task` FOREIGN KEY (`project_id`) REFERENCES `projects`(`id`)
 )

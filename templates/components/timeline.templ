@@ -93,7 +93,7 @@ templ Timeline(weekday time.Weekday, tasks []model.Task, projects model.ProjectI
                 <div class={ timeBarClass(), fmt.Sprintf("bg-%s-50", color), fmt.Sprintf("dark:bg-%s-900", color), fmt.Sprintf("border-%s-100", color), "border", "shadow-md", "text-sm", "mt-1" } style={ position }>
                     <div class={ "tooltip", "tooltip-top", fmt.Sprintf("bg-%s-100", color), fmt.Sprintf("text-%s-800", color), "h-full", "p-2", "rounded-s-xl" } data-tip={ project.Name }>@Icon(project.Icon, 16)</div>
                     <div class={ "col-start-3", "p-2", position }>
-                        { task.Title }
+                        { task.Title.String }
                         <span class="italic">{ fmt.Sprintf("%02d:%02d", task.StartTime.Time.Hour(), task.StartTime.Time.Minute()) }</span>
                     </div>
                 </div>
