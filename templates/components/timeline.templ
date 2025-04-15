@@ -54,16 +54,33 @@ css tickClass() {
     min-height: 1em;
 }
 
+var startWeekday = time.Monday
+
 templ Timeline(weekday time.Weekday, tasks []model.Task, projects model.ProjectIndex) {
     <div class="static w-full lg:w-1/2 mb-4 md:mb-8 flex flex-row gap-4 justify-center">
-        for i := 1; i <= 7; i++ {
-            {{ w := time.Weekday(i % 7)}}
-            <button class={ "btn", "rounded-full", templ.KV("btn-dash", weekday > 0 && weekday < w), templ.KV("btn-accent", weekday==w) }>{ w.String()[0:2] }</button>
+    {{ currentWeekday := time.Now().Weekday() }}
+        for i := startWeekday; i < 7+startWeekday; i++ {
+            {{
+                w := time.Weekday(i % 7)
+                // (w + 6) % 7 shifts Sunday (0) to 6, Monday (1) to 0, ..., Saturday (6) to 5
+                shiftedWeekday := time.Weekday((int(w) + 7 - int(startWeekday)) % 7 + 1)
+                isFuture := currentWeekday < shiftedWeekday
+            }}
+            <button class={ "btn", "btn-circle", templ.KV("btn-dash", isFuture), templ.KV("btn-accent", weekday==w) }>{ w.String()[0:2] }</button>
         }
     </div>
 
     <div class="overflow-y-scroll max-h-[100%]" style="scrollbar-width: none;">
-        <div class="w-full lg:w-1/2 grid grid-rows-52 grid-cols-[40px_10px_1fr] gap-y-2">
+        <div class="w-full lg:w-1/2 grid grid-rows-52 grid-cols-[40px_10px_1fr] gap-y-2"
+            @drop="adding = false"
+            @drop.prevent="
+                const target = event.target.closest('.tick');
+                const element = document.getElementById(event.dataTransfer.getData('text/plain'));
+                target.appendChild(element);
+            "
+            @dragover.prevent="adding = true"
+            @dragleave.prevent="adding = false"
+        >
             for i := 6; i < 18; i++ {
                 {{
                     h := i
@@ -75,7 +92,7 @@ templ Timeline(weekday time.Weekday, tasks []model.Task, projects model.ProjectI
                 <span class={ timeClass() }>{ fmt.Sprintf("%02d:00", h) }</span>
 
                 for j := 0; j < 4; j++ {
-                    <span class={ tickClass() }></span>
+                    <span class={ "tick", tickClass() }></span>
                 }
             }
 
