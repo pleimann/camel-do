@@ -9,7 +9,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestToDbTask(t *testing.T) {
+func TestToTableTask(t *testing.T) {
 	t.Run("converts task with all fields", func(t *testing.T) {
 		// Arrange
 		now := time.Now().UTC()
@@ -22,47 +22,45 @@ func TestToDbTask(t *testing.T) {
 		task := &model.Task{
 			ID:          "test-id",
 			CreatedAt:   now,
-			Title:       "Test Task",
+			Title:       zero.StringFrom("Test Task"),
 			Description: zero.StringFrom("Test Description"),
 			StartTime:   zero.TimeFrom(startTime),
-			Duration:    30 * time.Minute,
-			Completed:   true,
-			Rank:        1.0,
-			ProjectId:   zero.StringFrom("project-1"),
+			Duration:    zero.Int32From(30),
+			Completed:   zero.BoolFrom(true),
+			Rank:        zero.Int32From(1),
+			ProjectID:   zero.StringFrom("project-1"),
 		}
 
 		// Act
-		dbTask, err := toDbTask(task)
+		tableTask := toTableTask(task)
 
 		// Assert
-		assert.NoError(t, err)
-		assert.Equal(t, task.ID, *dbTask.ID)
-		assert.Equal(t, task.CreatedAt, *dbTask.CreatedAt)
-		assert.Equal(t, task.Title, *dbTask.Title)
-		assert.Equal(t, task.Description, dbTask.Description)
-		assert.Equal(t, task.Completed, *dbTask.Completed)
-		assert.Equal(t, task.Rank, *dbTask.Rank)
-		assert.Equal(t, task.ProjectId, dbTask.ProjectId)
-		assert.True(t, dbTask.StartTime.Valid)
-		assert.Equal(t, int32(30), *dbTask.Duration)
+		assert.Equal(t, task.ID, tableTask.ID)
+		assert.Equal(t, task.CreatedAt, tableTask.CreatedAt)
+		assert.Equal(t, task.Title, tableTask.Title)
+		assert.Equal(t, task.Description, tableTask.Description)
+		assert.Equal(t, task.Completed, tableTask.Completed)
+		assert.Equal(t, task.Rank, tableTask.Rank)
+		assert.Equal(t, task.ProjectID, tableTask.ProjectID)
+		assert.True(t, tableTask.StartTime.Valid)
+		assert.Equal(t, zero.Int32From(30), tableTask.Duration)
 	})
 
 	t.Run("handles empty start date/time", func(t *testing.T) {
 		// Arrange
 		task := &model.Task{
 			ID:        "test-id",
-			Title:     "Test Task",
-			Duration:  45 * time.Minute,
-			Completed: false,
-			Rank:      1.0,
+			Title:     zero.StringFrom("Test Task"),
+			Duration:  zero.Int32From(45),
+			Completed: zero.BoolFrom(false),
+			Rank:      zero.Int32From(1),
 		}
 
 		// Act
-		dbTask, err := toDbTask(task)
+		dbTask := toTableTask(task)
 
 		// Assert
-		assert.NoError(t, err)
 		assert.False(t, dbTask.StartTime.Valid)
-		assert.Equal(t, int32(45), *dbTask.Duration)
+		assert.Equal(t, zero.Int32From(45), dbTask.Duration)
 	})
 }

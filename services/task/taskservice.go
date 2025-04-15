@@ -202,19 +202,19 @@ func toModelTasks(tasks []m.Tasks) []model.Task {
 func toModelTask(t *m.Tasks) model.Task {
 	id := t.ID
 
-	task := model.Task{
-		ID:          id,
-		CreatedAt:   t.CreatedAt,
-		UpdatedAt:   t.UpdatedAt,
-		Title:       t.Title,
-		Description: t.Description,
-		StartTime:   t.StartTime,
-		Duration:    t.Duration,
-		Completed:   t.Completed,
-		Rank:        t.Rank,
-		ProjectID:   t.ProjectID,
-		GTaskID:     t.GTaskID,
-	}
+	task := model.NewTask(
+		id,
+		t.Title,
+		t.Description,
+		t.CreatedAt,
+		t.UpdatedAt,
+		t.StartTime,
+		t.Duration,
+		t.Completed,
+		t.Rank,
+		t.ProjectID,
+		t.GTaskID,
+	)
 
 	return task
 }

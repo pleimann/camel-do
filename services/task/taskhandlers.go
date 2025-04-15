@@ -121,9 +121,24 @@ func (h *TaskHandler) handleScheduleTask(w http.ResponseWriter, r *http.Request)
 		}
 	}
 
-	// TODO Add out of band swap to insert task into timeline
+	projectsIndex, err := h.projectService.GetProjects()
+
+	if err != nil {
+		h.handleError(w, r, http.StatusInternalServerError, "getting projects", err)
+		return
+	}
+
+	todaysTasks, err := h.taskService.GetTodaysTasks()
+
+	if err != nil {
+		h.handleError(w, r, http.StatusInternalServerError, "getting todays tasks", err)
+		return
+	}
+
+	timelineViewTemplate := components.TimelineView(time.Now().Weekday(), todaysTasks, projectsIndex)
+
 	htmx.NewResponse().
-		RenderHTML(w, "")
+		RenderTempl(r.Context(), w, timelineViewTemplate)
 }
 
 func (h *TaskHandler) handleTaskCreate(w http.ResponseWriter, r *http.Request) {

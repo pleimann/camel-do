@@ -7,12 +7,12 @@ import (
 	"fmt"
 	"log"
 	"log/slog"
-	"net/http"
 	"slices"
 	"strconv"
 
 	"github.com/guregu/null/v6/zero"
 	"github.com/pleimann/camel-do/model"
+	"github.com/pleimann/camel-do/services/oauth"
 	"google.golang.org/api/option"
 	"google.golang.org/api/tasks/v1"
 )
@@ -23,7 +23,9 @@ type TaskSyncService struct {
 	db          *sql.DB
 }
 
-func NewTaskSyncService(http *http.Client, db *sql.DB) (*TaskSyncService, error) {
+func NewTaskSyncService(db *sql.DB) (*TaskSyncService, error) {
+	http := oauth.NewGoogleAuth().GetClient()
+
 	service, err := tasks.NewService(context.Background(), option.WithHTTPClient(http))
 
 	if err != nil {

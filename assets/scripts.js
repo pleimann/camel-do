@@ -19,3 +19,13 @@ window.Alpine = Alpine
 Alpine.plugin(focus)
 Alpine.plugin(anchor)
 Alpine.start()
+
+Alpine.directive('log', (el, { expression }, { evaluateLater, effect }) => {
+    let getThingToLog = evaluateLater(expression)
+ 
+    effect(() => {
+        getThingToLog(thingToLog => {
+            console.log(thingToLog)
+        })
+    })
+})
