@@ -1,0 +1,34 @@
+{
+  "name": "camel-do",
+  "version": "0.0.1",
+  "description": "Frontend part of the Gowebly project.",
+  "license": "MIT",
+  "browserslist": "> 0.5%, last 2 versions, not dead",
+  "scripts": {
+    "fmt": "prettier --write .",
+    "build": "parcel build ./assets/scripts.js ./assets/styles.css --dist-dir ./static",
+    "dev": "parcel build ./assets/scripts.js ./assets/styles.css --dist-dir ./static --no-optimize",
+    "watch": "parcel watch ./assets/scripts.js ./assets/styles.css --dist-dir ./static --no-optimize"
+  },
+  "dependencies": {
+    "@alpinejs/anchor": "^3.14.9",
+    "@alpinejs/focus": "^3.14.9",
+    "@lucide/lab": "^0.1.2",
+    "alpinejs": "latest",
+    "daisyui": "^5.0.37",
+    "htmx-ext-remove-me": "^2.0.1",
+    "htmx-ext-response-targets": "^2.0.3",
+    "htmx.org": "latest",
+    "lucide": "^0.511.0",
+    "tailwindcss": "latest"
+  },
+  "devDependencies": {
+    "@parcel/transformer-css": "latest",
+    "@tailwindcss/forms": "latest",
+    "@tailwindcss/postcss": "latest",
+    "@tailwindcss/typography": "latest",
+    "parcel": "latest",
+    "postcss": "latest",
+    "prettier": "latest"
+  }
+}

@@ -1,0 +1,84 @@
+package pages
+
+import (
+	"github.com/pleimann/camel-do/model"
+	"github.com/pleimann/camel-do/templates/blocks/titlebar"
+	"github.com/pleimann/camel-do/templates/blocks/backlog"
+	"github.com/pleimann/camel-do/templates/blocks/timeline"
+	"time"
+)
+
+// MetaTags defines meta tags.
+templ MetaTags(keywords, description string) {
+	<meta name="keywords" content={ keywords }/>
+	<meta name="description" content={ description }/>
+}
+
+// styledTextStyles defines CSS styles for component.
+
+css styledTextStyles() {
+	color: #02BF87;
+}
+
+// BodyContent defines HTML content.
+templ Main(backlogTasks []model.Task, weekday time.Weekday, todaysTasks []model.Task, projects model.ProjectIndex) {
+	<div id="app">
+		@titlebar.TitleBar()
+		<main
+			class="h-[calc(100vh-(var(--spacing)*16))] max-h-[calc(100vh-(var(--spacing)*16))] w-full overflow-hidden"
+			x-data="{ selectedTask: null }"
+		>
+			<div class="flex flex-row h-full overflow-hidden">
+				<div
+					class="bg-primary/60 dark:bg-primary-content overflow-y-auto overflow-x-hidden p-4 pr-3 h-full w-65 min-w-55 md:w-75 md:min-w-75"
+					style="scrollbar-color: var(--color-primary) transparent; scrollbar-gutter: stable;"
+				>
+					@backlog.Backlog(backlogTasks, projects)
+				</div>
+				<div class="grow p-4 md:p-8" id="content">
+					@timeline.TimelineView(weekday, todaysTasks, projects)
+				</div>
+			</div>
+			<div class="fixed bottom-4 right-4">
+				<nav class="dropdown dropdown-hover dropdown-top dropdown-center">
+					<div
+						role="button"
+						class="btn btn-circle btn-soft btn-xl btn-primary shadow-lg tooltip tooltip-left m-1"
+						data-tip="New Task"
+						hx-get="/tasks/new"
+						hx-target="#dialog"
+						hx-trigger="click"
+					>
+						<i data-lucide="plus" class="size-12"></i>
+					</div>
+					<ul class="dropdown-content pb-2 z-1 flex flex-col gap-2">
+						<li
+							class="btn btn-lg btn-circle btn-soft btn-secondary shadow-md tooltip tooltip-left"
+							data-tip="Manage Projects"
+							hx-get="/projects/list"
+							hx-target="#dialog"
+							hx-trigger="click"
+						>
+							<i data-lucide="packages"></i>
+						</li>
+						<li
+							class="btn btn-lg btn-circle btn-soft btn-secondary shadow-md tooltip tooltip-left"
+							data-tip="New Project"
+							hx-get="/projects/new"
+							hx-target="#dialog"
+							hx-trigger="click"
+						>
+							<i data-lucide="package-plus"></i>
+						</li>
+					</ul>
+				</nav>
+			</div>
+		</main>
+	</div>
+}
+
+// BodyScripts defines JavaScript code.
+
+script BodyScripts() {
+	
+}

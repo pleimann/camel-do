@@ -1,0 +1,124 @@
+package pages
+
+import (
+    "fmt"
+    "slices"
+    "maps"
+    "github.com/pleimann/camel-do/model"
+    "github.com/pleimann/camel-do/templates/components"
+)
+
+templ TaskDialog(projectsIndex model.ProjectIndex, task *model.Task) {
+    {{ 
+        projects := slices.Collect(maps.Values(projectsIndex))
+        var project *model.Project
+        if task != nil && task.ProjectID.Valid {
+            p := projectsIndex[task.ProjectID.String]
+            project = &p
+        }
+    }}
+
+	<dialog class="modal" hx-on:htmx:load="this.showModal(); document.querySelector('form#taskForm').title.focus();" hx-on:close-modal="this.close()">
+		<div class="modal-box w-[20rem] pt-2">
+			<button class="btn btn-circle btn-ghost absolute right-2 top-2 z-1" 
+                @click="htmx.closest(this, 'dialog').remove()" tabindex="-1"
+            >
+				<i data-lucide="x"></i>
+			</button>
+
+			<form id="taskForm" method="dialog" class="flex flex-col gap-4"
+                if task == nil {
+                    hx-post="/tasks/"
+                } else {
+                    hx-put={ fmt.Sprintf("/tasks/%s", task.ID) }
+                }
+            >
+                <label class="input input-ghost input-lg grow">
+                    <i data-lucide="pencil-line" class="opacity-50 size-6 -ml-4"/>
+                    <input name="title" class="w-full shrink font-semibold" type="text" placeholder="New Task..." autocomplete="off" 
+                        if task != nil {
+                            value={ task.Title.String }
+                        }
+                    >
+                </label>
+
+                <div class="join grow" 
+                    if project != nil {
+                        x-data={ fmt.Sprintf("{ projectId: '%s' , projectName: '%s' }", project.ID, project.Name) }
+                    } else {
+                        x-data="{ projectId: '' , projectName: '' }"
+                    }
+                >
+                    <input x-model="projectName" type="text" tabindex="-1" placeholder="Project" class="join-item input input-readonly grow" 
+                        readonly list="projects" @click="$refs.projectDropdown.focus()" 
+                        if project != nil {
+                            value={ project.Name }
+                        }
+                    />
+                    <input name="projectId" type="hidden" x-model="projectId" 
+                        if project != nil {
+                            value={ project.ID } 
+                        }
+                    />
+
+                    // TODO: Allow selecting from dropdown with arrow keys
+                    <div class="dropdown dropdown-bottom dropdown-end" aria-haspopup="menu">
+                        <div tabindex="0" role="button" class="join-item btn px-1">
+                            <i data-lucide="chevron-down" />
+                        </div>
+                        <ul tabindex="0" x-ref="projectDropdown" class="dropdown-content menu bg-base-200 rounded-box z-1 w-52 p-2 mt-2 shadow-sm">
+                        for _, p := range projects {
+                            <li @click={ fmt.Sprintf("projectId = '%s'; projectName = '%s'; document.activeElement.blur();", p.ID, p.Name) }>
+                                <span>
+                                    @components.IconC(p.Icon, p.Color, 4) 
+                                    { p.Name } 
+                                </span>
+                            </li>
+                        }
+                        </ul>
+                    </div>
+                </div>
+
+                {{
+                    var durationMinutes int32 = 0
+                    if task != nil {
+                        durationMinutes = task.Duration.ValueOrZero()
+                     }
+                }}
+                <label class="input grow"
+                    x-data={ fmt.Sprintf("{ duration: %d }", task.Duration.ValueOrZero()) }
+
+                >
+                    <input name="duration" type="text" min="0" step="15" x-model.number="duration"
+                        value={ fmt.Sprintf("%d", durationMinutes) }
+                    />
+
+                    <div class="flex flex-row select-none cursor-default">
+                        <div class="cursor-pointer font-light text-center leading-none" @click="duration -= 15"><i data-lucide="chevron-down" /></div>
+                        15m
+                        <div class="cursor-pointer font-light text-center leading-none" @click="duration += 15"><i data-lucide="chevron-up" /></div>
+                    </div>
+                    <div class="flex flex-row select-none cursor-default">
+                        <div class="cursor-pointer font-light text-center leading-none" @click="duration -= 60"><i data-lucide="chevron-down" /></div>
+                        1h
+                        <div class="cursor-pointer font-light text-center leading-none" @click="duration += 60"><i data-lucide="chevron-up" /></div>
+                    </div>
+                </label>
+            
+                <textarea name="description" class="textarea" placeholder="Notes">
+                    if task != nil && task.Description.Valid {
+                        { task.Description.String }
+                    }
+                </textarea>
+                                                                                                                                                                    
+                {{
+                    submitLabel := "Create"
+                    if task != nil {
+                        submitLabel = "Save"
+                    }
+                }}
+				<button class="btn btn-primary">{ submitLabel }</button>
+			</form>
+		</div>
+	</dialog>
+}

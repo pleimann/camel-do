@@ -1,0 +1,85 @@
+package components
+
+import (
+    "fmt"
+)
+
+type timeOption struct {
+    hour int
+    minute int
+    period string
+}
+
+func generateTimeOptions(intervalMinutes int) []timeOption {
+    options := []timeOption{};
+
+    for i := 0; i < 24 * 60; i += intervalMinutes {
+        h24 := i / 60
+
+        h := h24 % 12
+        if h == 0 {
+            h = 12
+        }
+        
+        m := i % 60
+
+        p := "PM"
+        if h24 < 12 {
+            p = "AM"
+        }
+
+        option := timeOption{ hour: h, minute: m, period: p }
+
+        options = append(options, option)
+    }
+
+    return options;
+}
+
+script containerClickHandler(event any) {
+    const timeOption = event.target.closest('.time-option');
+
+    if (timeOption) {
+        const hour = timeOption.querySelector('.hour').textContent;
+        const minute = timeOption.querySelector('.minute').textContent;
+        const period = timeOption.querySelector('.period').textContent;
+        timepickerInput.value = `${hour} ${minute} ${period}`;
+
+        // Close the dropdown
+        timepickerContainer.classList.add('hidden');
+    }
+}
+
+templ TimePicker(minutesInterval int) {
+    <div id="timepicker" class="relative" x-data="{ open: false }" aria-haspopup="menu">
+        <!-- Timepicker Input with Icons -->
+        <div class="relative flex items-center">
+            <input id="timepicker" type="text"
+                class="w-full bg-transparent pr-8 py-2.5 input input-readonly"
+                placeholder="Select a time" readonly/>
+
+            <div id="toggleTimepicker" popovertarget="timepicker-container" 
+                type="menu"
+                class={"cursor-pointer", "picker-button"}
+                style="anchor-name: --picker-button;"
+            >
+                <i data-lucide="clock" />
+            </div>
+        </div>
+    </div>
+
+    <div popover id="timepicker-container" 
+        class="popover-menu popover-right-top" style="position-anchor: --picker-button;"
+        class={"picker-menu"}
+    >
+        {{ timeOptions := generateTimeOptions(minutesInterval) }}
+        for _, timeOption := range timeOptions{
+            <div class="time-option cursor-pointer flex gap-1 justify-between hover:bg-blue-light-5 hover:text-primary active:bg-blue-light-10, active:text-primary"
+            @click="containerClickhandler">
+                <div class="hour w-full">{ fmt.Sprintf("%02d", timeOption.hour) }</div>
+                <div class="minute w-full">{ fmt.Sprintf("%02d", timeOption.minute) }</div>
+                <div class="period w-full">{ timeOption.period }</div>
+            </div>
+        }
+    </div>
+}

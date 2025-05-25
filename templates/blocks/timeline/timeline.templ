@@ -1,0 +1,175 @@
+package timeline
+
+import (
+	"fmt"
+	"github.com/pleimann/camel-do/model"
+	"github.com/pleimann/camel-do/templates/components"
+	"sort"
+	"strings"
+	"time"
+)
+
+var startHours = 6
+var endHours = 24
+var slotMinutes = 15
+
+func taskPosition(task model.Task, holdOver int, slotGroupOffset int) map[string]string {
+	row := task.Position.Slot
+	spanRows := task.Position.Size
+
+    h := 0
+    if holdOver > 0 {
+        h = 1
+    }
+
+	return map[string]string{
+		"grid-row":   fmt.Sprintf(" %d / span %d", row, spanRows),
+        "grid-column":   fmt.Sprintf(" %d", 3 + h + slotGroupOffset),
+		"max-height": fmt.Sprintf(" %drem", 3 * spanRows),
+	}
+}
+
+func meridian(h24 int) string {
+	if h24 > 12 {
+		return "PM"
+	} else {
+		return "AM"
+	}
+}
+
+func groupTasksBySlot(tasks []model.Task) map[int][]model.Task {
+	resultMap := make(map[int][]model.Task)
+
+	for _, task := range tasks {
+		key := task.Position.Slot
+		resultMap[key] = append(resultMap[key], task)
+
+		sort.Slice(resultMap[key], func(i, j int) bool {
+			return resultMap[key][i].Position.Size >= resultMap[key][j].Position.Size
+		})
+	}
+
+	return resultMap
+}
+
+css taskBarClass() {
+	border-radius: var(--radius-xl);
+	display: flex;
+	flex-direction: row;
+    column-gap: calc(var(--spacing) * 2);
+}
+
+css timeClass() {
+	grid-column-start: 1;
+	grid-row: span 4;
+	font-variant-numeric: tabular-nums;
+	padding: 3px 5px;
+	border-width: 1px 1px 0 0;
+	border-style: solid;
+	border-color: lightgray;
+	font-size: var(--text-xs);
+	user-select: none;
+	cursor: default;
+    text-align: center;
+}
+
+css tickClass() {
+	grid-column-start: 2;
+	border-top: 1px solid lightgray;
+	min-height: 2em;
+}
+
+var startWeekday = time.Monday
+
+templ TimelineView(weekday time.Weekday, tasks []model.Task, projects model.ProjectIndex) {
+    @dayOfWeekSelector(weekday)
+    
+    @timeline(tasks, projects)
+}
+
+templ dayOfWeekSelector(weekday time.Weekday) {
+    <div id="dayOfWeekSelector" class="static w-full mb-4 flex flex-row gap-4 justify-center" hx-swap-oob="true">
+        {{ currentWeekday := time.Now().Weekday() }}
+        for i := startWeekday; i < 7+startWeekday; i++ {
+            {{
+                w := time.Weekday(i % 7)
+                // (w + 6) % 7 shifts Sunday (0) to 6, Monday (1) to 0, ..., Saturday (6) to 5
+                shiftedWeekday := time.Weekday((int(w)+7-int(startWeekday))%7 + 1)
+                isFuture := currentWeekday < shiftedWeekday
+            }}
+            <button class={ "btn", "btn-circle", templ.KV("btn-dash", isFuture), templ.KV("btn-accent", weekday==w) }>{ w.String()[0:2] }</button>
+        }
+    </div>
+}
+
+templ timeline(tasks []model.Task, projects model.ProjectIndex) {
+    <div id="timeline" class="w-full lg:w-1/2 max-h-[calc(100%-50px)] overflow-y-scroll" style="scrollbar-width: none;" hx-swap-oob="true" x-data="">
+		<div class="w-full grid grid-flow-col-dense grid-rows-52 grid-cols-[40px_10px_repeat(4,1fr)]" style="column-gap: calc(var(--spacing) * 2)">
+			{{ tasksBySlot := groupTasksBySlot(tasks) }}
+			for h24 := startHours; h24 < endHours; h24++ {
+				{{
+                    h := h24
+                    if h24 > 12 {
+                        h = h24 - 12
+                    }
+				}}
+				<span id={ fmt.Sprintf("tick-%d", h24) } class={ timeClass() }>{ fmt.Sprintf("%02d %s", h, meridian(h24)) }</span>
+                {{
+                    holdOver := 0
+                }}
+				for m := 0; m < 60; m += slotMinutes {
+					{{
+                        s := ((h24 - startHours) * (60 / slotMinutes)) + (m / slotMinutes)
+                        slotTasks := tasksBySlot[s]
+
+                        slotTaskCount := len(slotTasks)
+
+                        if holdOver > 0 {
+                            holdOver -= 1
+                        }
+					}}
+					<span
+						id={ fmt.Sprintf("tick-%d-%d", h24, m) }
+						x-data={ fmt.Sprintf("{hour: %d, minute: %d, slot: %d}", h, m, s) }
+						class={ "tick", tickClass() }
+					></span>
+					for i, task := range slotTasks {
+                        {{
+                            project := projects[task.ProjectID.String]
+                            color := strings.ToLower(project.Color.String())
+                            position := taskPosition(task, holdOver, i)
+                        }}
+						<div id={ fmt.Sprintf("task-bar-%s", task.ID) }
+                            class={
+                                taskBarClass(),
+                                fmt.Sprintf("bg-%s-50", color),
+                                fmt.Sprintf("dark:bg-%s-900", color),
+                                fmt.Sprintf("border-%s-100", color),
+                                "border", "shadow-sm", "text-sm",
+                            }
+                            style={ position }
+                        >
+                            <div class={
+                                    "tooltip", "tooltip-top", "h-full", "p-2", "rounded-s-xl",
+                                    fmt.Sprintf("bg-%s-200", color), fmt.Sprintf("text-%s-800", color),
+                                }
+                                data-tip={ project.Name }
+                            >@components.Icon(project.Icon, 16)</div>
+                            <div class="p-2">
+                                { task.Title.String }
+                                <span class="italic">{ fmt.Sprintf("%02d:%02d", task.StartTime.Time.Hour(), task.StartTime.Time.Minute()) }</span>
+                            </div>
+                        </div>
+					}
+                    {{
+                        // store the holdover column offset for the next slot group so that tasks don't overlap
+                        if slotTaskCount > 1 && // only if there is more than one element starting at this slot
+                            slotTasks[0].Position.Size > 1 {
+                            holdOver = slotTasks[0].Position.Size
+                        }
+                    }}
+				}
+			}
+		</div>
+	</div>
+}

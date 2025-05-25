@@ -1,0 +1,258 @@
+package backlog
+
+import (
+	"fmt"
+	"reflect"
+	"strings"
+
+	"github.com/pleimann/camel-do/model"
+	"github.com/pleimann/camel-do/utils"
+)
+
+const BacklogSelector = "#backlog"
+
+templ Backlog(tasks []model.Task, projects model.ProjectIndex) {
+	// padding being defined in Backlog component rather than parent (App) prevents drop shadows from being clipped
+	<div id="backlog" class="flex flex-col gap-2 bg-transparent">
+		for _, task := range tasks {
+			{{
+                project := model.Project{}
+
+                if !reflect.ValueOf(&task.ProjectID).Elem().IsZero() {
+                    project = projects[task.ProjectID.String]
+                }
+			}}
+			@TaskCard(task, &project)
+		}
+	</div>
+}
+
+const LightLevel = 200
+const DarkLevel = 800
+
+// BodyContent defines HTML content.
+templ TaskCard(task model.Task, project *model.Project) {
+	{{
+        var bgColor, txColor string
+        var bgColorDark, txColorDark string
+        if project != nil && project.Color.String() != "" {
+            bgColor = fmt.Sprintf("bg-%s-%d", strings.ToLower(project.Color.String()), LightLevel)
+            txColor = fmt.Sprintf("text-%s-%d", strings.ToLower(project.Color.String()), DarkLevel)
+            bgColorDark = fmt.Sprintf("dark:bg-%s-%d", strings.ToLower(project.Color.String()), LightLevel)
+            txColorDark = fmt.Sprintf("dark:text-%s-%d", strings.ToLower(project.Color.String()), DarkLevel)
+
+        } else {
+            bgColor = "bg-base-200"
+            txColor = "text-base-200"
+            bgColorDark = "dark:bg-base-200"
+            txColorDark = "dark:text-base-200"
+        }
+
+        var icon string
+        if project != nil && project.Icon.String() != "" {
+            icon = project.Icon.String()
+        } else {
+            icon = "package"
+        }
+
+        taskElementId := fmt.Sprintf("task-card-%s", task.ID)
+	}}
+	<div id={ taskElementId } class="card card-side card-xs bg-base-100 shadow-md text-sm select-none rounded-2xl">
+		<figure class={ "w-12", bgColor, txColor, bgColorDark, txColorDark }>
+			<i data-lucide={ icon } class="size-7"></i>
+		</figure>
+		<div class="card-body grid grid-cols-2 justify-center items-center">
+			<div class="text-sm font-medium col-span-2">{ task.Title.String }</div>
+			<time class="italic">{ utils.FormatTaskDuration(task.Duration.Int32) }</time>
+			if task.Description.Valid {
+				<div class="justify-self-end" x-data="{ isOpen: false }">
+					<div
+						@mouseover="isOpen = true"
+						@mouseleave="isOpen = false"
+						class="font-bold transition-colors duration-300"
+					>
+						<i data-lucide="notepad-text" class="size-4"></i>
+					</div>
+					<div
+						x-show="isOpen"
+						x-transition:enter="transition ease-out duration-300"
+						x-transition:enter-start="opacity-0 transform scale-95"
+						x-transition:enter-end="opacity-100 transform scale-100"
+						x-transition:leave="transition ease-in duration-200"
+						x-transition:leave-start="opacity-100 transform scale-100"
+						x-transition:leave-end="opacity-0 transform scale-95"
+						class="popover absolute bg-base-100 line-clamp-3 shadow-md rounded-lg w-52 -ml-36 md:w-64 md:-ml-48 mt-4 p-2 z-1"
+					>
+						{ task.Description.String }
+					</div>
+				</div>
+			}
+		</div>
+		<div class="card-actions rounded-e-2xl bg-base-200 dark:bg-base-200 p-2">
+			<div class="flex flex-col justify-between">
+				<div class="dropdown dropdown-hover dropdown-left dropdown-center">
+					<button
+						class="btn btn-circle btn-ghost tooltip tooltip-left"
+						hx-put={ fmt.Sprintf("/tasks/%s/complete", task.ID) }
+						hx-target="closest .card"
+                        hx-swap="outerHTML"
+					>
+						if task.Completed.Bool {
+							<i data-lucide="circle-checked" class="size-5"></i>
+						} else {
+							<i data-lucide="circle" class="size-5"></i>
+						}
+					</button>
+					<ul class="dropdown-content p-2 z-1 gap-2 flex flex-row-reverse rounded-s-full bg-base-200/90 bg-blend-overlay" tabIndex="0">
+						<li
+							class="btn btn-circle btn-ghost tooltip tooltip-bottom"
+							data-tip="Edit"
+							hx-get={ fmt.Sprintf("/tasks/edit/%s", task.ID) }
+							hx-target="#dialog"
+						>
+							<i data-lucide="edit" class="size-5"></i>
+						</li>
+						<li
+							class="btn btn-circle btn-ghost tooltip tooltip-bottom"
+							data-tip="Delete"
+							hx-delete={ fmt.Sprintf("/tasks/%s", task.ID) }
+							hx-target="closest .card"
+							hx-swap="delete"
+						>
+							<i data-lucide="Trash" class="size-5"></i>
+						</li>
+					</ul>
+				</div>
+				<button
+					class="btn btn-circle btn-ghost tooltip tooltip-left"
+                    data-tip="Schedule"
+					hx-put={ fmt.Sprintf("/tasks/schedule/%s", task.ID) }
+					hx-target="closest .card"
+					hx-swap="delete"
+				>
+					<i data-lucide="schedule" class="size-5"></i>
+				</button>
+			</div>
+		</div>
+	</div>
+}
+
+// The code dynamically generates these names so tailwind can't pick them up
+// "bg-red-200",
+// "bg-orange-200",
+// "bg-amber-200",
+// "bg-yellow-200",
+// "bg-lime-200",
+// "bg-green-200",
+// "bg-emerald-200",
+// "bg-teal-200",
+// "bg-cyan-200",
+// "bg-sky-200",
+// "bg-violet-200",
+// "bg-purple-200",
+// "bg-fuchsia-200",
+// "bg-pink-200",
+// "bg-rose-200",
+// "bg-zinc-200",
+
+// "bg-red-50",
+// "bg-orange-50",
+// "bg-amber-50",
+// "bg-yellow-50",
+// "bg-lime-50",
+// "bg-green-50",
+// "bg-emerald-50",
+// "bg-teal-50",
+// "bg-cyan-50",
+// "bg-sky-50",
+// "bg-violet-50",
+// "bg-purple-50",
+// "bg-fuchsia-50",
+// "bg-pink-50",
+// "bg-rose-50",
+// "bg-zinc-50",
+
+// "dark:bg-red-800",
+// "dark:bg-orange-800",
+// "dark:bg-amber-800",
+// "dark:bg-yellow-800",
+// "dark:bg-lime-800",
+// "dark:bg-green-800",
+// "dark:bg-emerald-800",
+// "dark:bg-teal-800",
+// "dark:bg-cyan-800",
+// "dark:bg-sky-800",
+// "dark:bg-violet-800",
+// "dark:bg-purple-800",
+// "dark:bg-fuchsia-800",
+// "dark:bg-pink-800",
+// "dark:bg-rose-800",
+// "dark:bg-zinc-800",
+
+// "dark:bg-red-900",
+// "dark:bg-orange-900",
+// "dark:bg-amber-900",
+// "dark:bg-yellow-900",
+// "dark:bg-lime-900",
+// "dark:bg-green-900",
+// "dark:bg-emerald-900",
+// "dark:bg-teal-900",
+// "dark:bg-cyan-900",
+// "dark:bg-sky-900",
+// "dark:bg-violet-900",
+// "dark:bg-purple-900",
+// "dark:bg-fuchsia-900",
+// "dark:bg-pink-900",
+// "dark:bg-rose-900",
+// "dark:bg-zinc-900",
+
+// "dark:text-red-200",
+// "dark:text-orange-200",
+// "dark:text-amber-200",
+// "dark:text-yellow-200",
+// "dark:text-lime-200",
+// "dark:text-green-200",
+// "dark:text-emerald-200",
+// "dark:text-teal-200",
+// "dark:text-cyan-200",
+// "dark:text-sky-200",
+// "dark:text-violet-200",
+// "dark:text-purple-200",
+// "dark:text-fuchsia-200",
+// "dark:text-pink-200",
+// "dark:text-rose-200",
+// "dark:text-zinc-200",
+
+// "text-red-800",
+// "text-orange-800",
+// "text-amber-800",
+// "text-yellow-800",
+// "text-lime-800",
+// "text-green-800",
+// "text-emerald-800",
+// "text-teal-800",
+// "text-cyan-800",
+// "text-sky-800",
+// "text-violet-800",
+// "text-purple-800",
+// "text-fuchsia-800",
+// "text-pink-800",
+// "text-rose-800",
+// "text-zinc-800",
+
+// "border-red-100",
+// "border-orange-100",
+// "border-amber-100",
+// "border-yellow-100",
+// "border-lime-100",
+// "border-green-100",
+// "border-emerald-100",
+// "border-teal-100",
+// "border-cyan-100",
+// "border-sky-100",
+// "border-violet-100",
+// "border-purple-100",
+// "border-fuchsia-100",
+// "border-pink-100",
+// "border-rose-100",
+// "border-zinc-100",

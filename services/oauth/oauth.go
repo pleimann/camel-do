@@ -1,0 +1,160 @@
+package oauth
+
+import (
+	"context"
+	"encoding/json"
+	"errors"
+	"fmt"
+	"log"
+	"log/slog"
+	"net/http"
+	"os"
+	"os/exec"
+	"runtime"
+	"time"
+
+	"golang.org/x/oauth2"
+	"golang.org/x/oauth2/google"
+	"google.golang.org/api/tasks/v1"
+)
+
+type GoogleAuth struct {
+	config *oauth2.Config
+}
+
+func NewGoogleAuth() *GoogleAuth {
+	b, err := os.ReadFile("credentials.json")
+	if err != nil {
+		log.Fatalf("Unable to read client secret file: %v", err)
+	}
+
+	// If modifying these scopes, delete your previously saved token.json.
+	config, err := google.ConfigFromJSON(b, tasks.TasksReadonlyScope)
+	if err != nil {
+		log.Fatalf("Unable to parse client secret file to config: %v", err)
+	}
+
+	return &GoogleAuth{
+		config: config,
+	}
+}
+
+// Retrieve a token, saves the token, then returns the generated client.
+func (a *GoogleAuth) GetClient() *http.Client {
+	// The file token.json stores the user's access and refresh tokens, and is
+	// created automatically when the authorization flow completes for the first time.
+	tokFile := "token.json"
+	tok, err := a.tokenFromFile(tokFile)
+	if err != nil {
+		tok = a.getTokenFromWeb(a.config)
+
+		slog.Info("Saving token from web...")
+
+		a.saveToken(tokFile, tok)
+
+		slog.Info("Saved token to file")
+
+	} else {
+		slog.Info("Got token from file")
+	}
+
+	return a.config.Client(context.Background(), tok)
+}
+
+// Request a token from the web, then returns the retrieved token.
+func (a *GoogleAuth) getTokenFromWeb(config *oauth2.Config) *oauth2.Token {
+	authURL := config.AuthCodeURL("state-token", oauth2.AccessTypeOffline)
+
+	var authCodeChannel = make(chan string)
+	defer close(authCodeChannel)
+
+	srv := a.startServer(authCodeChannel)
+
+	a.launchBrowser(authURL)
+
+	authCode := <-authCodeChannel
+
+	tok, err := config.Exchange(context.TODO(), authCode)
+	if err != nil {
+		log.Fatalf("Unable to retrieve token from web: %v", err)
+	}
+
+	ctx, _ := context.WithTimeout(context.Background(), 5*time.Second)
+	if err := srv.Shutdown(ctx); err != nil {
+		slog.Error("error shutting down server", "error", err)
+	}
+
+	return tok
+}
+
+func (a *GoogleAuth) startServer(authCodeChannel chan string) *http.Server {
+	srv := &http.Server{
+		Addr: ":9876",
+		Handler: http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
+			slog.Info("code response", "url", req.URL)
+
+			if req.URL.Query().Has("code") {
+				authCodeChannel <- req.URL.Query().Get("code")
+				fmt.Fprintf(w, "<html><body>This window can be closed.<scrip>window.close()</script></body></html>")
+			}
+		}),
+	}
+
+	go func() {
+		// always returns error. ErrServerClosed on graceful close
+		if err := srv.ListenAndServe(); !errors.Is(err, http.ErrServerClosed) {
+			// unexpected error. port in use?
+			log.Fatalf("ListenAndServe(): %v", err)
+		}
+	}()
+
+	fmt.Println("Listening on http://localhost:9876...")
+
+	// returning reference so caller can call Shutdown()
+	return srv
+}
+
+func (a *GoogleAuth) launchBrowser(url string) {
+	var err error
+
+	switch os := runtime.GOOS; os {
+	case "linux":
+		err = exec.Command("xdg-open", url).Start()
+
+	case "windows":
+		err = exec.Command("rundll32", "url.dll,FileProtocolHandler", url).Start()
+
+	case "darwin":
+		err = exec.Command("open", url).Start()
+
+	default:
+		err = fmt.Errorf("unsupported platform")
+	}
+
+	if err != nil {
+		log.Fatal(err)
+	}
+}
+
+// Retrieves a token from a local file.
+func (a *GoogleAuth) tokenFromFile(file string) (*oauth2.Token, error) {
+	f, err := os.Open(file)
+	if err != nil {
+		return nil, err
+	}
+	defer f.Close()
+	tok := &oauth2.Token{}
+	err = json.NewDecoder(f).Decode(tok)
+	return tok, err
+}
+
+// Saves a token to a file path.
+func (a *GoogleAuth) saveToken(path string, token *oauth2.Token) {
+	fmt.Printf("Saving credential file to: %s\n", path)
+	f, err := os.OpenFile(path, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0600)
+	if err != nil {
+		log.Fatalf("Unable to cache oauth token: %v", err)
+	}
+	defer f.Close()
+	json.NewEncoder(f).Encode(token)
+}

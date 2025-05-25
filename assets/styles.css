@@ -1,0 +1,156 @@
+@import 'tailwindcss' source('../templates');
+
+@plugin "daisyui" {
+  themes: light --default, dark --prefersdark;
+  exclude: rootscrollgutter;
+}
+
+@plugin "daisyui/theme" {
+  name: "light";
+  default: true;
+  prefersdark: false;
+  color-scheme: "light";
+
+  --color-base-100: oklch(100% 0 0);
+  --color-base-200: oklch(93% 0 0);
+  --color-base-300: oklch(86% 0 0);
+  --color-base-content: oklch(22.389% 0.031 278.072);
+  --color-primary: oklch(58% 0.158 241.966);
+  --color-primary-content: oklch(100% 0 0);
+  --color-secondary: oklch(55% 0.046 257.417);
+  --color-secondary-content: oklch(100% 0 0);
+  --color-accent: oklch(60% 0.118 184.704);
+  --color-accent-content: oklch(100% 0 0);
+  --color-neutral: oklch(0% 0 0);
+  --color-neutral-content: oklch(100% 0 0);
+  --color-info: oklch(60% 0.126 221.723);
+  --color-info-content: oklch(100% 0 0);
+  --color-success: oklch(62% 0.194 149.214);
+  --color-success-content: oklch(100% 0 0);
+  --color-warning: oklch(85% 0.199 91.936);
+  --color-warning-content: oklch(0% 0 0);
+  --color-error: oklch(70% 0.191 22.216);
+  --color-error-content: oklch(0% 0 0);
+  --radius-selector: 2rem;
+  --radius-field: .75rem;
+  --radius-box: 1rem;
+  --size-selector: 0.2rem;
+  --size-field: 0.2rem;
+  --border: 1px;
+  --depth: 1;
+  --noise: 0;
+}
+
+@plugin "daisyui/theme" {
+  name: "dark";
+  prefersdark: true;
+  color-scheme: dark;
+
+  --radius-selector: 2rem;
+  --radius-field: .75rem;
+  --radius-box: 1rem;
+  --size-selector: 0.2rem;
+  --size-field: 0.2rem;
+  --border: 1px;
+  --depth: 1;
+  --noise: 0;
+}
+
+html {
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-gray-500) white;
+}
+
+body {
+  overflow: hidden;
+  scrollbar-gutter: stable;
+  width: 100vw;
+  height: 100vh;
+}
+
+:focus-visible {
+  outline-width: 0;
+  outline-style: none;
+}
+
+.input:focus-within {
+  outline-width: 0;
+  outline-style: none;
+}
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-base-300) transparent;
+}
+
+::-webkit-scrollbar {
+  width: var(--spacing);
+  height: var(--spacing);
+}
+
+::-webkit-scrollbar-track {
+  background-color: transparent;
+  border-radius: 50%;
+}
+
+::-webkit-scrollbar-corner {
+  background-color: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: var(--color-gray-500);
+  border-radius: 1000px; /* can't use 50% cause it will produce an oval */
+}
+
+/* Alpine.js styles */
+
+[x-cloak] {
+  display: none !important;
+}
+
+.popover-menu {
+  display: none;
+  position: absolute;
+  margin: 0;
+  inset: auto;
+  opacity: 0;
+  transition: opacity 0.25s, display 0.25s, overlay 0.25s;
+  transition-behavior: allow-discrete;
+  
+  &:popover-open {
+    display: grid;
+    opacity: 1;
+    
+    @starting-style {
+      display: grid;
+      opacity: 0;
+    }
+  }
+}
+
+.popover-right-top {
+  top: anchor(top);
+  left: anchor(right);
+  position-try-fallbacks: --bottom;
+}
+
+.popover-bottom-right {
+  top: anchor(bottom);
+  right: anchor(right);
+  position-try-fallbacks: --top;
+}
+
+@position-try --top {
+  inset: auto;
+  bottom: anchor(top);
+  right: anchor(right);
+}
+
+@position-try --bottom {
+  inset: auto;
+  top: anchor(bottom);
+  right: anchor(right);
+}
