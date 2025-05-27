@@ -17,6 +17,7 @@ import (
 	"github.com/pleimann/camel-do/services/project"
 	"github.com/pleimann/camel-do/templates/blocks/backlog"
 	"github.com/pleimann/camel-do/templates/blocks/timeline"
+	"github.com/pleimann/camel-do/templates/components"
 	"github.com/pleimann/camel-do/templates/pages"
 	"github.com/pleimann/camel-do/utils"
 )
@@ -68,7 +69,9 @@ func (h *TaskHandler) handleNewTask(c echo.Context) error {
 
 	newTaskDialogTemplate := pages.TaskDialog(projectsIndex, nil)
 
-	if err := htmx.NewResponse().RenderTempl(c.Request().Context(), c.Response().Writer, newTaskDialogTemplate); err != nil {
+	dialogTemplate := components.Dialog(newTaskDialogTemplate)
+
+	if err := htmx.NewResponse().RenderTempl(c.Request().Context(), c.Response().Writer, dialogTemplate); err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, "render template", err)
 	}
 
@@ -93,9 +96,11 @@ func (h *TaskHandler) handleEditTask(c echo.Context) error {
 			return echo.NewHTTPError(http.StatusInternalServerError, "getting projects", err)
 		}
 
-		newTaskDialogTemplate := pages.TaskDialog(projectsIndex, task)
+		taskDialogTemplate := pages.TaskDialog(projectsIndex, task)
 
-		if err := htmx.NewResponse().RenderTempl(c.Request().Context(), c.Response().Writer, newTaskDialogTemplate); err != nil {
+		dialogTemplate := components.Dialog(taskDialogTemplate)
+
+		if err := htmx.NewResponse().RenderTempl(c.Request().Context(), c.Response().Writer, dialogTemplate); err != nil {
 			return echo.NewHTTPError(http.StatusInternalServerError, "render template", err)
 		}
 	}

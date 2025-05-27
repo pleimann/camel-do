@@ -11,71 +11,63 @@ const LightLevel = 200
 const DarkLevel = 800
 
 templ ProjectDialog(project *model.Project) {
-<dialog class="modal" hx-on:htmx:load="this.showModal(); document.querySelector('form#projectForm').projectName.focus();" hx-on:close-modal="this.close()">
-    <div class="modal-box p-8">
-        <button class="btn btn-circle btn-ghost absolute right-2 top-2" onclick="htmx.closest(this, 'dialog').remove()">
-            <i data-lucide="x"></i>
-        </button>
-        
-        <form id="projectForm" method="dialog" class="flex flex-col gap-8" 
-            if project == nil {
-                hx-post="/projects/"
+    <form id="projectForm" method="dialog" class="flex flex-col gap-8" hx-on:htmx:load="document.querySelector('form#projectForm').projectName.focus();"
+        if project == nil {
+            hx-post="/projects/"
+        } else {
+            hx-put={ fmt.Sprintf("/projects/%s", project.ID) }
+        }
+    >
+        <label class="input input-ghost input-lg focus-within:outline-hidden grow">
+            <i data-lucide="pencil-line" class="opacity-50 size-6 -ml-4" />
+            <input name="projectName" class="w-full shrink font-semibold" type="text" placeholder="New Project..."
+                autocomplete="off" 
+                if project != nil {
+                    value={ project.Name } 
+                }
+                />
+        </label>
+
+        <div class="flex gap-4 w-full" 
+            if project != nil {
+                x-data={ fmt.Sprintf("{ color: '%s' , icon: '%s' }", project.Color, project.Icon) }
             } else {
-                hx-put={ fmt.Sprintf("/projects/%s", project.ID) }
+                x-data="{ color: '', icon: '' }"
             }
         >
-            <label class="input input-ghost input-lg focus-within:outline-hidden grow">
-                <i data-lucide="pencil-line" class="opacity-50 size-6 -ml-4" />
-                <input name="projectName" class="w-full shrink font-semibold" type="text" placeholder="New Project..."
-                    autocomplete="off" 
-                    if project != nil {
-                        value={ project.Name } 
-                    }
-                    />
-            </label>
-
-            <div class="flex gap-4 w-full" 
-                if project != nil {
-                    x-data={ fmt.Sprintf("{ color: '%s' , icon: '%s' }", project.Color, project.Icon) }
-                } else {
-                    x-data="{ color: '', icon: '' }"
+            // TODO: Allow selection of color and icon with arrow keys
+            <div class="w-1/4 flex flex-col gap-2">
+                <input name="color" type="hidden" x-model="color" />
+                for _, color := range model.ColorValues() {
+                    <div class={ "btn" , "btn-soft" , "h-6" , "active:outline-2" , "active:outline-offset-2" ,
+                        fmt.Sprintf("bg-%s-%d", strings.ToLower(color.String()), LightLevel),
+                        fmt.Sprintf("text-%s-%d", strings.ToLower(color.String()), DarkLevel), }
+                        x-bind:class={ fmt.Sprintf("{ 'outline-2' : color=='%s' }", color) } x-on:click={
+                        fmt.Sprintf("color='%s'", color) }
+                    >{ color.String() }</div>
                 }
-            >
-                // TODO: Allow selection of color and icon with arrow keys
-                <div class="w-1/4 flex flex-col gap-2">
-                    <input name="color" type="hidden" x-model="color" />
-                    for _, color := range model.ColorValues() {
-                        <div class={ "btn" , "btn-soft" , "h-6" , "active:outline-2" , "active:outline-offset-2" ,
-                            fmt.Sprintf("bg-%s-%d", strings.ToLower(color.String()), LightLevel),
-                            fmt.Sprintf("text-%s-%d", strings.ToLower(color.String()), DarkLevel), }
-                            x-bind:class={ fmt.Sprintf("{ 'outline-2' : color=='%s' }", color) } x-on:click={
-                            fmt.Sprintf("color='%s'", color) }
-                        >{ color.String() }</div>
-                    }
-                </div>
-          
-                <div class=" w-3/4 grid grid-cols-4 gap-2">
-                    <input name="icon" type="hidden" x-model="icon" />
-                    for _, icon := range model.IconValues()[1:] {
-                        {{ classes := []string{ "btn", "btn-ghost", "btn-square", "flex", "flex-col", "size-18" } }}
-
-                        <div name="icon" role="button" aria-label={ icon.String() } class={ classes } x-bind:class={
-                            fmt.Sprintf("{ 'outline-2' : icon=='%s' }", icon) } x-on:click={ fmt.Sprintf("icon='%s'", icon) }>
-                            <i data-lucide={ icon.String() }></i>
-                            <span class=" font-light">{ icon.String() }</span>
-                        </div>
-                    }
-                </div>
             </div>
+        
+            <div class=" w-3/4 grid grid-cols-4 gap-2">
+                <input name="icon" type="hidden" x-model="icon" />
+                for _, icon := range model.IconValues()[1:] {
+                    {{ classes := []string{ "btn", "btn-ghost", "btn-square", "flex", "flex-col", "size-18" } }}
 
-            {{
-                submitLabel := "Create"
-                if project != nil {
-                    submitLabel = "Update"
+                    <div name="icon" role="button" aria-label={ icon.String() } class={ classes } x-bind:class={
+                        fmt.Sprintf("{ 'outline-2' : icon=='%s' }", icon) } x-on:click={ fmt.Sprintf("icon='%s'", icon) }>
+                        <i data-lucide={ icon.String() }></i>
+                        <span class=" font-light">{ icon.String() }</span>
+                    </div>
                 }
-            }}
-            <button class="btn btn-primary btn-block btn-lg">{ submitLabel }</button>
-        </form>
-    </div>
-</dialog>
+            </div>
+        </div>
+
+        {{
+            submitLabel := "Create"
+            if project != nil {
+                submitLabel = "Update"
+            }
+        }}
+        <button class="btn btn-primary btn-block btn-lg">{ submitLabel }</button>
+    </form>
 }
