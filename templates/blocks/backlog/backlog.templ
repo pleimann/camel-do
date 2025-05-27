@@ -95,7 +95,7 @@ templ TaskCard(task model.Task, project *model.Project) {
 						class="btn btn-circle btn-ghost tooltip tooltip-left"
 						hx-put={ fmt.Sprintf("/tasks/%s/complete", task.ID) }
 						hx-target="closest .card"
-                        hx-swap="outerHTML"
+            hx-swap="outerHTML"
 					>
 						if task.Completed.Bool {
 							<i data-lucide="circle-checked" class="size-5"></i>

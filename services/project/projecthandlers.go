@@ -27,13 +27,13 @@ func NewProjectHandler(group *echo.Group, projectService *ProjectService) *Proje
 		projectService: projectService,
 	}
 
-	group.GET("/new", projectHandler.handleNewProject)
-	group.GET("/list", projectHandler.handleListProjects)
-	group.GET("/edit/{id}", projectHandler.handleEditProject)
+	group.GET("/new", projectHandler.handleNewProject).Name = "new-project"
+	group.GET("/list", projectHandler.handleListProjects).Name = "list-projects"
+	group.GET("/edit/:id", projectHandler.handleEditProject).Name = "edit-project"
 
-	group.POST("/", projectHandler.handleProjectCreate)
-	group.DELETE("/{id}", projectHandler.handleProjectDelete)
-	group.PUT("/{id}", projectHandler.handleProjectUpdate)
+	group.POST("/", projectHandler.handleProjectCreate).Name = "create-project"
+	group.DELETE("/:id", projectHandler.handleProjectDelete).Name = "delete-project"
+	group.PUT("/:id", projectHandler.handleProjectUpdate).Name = "update-project"
 
 	return projectHandler
 }
@@ -149,30 +149,19 @@ func (h *ProjectHandler) handleProjectDelete(c echo.Context) error {
 }
 
 func (h *ProjectHandler) handleProjectUpdate(c echo.Context) error {
-	defer c.Request().Body.Close()
-
 	id := extractTaskId(c)
 
-	slog.Debug("ProjectHandler.handleProjectUpdate", "projectId", id)
+	c.Logger().Debug("ProjectHandler.handleProjectUpdate", "projectId", id)
 
-	if err := c.Request().ParseForm(); err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
-			return echo.NewHTTPError(http.StatusNotFound, "updating project", err)
-
-		} else {
-			return echo.NewHTTPError(http.StatusInternalServerError, "updating project", err)
+	var project model.Project
+	if err := c.Bind(&project); err != nil {
+		return &echo.HTTPError{
+			Code:    http.StatusBadRequest,
+			Message: err.Error(),
 		}
 	}
 
-	slog.Debug("ProjectHandler.handleProjectUpdate", "form", c.Request().PostForm.Encode())
-
-	var project model.Project
-
-	if err := utils.Decoder().Decode(&project, c.Request().PostForm); err != nil {
-		return echo.NewHTTPError(http.StatusUnprocessableEntity, "decoding form data", err)
-	}
-
-	slog.Debug("ProjectHandler.handleProjectUpdate", "project", project)
+	c.Logger().Debug("ProjectHandler.handleProjectUpdate", "project", project)
 
 	if err := h.projectService.UpdateProject(id, project); err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, "adding project", err)

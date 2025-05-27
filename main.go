@@ -1,16 +1,18 @@
 package main
 
 import (
+	"context"
 	"database/sql"
 	"embed"
 	"flag"
 	"fmt"
 	"log"
-	"log/slog"
 	"net/http"
 	"os"
+	"os/signal"
 	"os/user"
 	"strconv"
+	"time"
 
 	"github.com/angelofallars/htmx-go"
 	"github.com/labstack/echo/v4"
@@ -31,14 +33,14 @@ func main() {
 	flag.BoolVar(&seed, "seed", false, "seed database with some data")
 	flag.Parse()
 
-	slog.SetLogLoggerLevel(slog.LevelDebug)
+	// slog.SetLogLoggerLevel(slog.LevelDebug)
 
 	usr, err := user.Current()
 	if err != nil {
 		log.Fatalf("Failed to locate the user's home directory: %s", err)
 	}
 
-	slog.Info("current user", "name", usr.Name, "home-dir", usr.HomeDir)
+	log.Printf("current user", "name", usr.Name, "home-dir", usr.HomeDir)
 
 	if err = createDatabase(); err != nil {
 		log.Fatalf("Failed to create database service! %s", err)
@@ -67,7 +69,7 @@ func main() {
 
 	// Run your server.
 	if err := runServer(); err != nil {
-		log.Fatalf("Failed to start server!", "details", err.Error())
+		log.Fatal("Failed to start server!", "details", err.Error())
 		os.Exit(1)
 	}
 
@@ -107,41 +109,42 @@ func runServer() error {
 	}
 
 	// Create a new Echo server.
-	router := echo.New()
-	// router.HTTPErrorHandler = customHTTPErrorHandler
+	e := echo.New()
+	e.HTTPErrorHandler = customHTTPErrorHandler
 
 	// Add Echo middlewares.
-	// router.Use(middleware.Logger())
-	router.Use(middleware.Recover())
+	e.Use(middleware.Logger())
+	e.Use(middleware.Recover())
 
 	// Handle index page view.
 	indexViewHandler := home.NewHomeHandler(taskService, projectService)
-	router.GET("/", indexViewHandler.ServeHTTP)
+	e.GET("/", indexViewHandler.ServeHTTP).Name = "root"
 
 	// Serve embedded static files found at ./static
-	router.StaticFS("/static", echo.MustSubFS(static, "static"))
+	e.StaticFS("/static", echo.MustSubFS(static, "static")).Name = "static"
 
-	project.NewProjectHandler(router.Group("/projects"), projectService)
-	task.NewTaskHandler(router.Group("/tasks"), taskService, projectService)
+	projectsGroup := e.Group("/projects")
+	project.NewProjectHandler(projectsGroup, projectService)
 
-	return router.Start(fmt.Sprintf(":%d", port))
+	tasksGroup := e.Group("/tasks")
+	task.NewTaskHandler(tasksGroup, taskService, projectService)
 
-	// Create a new server instance with options from environment variables.
-	// For more information, see https://blog.cloudflare.com/the-complete-guide-to-golang-net-http-timeouts/
-	// Note: The ReadTimeout and WriteTimeout settings may interfere with SSE (Server-Sent Event) or WS (WebSocket) connections.
-	// For SSE or WS, these timeouts can cause the connection to reset after 10 or 5 seconds due to the ReadTimeout and WriteTimeout setting.
-	// If you plan to use SSE or WS, consider commenting out or removing the ReadTimeout and WriteTimeout key-value pairs.
-	// server := http.Server{
-	// 	Addr:         fmt.Sprintf(":%d", port),
-	// 	Handler:      router, // handle all Echo routes
-	// 	ReadTimeout:  5 * time.Second,
-	// 	WriteTimeout: 10 * time.Second,
-	// }
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt)
+	defer stop()
 
-	// // Send log message.
-	// slog.Info("Starting server...", "port", port)
+	// Start server
+	go func() {
+		if err := e.Start(fmt.Sprintf(":%d", port)); err != nil && err != http.ErrServerClosed {
+			e.Logger.Fatal("shutting down the server")
+		}
+	}()
 
-	// return server.ListenAndServe()
+	// Wait for interrupt signal to gracefully shut down the server with a timeout of 10 seconds.
+	<-ctx.Done()
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	return e.Shutdown(ctx)
 }
 
 func customHTTPErrorHandler(err error, c echo.Context) {
@@ -154,12 +157,10 @@ func customHTTPErrorHandler(err error, c echo.Context) {
 		code = he.Code
 	}
 
-	c.Logger().Error(err)
-
 	messageTemplate := components.ErrorMessage(err.Error())
 
-	htmx.NewResponse().
-		Retarget("#messages").
+	htmx.
+		NewResponse().
 		StatusCode(code).
 		RenderTempl(c.Request().Context(), c.Response().Writer, messageTemplate)
 }

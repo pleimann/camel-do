@@ -10,7 +10,6 @@ import (
 	"time"
 
 	"github.com/angelofallars/htmx-go"
-	"github.com/gorilla/mux"
 	"github.com/guregu/null/v6/zero"
 	"github.com/labstack/echo/v4"
 
@@ -37,24 +36,24 @@ func NewTaskHandler(
 		projectService: projectsService,
 	}
 
-	group.GET("/new", taskHandler.handleNewTask)
-	group.GET("/edit/{id}", taskHandler.handleEditTask)
+	group.GET("/new", taskHandler.handleNewTask).Name = "new-task"
+	group.GET("/edit/:id", taskHandler.handleEditTask).Name = "edit-task"
 
-	group.PUT("/schedule/{id}", taskHandler.handleScheduleTask)
-	group.POST("/", taskHandler.handleTaskCreate)
-	group.PUT("/{id}", taskHandler.handleTaskUpdate)
-	group.DELETE("/{id}", taskHandler.handleTaskDelete)
-	group.PUT("/{id}/complete", taskHandler.handleTaskComplete)
+	group.PUT("/schedule/:id", taskHandler.handleScheduleTask).Name = "schedule-task"
+	group.POST("/", taskHandler.handleTaskCreate).Name = "create-task"
+	group.PUT("/:id", taskHandler.handleTaskUpdate).Name = "update-task"
+	group.DELETE("/:id", taskHandler.handleTaskDelete).Name = "delete-task"
+	group.PUT("/:id/complete", taskHandler.handleTaskComplete).Name = "complete-task"
 
 	return taskHandler
 }
 
-func extractTaskId(r *http.Request) string {
+func extractTaskId(c echo.Context) string {
 	var idString string
-	if r.URL.Query().Has("id") {
-		idString = r.URL.Query().Get("id")
+	if c.QueryParams().Has("id") {
+		idString = c.QueryParam("id")
 	} else {
-		idString = mux.Vars(r)["id"]
+		idString = c.Param("id")
 	}
 
 	return idString
@@ -77,7 +76,7 @@ func (h *TaskHandler) handleNewTask(c echo.Context) error {
 }
 
 func (h *TaskHandler) handleEditTask(c echo.Context) error {
-	taskId := extractTaskId(c.Request())
+	taskId := extractTaskId(c)
 
 	if task, err := h.taskService.GetTask(taskId); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
@@ -105,7 +104,7 @@ func (h *TaskHandler) handleEditTask(c echo.Context) error {
 }
 
 func (h *TaskHandler) handleScheduleTask(c echo.Context) error {
-	taskId := extractTaskId(c.Request())
+	taskId := extractTaskId(c)
 
 	// TODO Ensure duration is at least 15
 	task := &model.Task{
@@ -210,7 +209,7 @@ func (h *TaskHandler) handleTaskUpdate(c echo.Context) error {
 
 	slog.Debug("TaskHandler.handleTaskUpdate", "form", c.Request().PostForm.Encode())
 
-	taskId := extractTaskId(c.Request())
+	taskId := extractTaskId(c)
 
 	task := &model.Task{
 		ID: taskId,
@@ -270,7 +269,7 @@ func (h *TaskHandler) handleTaskUpdate(c echo.Context) error {
 func (h *TaskHandler) handleTaskDelete(c echo.Context) error {
 	defer c.Request().Body.Close()
 
-	taskId := extractTaskId(c.Request())
+	taskId := extractTaskId(c)
 
 	slog.Debug("TaskHandler.handleTaskDelete", "taskId", taskId)
 
@@ -292,7 +291,7 @@ func (h *TaskHandler) handleTaskDelete(c echo.Context) error {
 func (h *TaskHandler) handleTaskComplete(c echo.Context) error {
 	defer c.Request().Body.Close()
 
-	taskId := extractTaskId(c.Request())
+	taskId := extractTaskId(c)
 
 	slog.Debug("TaskHandler.handleTaskComplete", "taskId", taskId)
 

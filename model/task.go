@@ -13,13 +13,13 @@ type Task struct {
 	CreatedAt time.Time
 	UpdatedAt time.Time
 
-	Title       zero.String `schema:"title"`                   // Title of the task
-	Description zero.String `schema:"description"`             // Description of the task
-	StartTime   zero.Time   `schema:"startTime"`               // Start time of the task
-	Duration    zero.Int32  `schema:"duration"`                // Duration of the task
-	Completed   zero.Bool   `schema:"completed,default:false"` // Status of task completion
+	Title       zero.String `form:"title"`                   // Title of the task
+	Description zero.String `form:"description"`             // Description of the task
+	StartTime   zero.Time   `form:"startTime"`               // Start time of the task
+	Duration    zero.Int32  `form:"duration"`                // Duration of the task
+	Completed   zero.Bool   `form:"completed,default:false"` // Status of task completion
 	Rank        zero.Int32  // Sort order
-	ProjectID   zero.String `schema:"projectId"` // Foreign key referencing the project associated with the task.
+	ProjectID   zero.String `form:"projectId"` // Foreign key referencing the project associated with the task.
 	GTaskID     zero.String
 	Position    TimelinePosition
 }
