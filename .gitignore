@@ -62,3 +62,5 @@ credentials.json
 token.json
 camel-do
 camel-do.db
+static/scripts.js*
+static/styles.css*
