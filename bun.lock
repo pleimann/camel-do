@@ -9,9 +9,12 @@
         "@lucide/lab": "^0.1.2",
         "alpinejs": "latest",
         "daisyui": "^5.0.37",
+        "htmx-ext-alpine-morph": "^2.0.1",
+        "htmx-ext-debug": "^2.0.1",
         "htmx-ext-remove-me": "^2.0.1",
         "htmx-ext-response-targets": "^2.0.3",
         "htmx.org": "latest",
+        "hx-drag": "^2.0.0",
         "lucide": "^0.511.0",
         "tailwindcss": "latest",
       },
@@ -355,11 +358,17 @@
 
     "has-flag": ["has-flag@4.0.0", "", {}, "sha512-EykJT/Q1KjTWctppgIAgfSO0tKVuZUjhgMr17kqTumMl6Afv3EISleU7qZUzoXDFTAHTDC4NOoG/ZxU3EvlMPQ=="],
 
+    "htmx-ext-alpine-morph": ["htmx-ext-alpine-morph@2.0.1", "", { "dependencies": { "htmx.org": "^2.0.2" } }, "sha512-teGpcVatx5IjDUYQs959x9FcePM1TIksjfW5tSe1KVQVEVSmbGxEoemneC7XV6RYpX+27i/xn1fPjduwvHDrAw=="],
+
+    "htmx-ext-debug": ["htmx-ext-debug@2.0.1", "", { "dependencies": { "htmx.org": "^2.0.2" } }, "sha512-GipbV220uTYdRrTzL+pK/Lbus3z167M6Ds6WnliCItIwsyK5qIFK8GPl6QIAaonf6+8sVif7rkxz/VIXUWdlFA=="],
+
     "htmx-ext-remove-me": ["htmx-ext-remove-me@2.0.1", "", { "dependencies": { "htmx.org": "^2.0.2" } }, "sha512-GYkBDZq2oErjyPK9uzBlMaUjf6WWYkqIcdABsgYR2/I2BmXjFSN1QTcsWabefFHabhrWdT0qHz0zgiaglex2Pw=="],
 
     "htmx-ext-response-targets": ["htmx-ext-response-targets@2.0.3", "", { "dependencies": { "htmx.org": "^2.0.2" } }, "sha512-glfxJolnRohvqVZcjixo6SRvyHgoEN4LffDVSJndWJHzDu6Mo8F3boKCIVYPaOyfohnGyqZfd6nxH3QqrBonRQ=="],
 
     "htmx.org": ["htmx.org@1.9.12", "", {}, "sha512-VZAohXyF7xPGS52IM8d1T1283y+X4D+Owf3qY1NZ9RuBypyu9l8cGsxUMAG5fEAb/DhT7rDoJ9Hpu5/HxFD3cw=="],
+
+    "hx-drag": ["hx-drag@2.0.0", "", {}, "sha512-PFemvfRr4h3SPXF8vQkhaiFlMTCwMtMy+GYdB6YqktizfctmrKijjLS4KKLaittSlboY8e5CzSl5EeUYFvpQOg=="],
 
     "is-extglob": ["is-extglob@2.1.1", "", {}, "sha512-SbKbANkN603Vi4jEZv49LeVJMn4yGwsbzZworEoyEiutsN3nJYdbO36zfhGJ6QEDpOZIFkDtnq5JRxmvl3jsoQ=="],
 
@@ -496,6 +505,10 @@
     "@tailwindcss/oxide-wasm32-wasi/@tybys/wasm-util": ["@tybys/wasm-util@0.9.0", "", { "dependencies": { "tslib": "^2.4.0" }, "bundled": true }, "sha512-6+7nlbMVX/PVDCwaIQ8nTOPveOcFLSt8GcXdx8hD0bt39uWxYT88uXzqTd4fTvqta7oeUJqudepapKNt2DYJFw=="],
 
     "@tailwindcss/oxide-wasm32-wasi/tslib": ["tslib@2.8.1", "", { "bundled": true }, "sha512-oJFu94HQb+KVduSUQL7wnpmqnfmLsOA/nAh6b6EH0wCEoK0/mPeXU6c3wKDV83MkOuHPRHtSXKKU99IBazS/2w=="],
+
+    "htmx-ext-alpine-morph/htmx.org": ["htmx.org@2.0.4", "", {}, "sha512-HLxMCdfXDOJirs3vBZl/ZLoY+c7PfM4Ahr2Ad4YXh6d22T5ltbTXFFkpx9Tgb2vvmWFMbIc3LqN2ToNkZJvyYQ=="],
+
+    "htmx-ext-debug/htmx.org": ["htmx.org@2.0.4", "", {}, "sha512-HLxMCdfXDOJirs3vBZl/ZLoY+c7PfM4Ahr2Ad4YXh6d22T5ltbTXFFkpx9Tgb2vvmWFMbIc3LqN2ToNkZJvyYQ=="],
 
     "htmx-ext-remove-me/htmx.org": ["htmx.org@2.0.4", "", {}, "sha512-HLxMCdfXDOJirs3vBZl/ZLoY+c7PfM4Ahr2Ad4YXh6d22T5ltbTXFFkpx9Tgb2vvmWFMbIc3LqN2ToNkZJvyYQ=="],
 

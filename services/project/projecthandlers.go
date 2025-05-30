@@ -14,7 +14,6 @@ import (
 	"github.com/pleimann/camel-do/model"
 	"github.com/pleimann/camel-do/templates/components"
 	"github.com/pleimann/camel-do/templates/pages"
-	"github.com/pleimann/camel-do/utils"
 )
 
 type ProjectHandler struct {
@@ -109,17 +108,9 @@ func (h *ProjectHandler) handleListProjects(c echo.Context) error {
 }
 
 func (h *ProjectHandler) handleProjectCreate(c echo.Context) error {
-	defer c.Request().Body.Close()
-
-	if err := c.Request().ParseForm(); err != nil {
-		return echo.NewHTTPError(http.StatusUnprocessableEntity, "parsing form data", err)
-	}
-
-	slog.Debug("ProjectHandler.handleProjectCreate", "form", c.Request().PostForm.Encode())
-
 	project := model.Project{}
 
-	if err := utils.Decoder().Decode(&project, c.Request().PostForm); err != nil {
+	if err := c.Bind(project); err != nil {
 		return echo.NewHTTPError(http.StatusUnprocessableEntity, "decoding form data", err)
 	}
 
@@ -135,8 +126,6 @@ func (h *ProjectHandler) handleProjectCreate(c echo.Context) error {
 }
 
 func (h *ProjectHandler) handleProjectDelete(c echo.Context) error {
-	defer c.Request().Body.Close()
-
 	id := extractTaskId(c)
 
 	slog.Debug("ProjectHandler.handleProjectDelete", "projectId", id)
@@ -162,10 +151,7 @@ func (h *ProjectHandler) handleProjectUpdate(c echo.Context) error {
 
 	var project model.Project
 	if err := c.Bind(&project); err != nil {
-		return &echo.HTTPError{
-			Code:    http.StatusBadRequest,
-			Message: err.Error(),
-		}
+		echo.NewHTTPError(http.StatusUnprocessableEntity, "decoding form data", err)
 	}
 
 	c.Logger().Debug("ProjectHandler.handleProjectUpdate", "project", project)

@@ -6,7 +6,8 @@
 
 # IDE files.
 .idea/
-.vscode/
+.vscode/*
+!.vscode/settings.json
 
 # Go workflow files.
 go.work
@@ -57,6 +58,7 @@ lerna-debug.log*
 *.out
 
 **/*_templ.go
+model/**/*_enum.go
 
 credentials.json
 token.json

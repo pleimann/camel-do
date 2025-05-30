@@ -1,0 +1,9 @@
+{
+  "explorer.fileNesting.patterns": {
+    "*.go": "${capture}_enum.go,${capture}_test.go",
+    "*.templ": "${capture}_templ.go",
+    "go.mod": "go.sum",
+    "*.css": "${capture}.css.map",
+    "*.js": "${capture}.js.map"
+  }
+}

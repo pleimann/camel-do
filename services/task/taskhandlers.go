@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"html/template"
-	"log/slog"
 	"net/http"
 	"time"
 
@@ -19,7 +18,6 @@ import (
 	"github.com/pleimann/camel-do/templates/blocks/timeline"
 	"github.com/pleimann/camel-do/templates/components"
 	"github.com/pleimann/camel-do/templates/pages"
-	"github.com/pleimann/camel-do/utils"
 )
 
 type TaskHandler struct {
@@ -152,21 +150,20 @@ func (h *TaskHandler) handleTaskCreate(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusUnprocessableEntity, "parsing form data", err)
 	}
 
-	slog.Debug("TaskHandler.handleTaskCreate", "form", c.Request().PostForm.Encode())
+	c.Logger().Debug("TaskHandler.handleTaskCreate", "form", c.Request().PostForm.Encode())
 
 	task := &model.Task{}
-
-	if err := utils.Decoder().Decode(task, c.Request().PostForm); err != nil {
+	if err := c.Bind(task); err != nil {
 		return echo.NewHTTPError(http.StatusUnprocessableEntity, "decoding form data", err)
 	}
 
-	slog.Debug("TaskHandler.handleTaskCreate", "task", task)
+	c.Logger().Debug("TaskHandler.handleTaskCreate", "task", task)
 
 	if err := h.taskService.AddTask(task); err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, "adding task", err)
 	}
 
-	slog.Debug("TaskHandler.handleTaskCreate: get project", "projectId", task.ProjectID)
+	c.Logger().Debug("TaskHandler.handleTaskCreate: get project", "projectId", task.ProjectID)
 
 	var err error
 	var project *model.Project
@@ -193,7 +190,7 @@ func (h *TaskHandler) handleTaskCreate(c echo.Context) error {
 		return err
 
 	} else {
-		slog.Debug("TaskHandler.handleTaskCreate: render AddedTaskCard", "task", task)
+		c.Logger().Debug("TaskHandler.handleTaskCreate: render AddedTaskCard", "task", task)
 
 		addedTaskTemplate := backlog.TaskCard(*task, project)
 
@@ -212,7 +209,7 @@ func (h *TaskHandler) handleTaskUpdate(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusUnprocessableEntity, "parsing form data", err)
 	}
 
-	slog.Debug("TaskHandler.handleTaskUpdate", "form", c.Request().PostForm.Encode())
+	c.Logger().Debug("TaskHandler.handleTaskUpdate", "form", c.Request().PostForm.Encode())
 
 	taskId := extractTaskId(c)
 
@@ -220,17 +217,17 @@ func (h *TaskHandler) handleTaskUpdate(c echo.Context) error {
 		ID: taskId,
 	}
 
-	if err := utils.Decoder().Decode(task, c.Request().PostForm); err != nil {
+	if err := c.Bind(task); err != nil {
 		return echo.NewHTTPError(http.StatusUnprocessableEntity, "decoding form data", err)
 	}
 
-	slog.Debug("TaskHandler.handleTaskUpdate", "task", task)
+	c.Logger().Debug("TaskHandler.handleTaskUpdate", "task", task)
 
 	if err := h.taskService.UpdateTask(task); err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, "adding task", err)
 	}
 
-	slog.Debug("TaskHandler.handleTaskUpdate: get project", "projectId", task.ProjectID)
+	c.Logger().Debug("TaskHandler.handleTaskUpdate: get project", "projectId", task.ProjectID)
 
 	var err error
 	var project *model.Project
@@ -249,7 +246,7 @@ func (h *TaskHandler) handleTaskUpdate(c echo.Context) error {
 
 	if task.StartTime.Valid {
 		// TODO Else it might belong on today's timeline but just close the dialog for now
-		slog.Debug("TaskHandler.handleTaskUpdate: closing task dialog", "task", task)
+		c.Logger().Debug("TaskHandler.handleTaskUpdate: closing task dialog", "task", task)
 
 		_, err := htmx.NewResponse().
 			AddTrigger(htmx.Trigger("close-modal")).
@@ -259,7 +256,7 @@ func (h *TaskHandler) handleTaskUpdate(c echo.Context) error {
 		return err
 
 	} else {
-		slog.Debug("TaskHandler.handleTaskUpdate: render TaskCard", "task", task)
+		c.Logger().Debug("TaskHandler.handleTaskUpdate: render TaskCard", "task", task)
 
 		taskTemplate := backlog.TaskCard(*task, project)
 
@@ -276,7 +273,7 @@ func (h *TaskHandler) handleTaskDelete(c echo.Context) error {
 
 	taskId := extractTaskId(c)
 
-	slog.Debug("TaskHandler.handleTaskDelete", "taskId", taskId)
+	c.Logger().Debug("TaskHandler.handleTaskDelete", "taskId", taskId)
 
 	if err := h.taskService.DeleteTask(taskId); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
@@ -298,7 +295,7 @@ func (h *TaskHandler) handleTaskComplete(c echo.Context) error {
 
 	taskId := extractTaskId(c)
 
-	slog.Debug("TaskHandler.handleTaskComplete", "taskId", taskId)
+	c.Logger().Debug("TaskHandler.handleTaskComplete", "taskId", taskId)
 
 	if err := h.taskService.CompleteToggleTask(taskId); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {

@@ -5,9 +5,9 @@ root = "."
 tmp_dir = "tmp"
 
 [build]
-pre_cmd = ["bun run build"]
-cmd = "go run github.com/a-h/templ/cmd/templ@latest generate && go build -o ./tmp/gowebly_echo ."
-bin = "tmp/gowebly_echo"
+pre_cmd = ["bun run dev"]
+cmd = "go tool templ generate && go build -o ./tmp/camel-do ."
+bin = "tmp/camel-do"
 include_ext = ["go", "templ", "html", "json", "js", "ts", "css", "scss"]
 exclude_dir = [".parcel-cache", "bin", "dist", "node_modules", "static", "tmp", "tests", "vendor"]
 exclude_regex = ["_test\\.go", "_templ\\.go"]

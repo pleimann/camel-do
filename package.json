@@ -16,9 +16,12 @@
     "@lucide/lab": "^0.1.2",
     "alpinejs": "latest",
     "daisyui": "^5.0.37",
+    "htmx-ext-alpine-morph": "^2.0.1",
+    "htmx-ext-debug": "^2.0.1",
     "htmx-ext-remove-me": "^2.0.1",
     "htmx-ext-response-targets": "^2.0.3",
     "htmx.org": "latest",
+    "hx-drag": "^2.0.0",
     "lucide": "^0.511.0",
     "tailwindcss": "latest"
   },

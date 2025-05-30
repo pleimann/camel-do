@@ -81,8 +81,11 @@ templ dayOfWeekSelector(weekday time.Weekday) {
 }
 
 templ timeline(tasks []model.Task, projects model.ProjectIndex) {
-	<div id="timeline" class="w-full lg:w-1/2 max-h-[calc(100%-50px)] overflow-y-scroll" style="scrollbar-width: none;" hx-swap-oob="true" x-data="">
-		<div class="w-full grid grid-flow-col-dense grid-rows-52 grid-cols-[40px_10px_1fr]" style="column-gap: calc(var(--spacing) * 2)">
+	<div id="timeline" class="w-full lg:w-1/2 max-h-[calc(100%-50px)] overflow-y-scroll" 
+    style="scrollbar-width: none;" 
+    hx-swap-oob="true" x-data="{ handleDrag: (item, position) => { alert(item + ' ' + position) } }"
+  >
+		<div x-sort.ghost="handleDrag" class="w-full grid grid-flow-col-dense grid-rows-52 grid-cols-[40px_10px_1fr]" style="column-gap: calc(var(--spacing) * 2)">
 			for h24 := startHours; h24 < endHours; h24++ {
 				{{
           h := h24
@@ -116,18 +119,20 @@ templ taskCard(task model.Task, projects model.ProjectIndex) {
   }}
   <div
     id={ fmt.Sprintf("task-bar-%s", task.ID) }
+    x-sort:item={ task.ID }
     class={
       taskBarClass(),
       fmt.Sprintf("bg-%s-50", color),
       fmt.Sprintf("dark:bg-%s-900", color),
       fmt.Sprintf("border-%s-100", color),
-      "border", "shadow-sm", "text-sm",
+      "border", "shadow-sm", "text-sm"
     }
     style={ position }
   >
     <div
-      class={
-        "tooltip", "tooltip-top", "h-full", "p-2", "rounded-s-xl",
+      x-sort:handle
+      class={ 
+        "cursor-pointer", "tooltip", "tooltip-top", "h-full", "p-2", "rounded-s-xl",
         fmt.Sprintf("bg-%s-200", color), fmt.Sprintf("text-%s-800", color),
       }
       data-tip={ project.Name }
