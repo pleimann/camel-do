@@ -46,7 +46,7 @@ func (s *ProjectService) GetProject(id string) (*model.Project, error) {
 		return nil, sql.ErrNoRows
 	}
 
-	modelProject := model.ConvertProject(&projects[0])
+	modelProject := toModelProject(&projects[0])
 
 	return &modelProject, nil
 }
@@ -63,7 +63,7 @@ func (s *ProjectService) GetProjects() (model.ProjectIndex, error) {
 		return nil, fmt.Errorf("failed to query projects: %w", err)
 	}
 
-	modelProjects := model.ConvertProjects(projects)
+	modelProjects := toModelProjects(projects)
 
 	projectsMap := make(model.ProjectIndex)
 	for _, project := range modelProjects {
@@ -129,4 +129,30 @@ func (s *ProjectService) DeleteProject(id string) error {
 	}
 
 	return nil
+}
+
+func toModelProjects(projects []m.Projects) (modelProject []model.Project) {
+	modelProjects := make([]model.Project, len(projects))
+	for i, p := range projects {
+		modelProjects[i] = toModelProject(&p)
+	}
+
+	return modelProjects
+}
+
+func toModelProject(p *m.Projects) model.Project {
+	id := p.ID
+	color, _ := model.ParseColorString(*p.Color)
+	icon, _ := model.ParseIconString(*p.Icon)
+
+	project := model.Project{
+		ID:        id,
+		CreatedAt: *p.CreatedAt,
+		UpdatedAt: *p.UpdatedAt,
+		Name:      *p.Name,
+		Color:     color,
+		Icon:      icon,
+	}
+
+	return project
 }

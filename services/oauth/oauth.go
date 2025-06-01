@@ -15,6 +15,7 @@ import (
 
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
+	"google.golang.org/api/calendar/v3"
 	"google.golang.org/api/tasks/v1"
 )
 
@@ -29,7 +30,7 @@ func NewGoogleAuth() *GoogleAuth {
 	}
 
 	// If modifying these scopes, delete your previously saved token.json.
-	config, err := google.ConfigFromJSON(b, tasks.TasksReadonlyScope)
+	config, err := google.ConfigFromJSON(b, tasks.TasksReadonlyScope, calendar.CalendarEventsScope)
 	if err != nil {
 		log.Fatalf("Unable to parse client secret file to config: %v", err)
 	}
@@ -63,6 +64,7 @@ func (a *GoogleAuth) GetClient() *http.Client {
 
 // Request a token from the web, then returns the retrieved token.
 func (a *GoogleAuth) getTokenFromWeb(config *oauth2.Config) *oauth2.Token {
+	// TODO implement PKCE
 	authURL := config.AuthCodeURL("state-token", oauth2.AccessTypeOffline)
 
 	var authCodeChannel = make(chan string)
@@ -91,8 +93,6 @@ func (a *GoogleAuth) startServer(authCodeChannel chan string) *http.Server {
 	srv := &http.Server{
 		Addr: ":9876",
 		Handler: http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
-			slog.Info("code response", "url", req.URL)
-
 			if req.URL.Query().Has("code") {
 				authCodeChannel <- req.URL.Query().Get("code")
 				fmt.Fprintf(w, "<html><body>This window can be closed.<scrip>window.close()</script></body></html>")

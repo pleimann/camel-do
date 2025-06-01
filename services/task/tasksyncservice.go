@@ -42,7 +42,11 @@ func NewTaskSyncService(db *sql.DB) (*TaskSyncService, error) {
 }
 
 func (t *TaskSyncService) GetGoogleTasks() []model.Task {
-	r, err := t.googleTasks.Tasklists.List().MaxResults(10).Do()
+	r, err := t.googleTasks.Tasklists.
+		List().
+		MaxResults(10).
+		Do()
+
 	if err != nil {
 		log.Fatalf("Unable to retrieve task lists. %v", err)
 	}
@@ -51,16 +55,15 @@ func (t *TaskSyncService) GetGoogleTasks() []model.Task {
 
 	if len(r.Items) > 0 {
 		taskList := r.Items[0]
-		gtasks, err := t.googleTasks.Tasks.List(taskList.Id).Do()
+		gtasks, err := t.googleTasks.Tasks.
+			List(taskList.Id).
+			Do()
+
 		if err != nil {
 			return []model.Task{}
 		}
 
-		for i, gtask := range gtasks.Items {
-			b, _ := gtask.MarshalJSON()
-
-			fmt.Printf("%d gtask: %v\n", i, string(b))
-
+		for _, gtask := range gtasks.Items {
 			order, _ := strconv.ParseInt(gtask.Position, 10, 32)
 
 			modelTasks = append(modelTasks, model.Task{

@@ -74,8 +74,8 @@ templ TaskDialog(projectsIndex model.ProjectIndex, task *model.Task) {
         {{
             var durationMinutes int32 = 0
             if task != nil {
-                durationMinutes = task.Duration.ValueOrZero()
-                }
+                durationMinutes = int32(task.Duration.V.Minutes())
+            }
         }}
         <label class="input grow"
             x-data={ fmt.Sprintf("{ duration: %d }", durationMinutes) }

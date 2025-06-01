@@ -58,7 +58,7 @@ func GenerateRandomTask() model.Task {
 	}
 
 	// Generate random duration between 15 minutes and 4 hours.
-	duration := int32(math.Round(rand.Float64()*4.0) * 15)
+	duration := time.Duration(math.Round(rand.Float64()*4.0) * 15)
 
 	// Generate random completed status.
 	completed := rand.IntN(3) == 1
@@ -74,7 +74,7 @@ func GenerateRandomTask() model.Task {
 		Description: description,
 		ProjectID:   zero.StringFromPtr(nil),
 		StartTime:   startTime,
-		Duration:    zero.Int32From(duration),
+		Duration:    zero.ValueFrom(duration),
 		Completed:   zero.BoolFrom(completed), // default to not completed.
 		CreatedAt:   createdAt,                // Set the creation timestamp
 		UpdatedAt:   updatedAt,                // Set the update timestamp

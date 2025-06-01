@@ -2,8 +2,6 @@ package model
 
 import (
 	"time"
-
-	m "github.com/pleimann/camel-do/db/model"
 )
 
 // Project represents a project in the task tracking application.
@@ -18,29 +16,3 @@ type Project struct {
 }
 
 type ProjectIndex = map[string]Project
-
-func ConvertProjects(projects []m.Projects) (modelProject []Project) {
-	modelProjects := make([]Project, len(projects))
-	for i, p := range projects {
-		modelProjects[i] = ConvertProject(&p)
-	}
-
-	return modelProjects
-}
-
-func ConvertProject(p *m.Projects) Project {
-	id := p.ID
-	color, _ := ParseColorString(*p.Color)
-	icon, _ := ParseIconString(*p.Icon)
-
-	project := Project{
-		ID:        id,
-		CreatedAt: *p.CreatedAt,
-		UpdatedAt: *p.UpdatedAt,
-		Name:      *p.Name,
-		Color:     color,
-		Icon:      icon,
-	}
-
-	return project
-}

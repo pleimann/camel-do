@@ -20,7 +20,7 @@ type Tasks struct {
 	Title       zero.String
 	Description zero.String
 	StartTime   zero.Time `sql:"type:timestamptz"`
-	Duration    zero.Int32
+	Duration    zero.Value[time.Duration]
 	Completed   zero.Bool
 	Rank        zero.Int32
 	ProjectID   zero.String `sql:"project_id"`

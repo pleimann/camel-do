@@ -9,6 +9,7 @@ require (
 	github.com/angelofallars/htmx-go v0.5.0
 	github.com/derektata/lorem v0.0.2
 	github.com/go-jet/jet/v2 v2.13.0
+	github.com/goforj/godump v1.0.5
 	github.com/golang-migrate/migrate/v4 v4.18.3
 	github.com/gowebly/helpers v0.4.0
 	github.com/guregu/null/v6 v6.0.0

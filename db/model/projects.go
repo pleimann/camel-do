@@ -19,3 +19,4 @@ type Projects struct {
 	Color     *string
 	Icon      *string
 }
+

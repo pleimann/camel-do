@@ -144,14 +144,6 @@ func (h *TaskHandler) handleScheduleTask(c echo.Context) error {
 }
 
 func (h *TaskHandler) handleTaskCreate(c echo.Context) error {
-	defer c.Request().Body.Close()
-
-	if err := c.Request().ParseForm(); err != nil {
-		return echo.NewHTTPError(http.StatusUnprocessableEntity, "parsing form data", err)
-	}
-
-	c.Logger().Debug("TaskHandler.handleTaskCreate", "form", c.Request().PostForm.Encode())
-
 	task := &model.Task{}
 	if err := c.Bind(task); err != nil {
 		return echo.NewHTTPError(http.StatusUnprocessableEntity, "decoding form data", err)

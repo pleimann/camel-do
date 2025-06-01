@@ -10,7 +10,6 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
-	"os/user"
 	"strconv"
 	"time"
 
@@ -22,6 +21,7 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 	database "github.com/pleimann/camel-do/db"
 
+	"github.com/pleimann/camel-do/services/cal"
 	"github.com/pleimann/camel-do/services/home"
 	"github.com/pleimann/camel-do/services/project"
 	"github.com/pleimann/camel-do/services/task"
@@ -33,14 +33,7 @@ func main() {
 	flag.BoolVar(&seed, "seed", false, "seed database with some data")
 	flag.Parse()
 
-	// slog.SetLogLoggerLevel(slog.LevelDebug)
-
-	usr, err := user.Current()
-	if err != nil {
-		log.Fatalf("Failed to locate the user's home directory: %s", err)
-	}
-
-	log.Printf("current user", "name", usr.Name, "home-dir", usr.HomeDir)
+	var err error
 
 	if err = createDatabase(); err != nil {
 		log.Fatalf("Failed to create database service! %s", err)
@@ -50,7 +43,12 @@ func main() {
 
 	taskSyncService, err = task.NewTaskSyncService(db)
 	if err != nil {
-		log.Fatalf("Failed create sync service! %s", err)
+		log.Fatalf("Failed create task sync service! %s", err)
+	}
+
+	calendarService, err = cal.NewCalendarService(&cal.CalendarServiceConfig{}, db)
+	if err != nil {
+		log.Fatalf("error creating CalendarService: %s", err)
 	}
 
 	projectService, err = project.NewService(&project.ProjectServiceConfig{}, db)
@@ -84,6 +82,7 @@ const databasePath = "./camel-do.db"
 var db *sql.DB
 var taskService *task.TaskService
 var taskSyncService *task.TaskSyncService
+var calendarService *cal.CalendarService
 var projectService *project.ProjectService
 
 func createDatabase() error {
@@ -117,7 +116,7 @@ func runServer() error {
 	e.Use(middleware.Recover())
 
 	// Handle index page view.
-	indexViewHandler := home.NewHomeHandler(taskService, projectService)
+	indexViewHandler := home.NewHomeHandler(taskService, calendarService, projectService)
 	e.GET("/", indexViewHandler.ServeHTTP).Name = "root"
 
 	// Serve embedded static files found at ./static

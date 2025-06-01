@@ -1,12 +1,13 @@
 package home
 
 import (
-	"log/slog"
 	"net/http"
 	"time"
 
 	"github.com/a-h/templ"
+	"github.com/goforj/godump"
 	"github.com/labstack/echo/v4"
+	"github.com/pleimann/camel-do/services/cal"
 	"github.com/pleimann/camel-do/services/project"
 	"github.com/pleimann/camel-do/services/task"
 	"github.com/pleimann/camel-do/templates"
@@ -14,15 +15,17 @@ import (
 )
 
 type HomeHandler struct {
-	taskService    *task.TaskService
-	projectService *project.ProjectService
+	taskService     *task.TaskService
+	calendarService *cal.CalendarService
+	projectService  *project.ProjectService
 }
 
 // HomeHandler handles a view for the index page.
-func NewHomeHandler(taskService *task.TaskService, projectService *project.ProjectService) HomeHandler {
+func NewHomeHandler(taskService *task.TaskService, calendarService *cal.CalendarService, projectService *project.ProjectService) HomeHandler {
 	return HomeHandler{
-		taskService:    taskService,
-		projectService: projectService,
+		taskService:     taskService,
+		calendarService: calendarService,
+		projectService:  projectService,
 	}
 }
 
@@ -32,6 +35,12 @@ func (h HomeHandler) ServeHTTP(c echo.Context) error {
 		// If not, return HTTP 404 error.
 		return echo.NewHTTPError(http.StatusNotFound, "render page method %s status path %s", c.Request().Method, c.Request().URL.Path)
 	}
+
+	todaysEvents, err := h.calendarService.GetTodaysEvents()
+	if err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, "get tasks for today %w", err)
+	}
+	godump.Dump(todaysEvents)
 
 	// Get backlog and tasks scheduled for today
 	backlogTasks, err := h.taskService.GetBacklogTasks()
@@ -43,7 +52,7 @@ func (h HomeHandler) ServeHTTP(c echo.Context) error {
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, "get tasks for today %w", err)
 	}
-	slog.Info("", slog.Any("todaysTasks", todaysTasks))
+	godump.Dump(todaysTasks)
 
 	projectIndex, err := h.projectService.GetProjects()
 	if err != nil {

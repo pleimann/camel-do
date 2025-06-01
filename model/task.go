@@ -16,7 +16,7 @@ type Task struct {
 	Title       zero.String `form:"title"`                   // Title of the task
 	Description zero.String `form:"description"`             // Description of the task
 	StartTime   zero.Time   `form:"startTime"`               // Start time of the task
-	Duration    zero.Int32  `form:"duration"`                // Duration of the task
+	Duration    Duration    `form:"duration"`                // Duration of the task
 	Completed   zero.Bool   `form:"completed,default:false"` // Status of task completion
 	Rank        zero.Int32  // Sort order
 	ProjectID   zero.String `form:"projectId"` // Foreign key referencing the project associated with the task.
@@ -31,7 +31,7 @@ func NewTask(
 	createdAt time.Time,
 	updatedAt time.Time,
 	startTime zero.Time,
-	duration zero.Int32,
+	duration Duration,
 	completed zero.Bool,
 	rank zero.Int32,
 	projectID zero.String,
@@ -51,7 +51,10 @@ func NewTask(
 		GTaskID:     gTaskID,
 	}
 
-	task.Position = NewTimelinePosition(task)
+	task.Position = NewTimelinePosition(
+		task.StartTime.Time,
+		task.Duration.V,
+	)
 
 	return task
 }
@@ -71,7 +74,7 @@ func (t Task) MarshalJSON() ([]byte, error) {
 		"title":       t.Title.String,
 		"description": t.Description.String,
 		"startTime":   t.StartTime.Time,
-		"duration":    t.Duration.Int32,
+		"duration":    t.Duration.V,
 		"completed":   t.Completed.Bool,
 		"rank":        t.Rank.Int32,
 		"projectId":   t.ProjectID.String,
@@ -96,10 +99,10 @@ func (t TimelinePosition) MarshallJSON() ([]byte, error) {
 	})
 }
 
-func NewTimelinePosition(task Task) TimelinePosition {
+func NewTimelinePosition(startTime time.Time, duration time.Duration) TimelinePosition {
 	return TimelinePosition{
-		Slot: slot(task.StartTime.Time),
-		Size: size(int(task.Duration.Int32)),
+		Slot: slot(startTime),
+		Size: size(int(duration.Minutes())),
 	}
 }
 
@@ -107,6 +110,6 @@ func slot(t time.Time) int {
 	return (t.Hour()-startHours)*int(60/slotMinutes) + (t.Minute() / slotMinutes) + 1
 }
 
-func size(duration int) int {
-	return max(duration, slotMinutes) / slotMinutes
+func size(durationMinutes int) int {
+	return max(durationMinutes, slotMinutes) / slotMinutes
 }
