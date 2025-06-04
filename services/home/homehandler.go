@@ -1,11 +1,11 @@
 package home
 
 import (
+	"log/slog"
 	"net/http"
 	"time"
 
 	"github.com/a-h/templ"
-	"github.com/goforj/godump"
 	"github.com/labstack/echo/v4"
 	"github.com/pleimann/camel-do/services/cal"
 	"github.com/pleimann/camel-do/services/project"
@@ -40,7 +40,7 @@ func (h HomeHandler) ServeHTTP(c echo.Context) error {
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, "get tasks for today %w", err)
 	}
-	godump.Dump(todaysEvents)
+	slog.Debug("Today's Calendar Events", "events", todaysEvents)
 
 	// Get backlog and tasks scheduled for today
 	backlogTasks, err := h.taskService.GetBacklogTasks()
@@ -52,7 +52,6 @@ func (h HomeHandler) ServeHTTP(c echo.Context) error {
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, "get tasks for today %w", err)
 	}
-	godump.Dump(todaysTasks)
 
 	projectIndex, err := h.projectService.GetProjects()
 	if err != nil {

@@ -24,7 +24,7 @@ rerun = false
 rerun_delay = 500
 
 [log]
-time = false
+time = true
 main_only = false
 
 [color]
@@ -34,8 +34,8 @@ build = "yellow"
 runner = "green"
 
 [misc]
-clean_on_exit = true
+clean_on_exit = false
 
 [screen]
 clear_on_rebuild = true
-keep_scroll = true
+keep_scroll = false

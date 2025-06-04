@@ -3,7 +3,7 @@ package cal
 import (
 	"context"
 	"database/sql"
-	"log"
+	"fmt"
 	"log/slog"
 	"time"
 
@@ -32,8 +32,7 @@ func NewCalendarService(config *CalendarServiceConfig, db *sql.DB) (*CalendarSer
 	service, err := calendar.NewService(ctx, option.WithHTTPClient(client))
 
 	if err != nil {
-		slog.Error("error creating google tasks service", "error", err.Error())
-		return nil, err
+		return nil, fmt.Errorf("error creating google calendar service: %w", err)
 	}
 
 	calendarService := &CalendarService{
@@ -70,10 +69,13 @@ func (s *CalendarService) getUpcomingEvents(
 		Do()
 
 	if err != nil {
-		log.Fatalf("Unable to retrieve next ten of the user's events: %v", err)
+		slog.Error("Unable to retrieve next ten of the user's events", "error", err)
 	}
 
 	modelEvents := []model.Event{}
+
+	bytes, _ := events.MarshalJSON()
+	fmt.Printf("calendar events: %v", string(bytes))
 
 	for _, event := range events.Items {
 		modelEvents = append(modelEvents, toModelEvent(event))
@@ -84,13 +86,21 @@ func (s *CalendarService) getUpcomingEvents(
 
 func toModelEvent(event *calendar.Event) model.Event {
 	startTime, _ := time.Parse(time.RFC3339, event.Start.DateTime)
+	endTime, _ := time.Parse(time.RFC3339, event.End.DateTime)
+	createdTime, _ := time.Parse(time.RFC3339, event.Created)
+	updatedTime, _ := time.Parse(time.RFC3339, event.Updated)
+
+	duration := endTime.Sub(startTime)
 
 	return model.Event{
 		Task: model.Task{
-			GTaskID:     zero.StringFrom(event.Id),
-			Title:       zero.StringFrom(event.Description),
-			Description: zero.StringFrom(event.ConferenceData.Notes),
+			CreatedAt:   createdTime,
+			UpdatedAt:   updatedTime,
+			Title:       zero.StringFrom(event.Summary),
+			Description: zero.StringFrom(event.Description),
 			StartTime:   zero.TimeFrom(startTime),
+			Duration:    zero.ValueFrom(duration),
+			GTaskID:     zero.StringFrom(event.Id),
 		},
 	}
 }

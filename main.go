@@ -7,6 +7,7 @@ import (
 	"flag"
 	"fmt"
 	"log"
+	"log/slog"
 	"net/http"
 	"os"
 	"os/signal"
@@ -29,6 +30,12 @@ import (
 )
 
 func main() {
+	logger := slog.New(slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{
+		Level: slog.LevelDebug,
+	}))
+
+	slog.SetDefault(logger)
+
 	var seed bool
 	flag.BoolVar(&seed, "seed", false, "seed database with some data")
 	flag.Parse()
@@ -109,10 +116,24 @@ func runServer() error {
 
 	// Create a new Echo server.
 	e := echo.New()
+	e.Logger.SetHeader("time=${time_rfc3339_nano} ${level}")
 	e.HTTPErrorHandler = customHTTPErrorHandler
 
 	// Add Echo middlewares.
-	e.Use(middleware.Logger())
+	e.Use(middleware.RequestLoggerWithConfig(middleware.RequestLoggerConfig{
+		LogStatus:   true,
+		LogURI:      true,
+		LogError:    true,
+		HandleError: true,
+		LogValuesFunc: func(c echo.Context, v middleware.RequestLoggerValues) error {
+			if v.Error == nil {
+				slog.Info("REQUEST", "status", v.Status, "uri", v.URI)
+			} else {
+				slog.Error("REQUEST_ERROR", "status", v.Status, "uri", v.URI, "err", v.Error.Error())
+			}
+			return nil
+		},
+	}))
 	e.Use(middleware.Recover())
 
 	// Handle index page view.
