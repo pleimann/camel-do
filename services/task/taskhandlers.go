@@ -39,7 +39,7 @@ func NewTaskHandler(
 	group.GET("/edit/:id", taskHandler.handleEditTask).Name = "edit-task"
 
 	group.PUT("/schedule/:id", taskHandler.handleScheduleTask).Name = "schedule-task"
-	group.POST("/", taskHandler.handleTaskCreate).Name = "create-task"
+	group.POST("/", taskHandler.handleCreateTask).Name = "create-task"
 	group.PUT("/:id", taskHandler.handleTaskUpdate).Name = "update-task"
 	group.DELETE("/:id", taskHandler.handleTaskDelete).Name = "delete-task"
 	group.PUT("/:id/complete", taskHandler.handleTaskComplete).Name = "complete-task"
@@ -137,13 +137,13 @@ func (h *TaskHandler) handleScheduleTask(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusInternalServerError, "getting todays tasks", err)
 	}
 
-	timelineViewTemplate := timeline.TimelineView(time.Now().Weekday(), todaysTasks, projectsIndex)
+	timelineViewTemplate := timeline.TasklistView(time.Now().Weekday(), todaysTasks, projectsIndex)
 
 	return htmx.NewResponse().
 		RenderTempl(c.Request().Context(), c.Response().Writer, timelineViewTemplate)
 }
 
-func (h *TaskHandler) handleTaskCreate(c echo.Context) error {
+func (h *TaskHandler) handleCreateTask(c echo.Context) error {
 	task := &model.Task{}
 	if err := c.Bind(task); err != nil {
 		return echo.NewHTTPError(http.StatusUnprocessableEntity, "decoding form data", err)

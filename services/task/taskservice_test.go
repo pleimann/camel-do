@@ -42,7 +42,7 @@ func TestToTableTask(t *testing.T) {
 		assert.Equal(t, task.Completed, tableTask.Completed)
 		assert.Equal(t, task.Rank, tableTask.Rank)
 		assert.Equal(t, task.ProjectID, tableTask.ProjectID)
-		assert.True(t, tableTask.StartTime.Valid)
+		assert.True(t, tableTask.StartTime.IsZero())
 		assert.Equal(t, zero.Int32From(30), tableTask.Duration)
 	})
 
@@ -60,7 +60,7 @@ func TestToTableTask(t *testing.T) {
 		dbTask := toTableTask(task)
 
 		// Assert
-		assert.False(t, dbTask.StartTime.Valid)
+		assert.False(t, dbTask.StartTime.IsZero())
 		assert.Equal(t, zero.Int32From(45), dbTask.Duration)
 	})
 }

@@ -12,7 +12,7 @@ import (
 )
 
 func Seed(count int, taskService *task.TaskService, projectService *project.ProjectService) {
-	projects, err := project.GenerateRandomProjects()
+	projects, err := project.GenerateRandomProjects(5)
 	if err != nil {
 		log.Fatal(err)
 	}

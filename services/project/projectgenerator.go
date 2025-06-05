@@ -1,7 +1,6 @@
 package project
 
 import (
-	"fmt"
 	"math/rand/v2"
 	"time"
 
@@ -10,12 +9,7 @@ import (
 )
 
 // GenerateRandomProjects generates a slice of Project with random data.
-func GenerateRandomProjects() ([]model.Project, error) {
-	count := rand.IntN(5) + 1
-	if count < 1 || count > 5 {
-		return nil, fmt.Errorf("project count must be between 1 and 5, got %d", count)
-	}
-
+func GenerateRandomProjects(count int) ([]model.Project, error) {
 	projects := []model.Project{}
 	for i := 0; i < count; i++ {
 		project := GenerateRandomProject()

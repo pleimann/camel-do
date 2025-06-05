@@ -1,0 +1,36 @@
+package blocks
+
+templ ActionButton() {
+    <nav class="dropdown dropdown-hover dropdown-top dropdown-center">
+        <div
+            role="button"
+            class="btn btn-circle btn-soft btn-xl btn-primary shadow-lg tooltip tooltip-left m-1"
+            data-tip="New Task"
+            hx-get="/tasks/new"
+            hx-target="#dialog"
+            hx-trigger="click"
+        >
+            <i data-lucide="plus" class="size-12"></i>
+        </div>
+        <ul class="dropdown-content pb-2 z-1 flex flex-col gap-2">
+            <li
+                class="btn btn-lg btn-circle btn-soft btn-secondary shadow-md tooltip tooltip-left"
+                data-tip="Manage Projects"
+                hx-get="/projects/list"
+                hx-target="#dialog"
+                hx-trigger="click"
+            >
+                <i data-lucide="packages"></i>
+            </li>
+            <li
+                class="btn btn-lg btn-circle btn-soft btn-secondary shadow-md tooltip tooltip-left"
+                data-tip="New Project"
+                hx-get="/projects/new"
+                hx-target="#dialog"
+                hx-trigger="click"
+            >
+                <i data-lucide="package-plus"></i>
+            </li>
+        </ul>
+    </nav>
+}

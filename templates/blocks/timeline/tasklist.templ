@@ -1,0 +1,25 @@
+package timeline
+
+import (
+	"github.com/pleimann/camel-do/model"
+	"time"
+)
+
+templ TasklistView(weekday time.Weekday, tasks []model.Task, projects model.ProjectIndex) {
+	@dayOfWeekSelector(weekday)
+	@taskList(tasks, projects)
+}
+
+templ taskList(tasks []model.Task, projects model.ProjectIndex) {
+	<div
+		id="timeline"
+		class="w-full lg:w-1/2 h-[calc(100%-50px)] max-h-[calc(100%-50px)] overflow-y-scroll flex flex-col gap-4"
+		style="scrollbar-width: none;"
+		hx-swap-oob="true"
+		hx-ext="drag"
+	>
+        for _, task := range tasks {
+            @taskCard(task, projects)
+        }
+    </div>
+}

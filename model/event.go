@@ -19,7 +19,7 @@ func NewEvent(
 	createdAt time.Time,
 	updatedAt time.Time,
 	startTime zero.Time,
-	duration Duration,
+	duration zero.Int32,
 	projectID zero.String,
 	gTaskID zero.String,
 ) Event {
@@ -33,7 +33,7 @@ func NewEvent(
 		Duration:    duration,
 		ProjectID:   projectID,
 		GTaskID:     gTaskID,
-		Position:    NewTimelinePosition(startTime.Time, duration.V),
+		Position:    NewTimelinePosition(startTime.Time, duration.Int32),
 	}
 
 	event := Event{

@@ -16,7 +16,7 @@ type Task struct {
 	Title       zero.String `form:"title"`                   // Title of the task
 	Description zero.String `form:"description"`             // Description of the task
 	StartTime   zero.Time   `form:"startTime"`               // Start time of the task
-	Duration    Duration    `form:"duration"`                // Duration of the task
+	Duration    zero.Int32  `form:"duration"`                // Duration of the task
 	Completed   zero.Bool   `form:"completed,default:false"` // Status of task completion
 	Rank        zero.Int32  // Sort order
 	ProjectID   zero.String `form:"projectId"` // Foreign key referencing the project associated with the task.
@@ -31,7 +31,7 @@ func NewTask(
 	createdAt time.Time,
 	updatedAt time.Time,
 	startTime zero.Time,
-	duration Duration,
+	duration zero.Int32,
 	completed zero.Bool,
 	rank zero.Int32,
 	projectID zero.String,
@@ -53,7 +53,7 @@ func NewTask(
 
 	task.Position = NewTimelinePosition(
 		task.StartTime.Time,
-		task.Duration.V,
+		duration.Int32,
 	)
 
 	return task
@@ -74,7 +74,7 @@ func (t Task) MarshalJSON() ([]byte, error) {
 		"title":       t.Title.String,
 		"description": t.Description.String,
 		"startTime":   t.StartTime.Time,
-		"duration":    t.Duration.V,
+		"duration":    t.Duration,
 		"completed":   t.Completed.Bool,
 		"rank":        t.Rank.Int32,
 		"projectId":   t.ProjectID.String,
@@ -99,10 +99,10 @@ func (t TimelinePosition) MarshallJSON() ([]byte, error) {
 	})
 }
 
-func NewTimelinePosition(startTime time.Time, duration time.Duration) TimelinePosition {
+func NewTimelinePosition(startTime time.Time, duration int32) TimelinePosition {
 	return TimelinePosition{
 		Slot: slot(startTime),
-		Size: size(int(duration.Minutes())),
+		Size: size(int(duration)),
 	}
 }
 

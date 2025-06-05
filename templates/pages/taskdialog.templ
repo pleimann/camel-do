@@ -74,7 +74,7 @@ templ TaskDialog(projectsIndex model.ProjectIndex, task *model.Task) {
         {{
             var durationMinutes int32 = 0
             if task != nil {
-                durationMinutes = int32(task.Duration.V.Minutes())
+                durationMinutes = task.Duration.Int32
             }
         }}
         <label class="input grow"

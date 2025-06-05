@@ -5,9 +5,11 @@ import (
 	"time"
 )
 
-func FormatTaskDuration(d time.Duration) string {
-	hours := int(d.Hours())
-	minutes := int(d.Minutes()) % 60
+func FormatTaskDuration(d int32) string {
+	duration := time.Duration(d) * time.Minute
+
+	hours := int(duration.Hours())
+	minutes := int(duration.Minutes()) % 60
 
 	if hours > 0 {
 		return fmt.Sprintf("%2dh %2dm", hours, minutes)

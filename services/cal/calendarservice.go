@@ -99,7 +99,7 @@ func toModelEvent(event *calendar.Event) model.Event {
 			Title:       zero.StringFrom(event.Summary),
 			Description: zero.StringFrom(event.Description),
 			StartTime:   zero.TimeFrom(startTime),
-			Duration:    zero.ValueFrom(duration),
+			Duration:    zero.Int32From(int32(duration.Minutes())),
 			GTaskID:     zero.StringFrom(event.Id),
 		},
 	}
