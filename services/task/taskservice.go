@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 	"log/slog"
+	"slices"
 	"time"
 
 	. "github.com/go-jet/jet/v2/sqlite"
@@ -145,6 +146,8 @@ func (t *TaskService) GetBacklogTasks() ([]model.Task, error) {
 
 	modelTasks := toModelTasks(tasks)
 
+	sortTasksByStartTime(&modelTasks)
+
 	return modelTasks, nil
 }
 
@@ -169,7 +172,38 @@ func (t *TaskService) GetTodaysTasks() ([]model.Task, error) {
 
 	modelTasks := toModelTasks(tasks)
 
+	sortTasksByStartTime(&modelTasks)
+
 	return modelTasks, nil
+}
+
+func sortTasksByStartTime(tasks *[]model.Task) {
+	slices.SortFunc(*tasks, func(a, b model.Task) int {
+		if a.StartTime.Valid && b.StartTime.Valid {
+			timeCmp := a.StartTime.Time.Compare(b.StartTime.Time)
+
+			if timeCmp == 0 {
+				if a.Rank.Int32 < b.Rank.Int32 {
+					return -1
+				} else if a.Rank.Int32 > b.Rank.Int32 {
+					return 1
+				} else {
+					if a.Duration.Int32 < b.Duration.Int32 {
+						return -1
+					} else if a.Duration.Int32 > b.Duration.Int32 {
+						return 1
+					} else {
+						return 0
+					}
+				}
+
+			} else {
+				return timeCmp
+			}
+		}
+
+		return 0
+	})
 }
 
 func toTableTask(task *model.Task) m.Tasks {
