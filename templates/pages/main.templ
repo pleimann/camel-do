@@ -30,12 +30,18 @@ templ Main(backlogTasks []model.Task, weekday time.Weekday, todaysTasks []model.
 			x-data="{ selectedTask: null }"
 		>
 			<div class="flex flex-row h-full overflow-hidden">
-				<div
-					class="bg-primary/60 dark:bg-primary-content overflow-y-auto overflow-x-hidden p-4 pr-3 h-full w-65 min-w-55 md:w-75 md:min-w-75"
-					style="scrollbar-color: var(--color-primary) transparent; scrollbar-gutter: stable;"
-				>
-					@backlog.Backlog(backlogTasks, projects)
-				</div>
+                <div class="flex flex-col w-65 min-w-55 md:w-75 md:min-w-75">
+                    <form class="p-4 w-full flex gap-2 items-center justify-evenly bg-primary/40 bg-linear-to-b from-(--color-primary)">
+                        <input class="flex-1 btn btn-sm btn-primary btn-outline btn-soft" type="checkbox" name="incomplete" aria-label="incomplete"/>
+                        <input class="flex-1 btn btn-sm btn-primary btn-outline btn-soft" type="checkbox" name="tomorrow" aria-label="today"/>
+                    </form>
+                    <div
+                        class="overflow-y-auto overflow-x-hidden bg-primary/40 dark:bg-primary-content/40 pl-4 pb-4 pr-1 h-full"
+                        style="scrollbar-color: var(--color-primary) transparent; scrollbar-gutter: stable;"
+                    >
+                        @backlog.Backlog(backlogTasks, projects)
+                    </div>
+                </div>
 				<div class="grow p-4 md:p-8" id="content">
 					@tasklist.TasklistView(weekday, todaysTasks, projects)
 				</div>
