@@ -112,6 +112,7 @@ templ timelineTaskCard(task model.Task, projects model.ProjectIndex) {
         color := strings.ToLower(project.Color.String())
         position := taskPosition(task)
 	}}
+    // Use a DaisyUI stack component for tasks at the same time
 	<div
 		id={ fmt.Sprintf("task-bar-%s", task.ID) }
 		hx-drag={ fmt.Sprintf("{ taskId: 'task-bar-%s' }", task.ID) }
