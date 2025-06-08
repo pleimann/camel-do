@@ -2,13 +2,13 @@ package titlebar
 
 // BodyContent defines HTML content.
 templ TitleBar() {
-    <div class="navbar z-100 shadow-lg bg-primary text-primary-content w-[100vw] px-6">
+    <div class="navbar z-100 shadow-lg bg-primary text-primary-content w-[100vw]">
         <div class="navbar-start">
-            <a class="text-xl font-black font-stretch-125%">Camel Do</a>
+            <a class="w-65 min-w-55 md:w-75 md:min-w-75 text-center text-xl font-black font-stretch-125%">Camel Do</a>
         </div>
         <div class="navbar-center">
         </div>
-        <div class="navbar-end flex flex-row gap-4">
+        <div class="navbar-end flex flex-row gap-4 pr-4">
             <button class="btn shadow-none btn-circle">
                 <i data-lucide="search" class="size-6" />
             </button>
