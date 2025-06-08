@@ -77,7 +77,7 @@ func (h HomeHandler) ServeHTTP(c echo.Context) error {
 			Title:    "Camel Do ", // define title text
 			LoginUri: "http://localhost:4000/auth/google/login",
 		},
-		pages.MetaTags(
+		templates.MetaTags(
 			"camel-do, todo, tasks", // define meta keywords
 			"Welcome to Camel Do! You're here because camels are awesome and you need more of them in your life.", // define meta description
 		),

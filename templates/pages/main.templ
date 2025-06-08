@@ -17,11 +17,11 @@ templ Main(backlogTasks []model.Task, weekday time.Weekday, todaysTasks []model.
 			x-data="{ selectedTask: null }"
 		>
 			<div class="flex flex-row h-full overflow-hidden">
-                <div class="flex flex-col w-65 min-w-55 md:w-75 md:min-w-75 bg-primary/40 dark:bg-primary-content/40">
+                <div class="flex flex-col w-65 min-w-65 md:w-75 md:min-w-75 bg-primary/40 dark:bg-primary-content/40">
                     <div class="p-4 w-full">
                         <form class="flex gap-2 items-center justify-evenly">
-                            <input class="flex-1 btn btn-lg btn-primary btn-outline btn-soft" type="checkbox" name="incomplete" aria-label="incomplete"/>
-                            <input class="flex-1 btn btn-lg btn-primary btn-outline btn-soft" type="checkbox" name="tomorrow" aria-label="today"/>
+                            <input class="flex-1 btn btn-primary btn-outline btn-soft" type="checkbox" name="complete" aria-label="complete" checked="true"/>
+                            <input class="flex-1 btn btn-primary btn-outline btn-soft" type="checkbox" name="today" aria-label="today"/>
                         </form>
                     </div>
                     <div

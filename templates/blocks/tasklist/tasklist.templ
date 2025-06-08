@@ -31,10 +31,9 @@ templ TasklistView(weekday time.Weekday, tasks []model.Task, projects model.Proj
 templ taskList(tasks []model.Task, projects model.ProjectIndex) {
 	<div
 		id="timeline"
-		class="w-full lg:w-1/2 h-[calc(100%-50px)] max-h-[calc(100%-50px)] overflow-y-scroll flex flex-col gap-4"
+		class="w-full lg:w-1/2 h-[calc(100%-50px)] max-h-[calc(100%-50px)] overflow-y-scroll flex flex-col gap-2"
 		style="scrollbar-width: none;"
 		hx-swap-oob="true"
-		hx-ext="drag"
 	>
         for _, task := range tasks {
             {{
@@ -55,15 +54,19 @@ templ taskList(tasks []model.Task, projects model.ProjectIndex) {
             >
                 <div
                     class={ 
-                        "cursor-pointer", "tooltip", "tooltip-top", "h-full", "p-2", "rounded-s-xl",
+                        "cursor-pointer", "h-full", "p-2", "rounded-s-xl",
                         fmt.Sprintf("bg-%s-200", color), fmt.Sprintf("text-%s-800", color),
                     }
-                    data-tip={ project.Name }
-                >@components.Icon(project.Icon, 16)</div>
-                <div class="p-2">
-                    { task.Title.String }
-                    <time class="italic">{ utils.FormatTaskDuration(task.Duration.Int32) }</time>
-                    <span class="italic">{ fmt.Sprintf("%02d:%02d", task.StartTime.Time.Hour(), task.StartTime.Time.Minute()) }</span>
+                >
+                    <scan class={"tooltip", "tooltip-right"} data-tip={ project.Name }>@components.Icon(project.Icon, 16)</scan>
+                </div>
+                <div class="p-2 w-full grid grid-cols-2 grid-rows-[1rem_1rem_auto] gap-1">
+                    <time class="italic col-1">{ utils.FormatTime(task.StartTime.Time) }</time>
+                    <time class="italic text-right col-2">{ utils.FormatDuration(task.Duration.Int32) }</time>
+                    <div class={"col-span-2"}>{ task.Title.String }</div>
+                    if task.Position.Size > 3 {
+                        <div class="col-span-2">{ task.Description.String }</div>
+                    }
                 </div>
             </div>
         }

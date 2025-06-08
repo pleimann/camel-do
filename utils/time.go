@@ -5,7 +5,7 @@ import (
 	"time"
 )
 
-func FormatTaskDuration(d int32) string {
+func FormatDuration(d int32) string {
 	duration := time.Duration(d) * time.Minute
 
 	hours := int(duration.Hours())
@@ -17,4 +17,8 @@ func FormatTaskDuration(d int32) string {
 	} else {
 		return fmt.Sprintf("%2dm", minutes)
 	}
+}
+
+func FormatTime(t time.Time) string {
+	return t.Local().Format("03:04 PM")
 }
