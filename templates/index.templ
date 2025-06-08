@@ -1,10 +1,13 @@
 package templates
 
-import "github.com/pleimann/camel-do/templates/pages"
-
 type Config struct {
 	Title          string
 	LoginUri       string
+}
+
+templ MetaTags(keywords, description string) {
+	<meta name="keywords" content={ keywords }/>
+	<meta name="description" content={ description }/>
 }
 
 templ Layout(config Config, metaTags, bodyContent templ.Component) {
@@ -43,7 +46,7 @@ templ Layout(config Config, metaTags, bodyContent templ.Component) {
         <link href="https://fonts.googleapis.com/css2?family=Inter&display=swap" rel="stylesheet"/>
         <link href="/static/styles.css" rel="stylesheet"/>
     </head>
-		<body onload={ pages.BodyScripts() } x-data="{}" 
+		<body onload={ BodyScripts() } x-data="{}" 
           hx-ext="remove-me,response-targets,debug,drag"
           hx-target-5*="#errors"
           hx-target-4*="#warnings">
@@ -56,4 +59,8 @@ templ Layout(config Config, metaTags, bodyContent templ.Component) {
 			<script src="/static/scripts.js"></script>
 		</body>
 	</html>
+}
+
+script BodyScripts() {
+	
 }

@@ -9,19 +9,6 @@ import (
 	"time"
 )
 
-// MetaTags defines meta tags.
-templ MetaTags(keywords, description string) {
-	<meta name="keywords" content={ keywords }/>
-	<meta name="description" content={ description }/>
-}
-
-// styledTextStyles defines CSS styles for component.
-
-css styledTextStyles() {
-	color: #02BF87;
-}
-
-// BodyContent defines HTML content.
 templ Main(backlogTasks []model.Task, weekday time.Weekday, todaysTasks []model.Task, projects model.ProjectIndex) {
 	<div id="app">
 		@titlebar.TitleBar()
@@ -30,15 +17,15 @@ templ Main(backlogTasks []model.Task, weekday time.Weekday, todaysTasks []model.
 			x-data="{ selectedTask: null }"
 		>
 			<div class="flex flex-row h-full overflow-hidden">
-                <div class="flex flex-col w-65 min-w-55 md:w-75 md:min-w-75">
-                    <div class="p-4 w-full bg-primary/40 bg-linear-to-b from-(--color-primary)">
+                <div class="flex flex-col w-65 min-w-55 md:w-75 md:min-w-75 bg-primary/40 dark:bg-primary-content/40">
+                    <div class="p-4 w-full">
                         <form class="flex gap-2 items-center justify-evenly">
-                            <input class="flex-1 btn btn-sm btn-primary btn-outline btn-soft" type="checkbox" name="incomplete" aria-label="incomplete"/>
-                            <input class="flex-1 btn btn-sm btn-primary btn-outline btn-soft" type="checkbox" name="tomorrow" aria-label="today"/>
+                            <input class="flex-1 btn btn-lg btn-primary btn-outline btn-soft" type="checkbox" name="incomplete" aria-label="incomplete"/>
+                            <input class="flex-1 btn btn-lg btn-primary btn-outline btn-soft" type="checkbox" name="tomorrow" aria-label="today"/>
                         </form>
                     </div>
                     <div
-                        class="overflow-y-auto overflow-x-hidden bg-primary/40 dark:bg-primary-content/40 pl-4 pb-4 pr-1 h-full"
+                        class="overflow-y-auto overflow-x-hidden pl-4 pb-4 pr-1 h-full"
                         style="scrollbar-color: var(--color-primary) transparent; scrollbar-gutter: stable;"
                     >
                         @backlog.Backlog(backlogTasks, projects)
@@ -53,10 +40,4 @@ templ Main(backlogTasks []model.Task, weekday time.Weekday, todaysTasks []model.
 			</div>
 		</main>
 	</div>
-}
-
-// BodyScripts defines JavaScript code.
-
-script BodyScripts() {
-	
 }
