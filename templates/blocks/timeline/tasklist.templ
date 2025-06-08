@@ -1,9 +1,20 @@
 package timeline
 
 import (
-	"github.com/pleimann/camel-do/model"
 	"time"
+    "strings"
+    "fmt"
+
+	"github.com/pleimann/camel-do/model"
+	"github.com/pleimann/camel-do/utils"
+	"github.com/pleimann/camel-do/templates/components"
 )
+
+func taskCardSize(task model.Task) map[string]string {
+	return map[string]string{
+		"height": fmt.Sprintf(" %drem", 2*task.Position.Size),
+	}
+}
 
 templ TasklistView(weekday time.Weekday, tasks []model.Task, projects model.ProjectIndex) {
 	@dayOfWeekSelector(weekday)
@@ -19,7 +30,36 @@ templ taskList(tasks []model.Task, projects model.ProjectIndex) {
 		hx-ext="drag"
 	>
         for _, task := range tasks {
-            @taskCard(task, projects)
+            {{
+                project := projects[task.ProjectID.String]
+                color := strings.ToLower(project.Color.String())
+                position := taskPosition(task)
+            }}
+            <div
+                id={ fmt.Sprintf("task-bar-%s", task.ID) }
+                hx-drag={ fmt.Sprintf("{ taskId: 'task-bar-%s' }", task.ID) }
+                class={
+                    taskBarClass(),
+                    fmt.Sprintf("bg-%s-50", color),
+                    fmt.Sprintf("dark:bg-%s-900", color),
+                    fmt.Sprintf("border-%s-100", color),
+                    "border", "shadow-sm", "text-sm"
+                }
+                style={ position }
+            >
+                <div
+                    class={ 
+                        "cursor-pointer", "tooltip", "tooltip-top", "h-full", "p-2", "rounded-s-xl",
+                        fmt.Sprintf("bg-%s-200", color), fmt.Sprintf("text-%s-800", color),
+                    }
+                    data-tip={ project.Name }
+                >@components.Icon(project.Icon, 16)</div>
+                <div class="p-2">
+                    { task.Title.String }
+                    <time class="italic">{ utils.FormatTaskDuration(task.Duration.Int32) }</time>
+                    <span class="italic">{ fmt.Sprintf("%02d:%02d", task.StartTime.Time.Hour(), task.StartTime.Time.Minute()) }</span>
+                </div>
+            </div>
         }
     </div>
 }

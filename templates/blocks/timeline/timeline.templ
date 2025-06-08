@@ -59,10 +59,10 @@ css tickClass() {
 }
 
 css slotClass() {
-  grid-column-start: 3;
-  user-select: none;
-  font-size: var(--text-xs);
-  font-variant-numeric: tabular-nums;
+	grid-column-start: 3;
+	user-select: none;
+	font-size: var(--text-xs);
+	font-variant-numeric: tabular-nums;
 }
 
 var startWeekday = time.Monday
@@ -77,10 +77,10 @@ templ dayOfWeekSelector(weekday time.Weekday) {
 		{{ currentWeekday := time.Now().Weekday() }}
 		for i := startWeekday; i < 7+startWeekday; i++ {
 			{{
-        w := time.Weekday(i % 7)
-        // (w + 6) % 7 shifts Sunday (0) to 6, Monday (1) to 0, ..., Saturday (6) to 5
-        shiftedWeekday := time.Weekday((int(w)+7-int(startWeekday))%7 + 1)
-        isFuture := currentWeekday < shiftedWeekday
+                w := time.Weekday(i % 7)
+                // (w + 6) % 7 shifts Sunday (0) to 6, Monday (1) to 0, ..., Saturday (6) to 5
+                shiftedWeekday := time.Weekday((int(w)+7-int(startWeekday))%7 + 1)
+                isFuture := currentWeekday < shiftedWeekday
 			}}
 			<button class={ "btn", "btn-circle", templ.KV("btn-dash", isFuture), templ.KV("btn-accent", weekday==w) }>{ w.String()[0:2] }</button>
 		}
@@ -88,76 +88,70 @@ templ dayOfWeekSelector(weekday time.Weekday) {
 }
 
 templ timeline(tasks []model.Task, projects model.ProjectIndex) {
-	<div id="timeline" class="w-full lg:w-1/2 max-h-[calc(100%-50px)] overflow-y-scroll" 
-    style="scrollbar-width: none;" 
-    hx-swap-oob="true"
-    hx-ext="drag"
-  >
+	<div
+		id="timeline"
+		class="w-full lg:w-1/2 max-h-[calc(100%-50px)] overflow-y-scroll"
+		style="scrollbar-width: none;"
+		hx-swap-oob="true"
+		hx-ext="drag"
+	>
 		<div x-sort.ghost="handleDrag" class="w-full grid grid-flow-col-dense grid-rows-52 grid-cols-[40px_10px_1fr]" style="column-gap: calc(var(--spacing) * 2)">
 			for h24 := startHours; h24 < endHours; h24++ {
 				{{
-          h := h24
-          if h24 > 12 {
-            h = h24 - 12
-          }
+                    h := h24
+                    if h24 > 12 {
+                        h = h24 - 12
+                    }
 				}}
-				
-        <span id={ fmt.Sprintf("tick-%d", h24) } class={ timeClass() }>{ fmt.Sprintf("%02d %s", h, meridian(h24)) }</span>
-        
-        for m := 0; m < 60; m += slotMinutes {
-          {{ s := ((h24 - startHours) * (60 / slotMinutes)) + (m / slotMinutes) }}
-          <span
-            id={ fmt.Sprintf("tick-%d-%d", h24, m) }
-            x-data={ fmt.Sprintf("{hour: %d, minute: %d, slot: %d}", h, m, s) }
-            class={ "tick", tickClass() }
-          ></span>
-
-          <span
-            id={ fmt.Sprintf("slot-%d-%d", h24, m) }
-            class={ slotClass() }
-            hx-drop={ fmt.Sprintf("{hour: %d, minute: %d, slot: %d}", h, m, s) }
-          >
-            // { fmt.Sprintf("%d:%d", h24, m) }
-          </span>
-        }
+				<span id={ fmt.Sprintf("tick-%d", h24) } class={ timeClass() }>{ fmt.Sprintf("%02d %s", h, meridian(h24)) }</span>
+				for m := 0; m < 60; m += slotMinutes {
+					{{ s := ((h24 - startHours) * (60 / slotMinutes)) + (m / slotMinutes) }}
+					<span
+						id={ fmt.Sprintf("tick-%d-%d", h24, m) }
+						x-data={ fmt.Sprintf("{hour: %d, minute: %d, slot: %d}", h, m, s) }
+						class={ "tick", tickClass() }
+					></span>
+					<span id={ fmt.Sprintf("slot-%d-%d", h24, m) } class={ slotClass() }>
+						// { fmt.Sprintf("%d:%d", h24, m) }
+					</span>
+				}
 			}
-      
-      for _, task := range tasks {
-        @taskCard(task, projects)
-      }
+			for _, task := range tasks {
+				@timelineTaskCard(task, projects)
+			}
 		</div>
 	</div>
 }
 
-templ taskCard(task model.Task, projects model.ProjectIndex) {
-  {{
-    project := projects[task.ProjectID.String]
-    color := strings.ToLower(project.Color.String())
-    position := taskPosition(task)
-  }}
-  <div
-    id={ fmt.Sprintf("task-bar-%s", task.ID) }
-    hx-drag={ fmt.Sprintf("{ taskId: 'task-bar-%s' }", task.ID) }
-    class={
-      taskBarClass(),
-      fmt.Sprintf("bg-%s-50", color),
-      fmt.Sprintf("dark:bg-%s-900", color),
-      fmt.Sprintf("border-%s-100", color),
-      "border", "shadow-sm", "text-sm"
-    }
-    style={ position }
-  >
-    <div
-      class={ 
-        "cursor-pointer", "tooltip", "tooltip-top", "h-full", "p-2", "rounded-s-xl",
-        fmt.Sprintf("bg-%s-200", color), fmt.Sprintf("text-%s-800", color),
-      }
-      data-tip={ project.Name }
-    >@components.Icon(project.Icon, 16)
-    </div>
-    <div class="p-2">
-      { task.Title.String }
-      <span class="italic">{ fmt.Sprintf("%02d:%02d", task.StartTime.Time.Hour(), task.StartTime.Time.Minute()) }</span>
-    </div>
-  </div>
+templ timelineTaskCard(task model.Task, projects model.ProjectIndex) {
+	{{
+        project := projects[task.ProjectID.String]
+        color := strings.ToLower(project.Color.String())
+        position := taskPosition(task)
+	}}
+	<div
+		id={ fmt.Sprintf("task-bar-%s", task.ID) }
+		hx-drag={ fmt.Sprintf("{ taskId: 'task-bar-%s' }", task.ID) }
+		class={ taskBarClass(),
+            fmt.Sprintf("bg-%s-50", color),
+            fmt.Sprintf("dark:bg-%s-900", color),
+            fmt.Sprintf("border-%s-100", color),
+            "border", "shadow-sm", "text-sm" 
+        }
+		style={ position }
+	>
+		<div
+			class={
+				"cursor-pointer", "tooltip", "tooltip-top", "h-full", "p-2", "rounded-s-xl",
+				fmt.Sprintf("bg-%s-200", color), fmt.Sprintf("text-%s-800", color),
+			}
+			data-tip={ project.Name }
+		>
+			@components.Icon(project.Icon, 16)
+		</div>
+		<div class="p-2">
+			{ task.Title.String }
+			<span class="italic">{ fmt.Sprintf("%02d:%02d", task.StartTime.Time.Hour(), task.StartTime.Time.Minute()) }</span>
+		</div>
+	</div>
 }
