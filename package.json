@@ -14,16 +14,16 @@
     "@alpinejs/anchor": "^3.14.9",
     "@alpinejs/focus": "^3.14.9",
     "@lucide/lab": "^0.1.2",
-    "alpinejs": "latest",
+    "alpinejs": "^3.0.0",
     "daisyui": "^5.0.37",
     "htmx-ext-alpine-morph": "^2.0.1",
     "htmx-ext-debug": "^2.0.1",
     "htmx-ext-remove-me": "^2.0.1",
     "htmx-ext-response-targets": "^2.0.3",
-    "htmx.org": "latest",
+    "htmx.org": "^1.9.0",
     "hx-drag": "^2.0.0",
     "lucide": "^0.511.0",
-    "tailwindcss": "latest"
+    "tailwindcss": "~4.1.0"
   },
   "devDependencies": {
     "@parcel/transformer-css": "latest",

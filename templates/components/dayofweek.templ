@@ -1,0 +1,18 @@
+package components
+
+import "time"
+
+templ DayOfWeekSelector(startWeekday time.Weekday, weekday time.Weekday) {
+	<div id="dayOfWeekSelector" class="static w-full mb-4 flex flex-row gap-4 justify-center" hx-swap-oob="true">
+		{{ currentWeekday := time.Now().Weekday() }}
+		for i := startWeekday; i < 7+startWeekday; i++ {
+			{{
+                w := time.Weekday(i % 7)
+                // (w + 6) % 7 shifts Sunday (0) to 6, Monday (1) to 0, ..., Saturday (6) to 5
+                shiftedWeekday := time.Weekday((int(w)+7-int(startWeekday))%7 + 1)
+                isFuture := currentWeekday < shiftedWeekday
+			}}
+			<button class={ "btn", "btn-circle", templ.KV("btn-dash", isFuture), templ.KV("btn-accent", weekday==w) }>{ w.String()[0:2] }</button>
+		}
+	</div>
+}

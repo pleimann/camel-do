@@ -1,4 +1,4 @@
-package timeline
+package tasklist
 
 import (
 	"time"
@@ -11,13 +11,20 @@ import (
 )
 
 func taskCardSize(task model.Task) map[string]string {
-	return map[string]string{
-		"height": fmt.Sprintf(" %drem", 2*task.Position.Size),
-	}
+    return map[string]string{
+        "height": fmt.Sprintf("%.1frem", float32(task.Position.Size) * 2.5),
+    }
+}
+
+css taskClass() {
+	border-radius: var(--radius-xl);
+	display: flex;
+	flex-direction: row;
+	column-gap: calc(var(--spacing) * 2);
 }
 
 templ TasklistView(weekday time.Weekday, tasks []model.Task, projects model.ProjectIndex) {
-	@dayOfWeekSelector(weekday)
+	@components.DayOfWeekSelector(time.Monday, weekday)
 	@taskList(tasks, projects)
 }
 
@@ -33,19 +40,18 @@ templ taskList(tasks []model.Task, projects model.ProjectIndex) {
             {{
                 project := projects[task.ProjectID.String]
                 color := strings.ToLower(project.Color.String())
-                position := taskPosition(task)
             }}
             <div
                 id={ fmt.Sprintf("task-bar-%s", task.ID) }
                 hx-drag={ fmt.Sprintf("{ taskId: 'task-bar-%s' }", task.ID) }
                 class={
-                    taskBarClass(),
+                    taskClass(),
                     fmt.Sprintf("bg-%s-50", color),
                     fmt.Sprintf("dark:bg-%s-900", color),
                     fmt.Sprintf("border-%s-100", color),
                     "border", "shadow-sm", "text-sm"
                 }
-                style={ position }
+                style={ taskCardSize(task) }
             >
                 <div
                     class={ 

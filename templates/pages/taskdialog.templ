@@ -18,7 +18,7 @@ templ TaskDialog(projectsIndex model.ProjectIndex, task *model.Task) {
         }
     }}
 
-    <form id="taskForm" method="dialog" class="flex flex-col gap-4"
+    <form id="taskForm" method="dialog" class="flex flex-col items-stretch gap-4"
         if task == nil {
             hx-post="/tasks/"
         } else {
@@ -77,10 +77,11 @@ templ TaskDialog(projectsIndex model.ProjectIndex, task *model.Task) {
                 durationMinutes = task.Duration.Int32
             }
         }}
-        <label class="input grow"
+        <label class="input w-full"
             x-data={ fmt.Sprintf("{ duration: %d }", durationMinutes) }
         >
-            <input name="duration" type="text" min="0" step="15" x-model.number="duration"
+            <input name="duration" type="text" min="0" step="15"
+                x-model.number="duration"
                 value={ fmt.Sprintf("%d", durationMinutes) }
             />
 
@@ -96,7 +97,7 @@ templ TaskDialog(projectsIndex model.ProjectIndex, task *model.Task) {
             </div>
         </label>
     
-        <textarea name="description" class="textarea" placeholder="Notes">
+        <textarea name="description" class="textarea w-full" placeholder="Notes">
             if task != nil && task.Description.Valid {
                 { task.Description.String }
             }

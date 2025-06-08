@@ -15,7 +15,7 @@ import (
 	"github.com/pleimann/camel-do/model"
 	"github.com/pleimann/camel-do/services/project"
 	"github.com/pleimann/camel-do/templates/blocks/backlog"
-	"github.com/pleimann/camel-do/templates/blocks/timeline"
+	"github.com/pleimann/camel-do/templates/blocks/tasklist"
 	"github.com/pleimann/camel-do/templates/components"
 	"github.com/pleimann/camel-do/templates/pages"
 )
@@ -137,7 +137,7 @@ func (h *TaskHandler) handleScheduleTask(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusInternalServerError, "getting todays tasks", err)
 	}
 
-	timelineViewTemplate := timeline.TasklistView(time.Now().Weekday(), todaysTasks, projectsIndex)
+	timelineViewTemplate := tasklist.TasklistView(time.Now().Weekday(), todaysTasks, projectsIndex)
 
 	return htmx.NewResponse().
 		RenderTempl(c.Request().Context(), c.Response().Writer, timelineViewTemplate)
