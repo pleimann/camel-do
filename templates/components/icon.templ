@@ -1,10 +1,10 @@
 package components
 
 import (
-"strings"
-"fmt"
+    "strings"
+    "fmt"
 
-"github.com/pleimann/camel-do/model"
+    "github.com/pleimann/camel-do/model"
 )
 
 templ IconC(name model.Icon, color model.Color, size int, addlClasses... string) {
@@ -18,11 +18,6 @@ templ IconC(name model.Icon, color model.Color, size int, addlClasses... string)
     <i data-lucide={ strings.ToLower(name.String()) } class={ classes } />
 }
 
-templ Icon(name model.Icon, size int, addlClasses... string) {
-    {{
-        classes := append(addlClasses,
-        fmt.Sprintf("size-%d", size), "rounded" )
-    }}
-
-    <i data-lucide={ strings.ToLower(name.String()) } class={ classes } />
+templ Icon(name model.Icon, size int, classes... string) {
+    <i data-lucide={ strings.ToLower(name.String()) } class={ classes } style={ fmt.Sprintf("height: %dpx; width: %dpx;", size, size) } />
 }

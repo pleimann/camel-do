@@ -12,7 +12,7 @@ import (
 
 func taskCardSize(task model.Task) map[string]string {
     return map[string]string{
-        "height": fmt.Sprintf("%.1frem", float32(task.Position.Size) * 2.5),
+        // "height": fmt.Sprintf("%.1frem", float32(task.Position.Size) * 2.5),
     }
 }
 
@@ -29,46 +29,30 @@ templ TasklistView(weekday time.Weekday, tasks []model.Task, projects model.Proj
 }
 
 templ taskList(tasks []model.Task, projects model.ProjectIndex) {
-	<div
-		id="timeline"
-		class="w-full lg:w-1/2 h-[calc(100%-50px)] max-h-[calc(100%-50px)] overflow-y-scroll flex flex-col gap-2"
-		style="scrollbar-width: none;"
-		hx-swap-oob="true"
-	>
-        for _, task := range tasks {
-            {{
-                project := projects[task.ProjectID.String]
-                color := strings.ToLower(project.Color.String())
-            }}
-            <div
-                id={ fmt.Sprintf("task-bar-%s", task.ID) }
-                hx-drag={ fmt.Sprintf("{ taskId: 'task-bar-%s' }", task.ID) }
-                class={
-                    taskClass(),
-                    fmt.Sprintf("bg-%s-50", color),
-                    fmt.Sprintf("dark:bg-%s-900", color),
-                    fmt.Sprintf("border-%s-100", color),
-                    "border", "shadow-sm", "text-sm"
-                }
-                style={ taskCardSize(task) }
-            >
-                <div
-                    class={ 
-                        "cursor-pointer", "h-full", "p-2", "rounded-s-xl",
-                        fmt.Sprintf("bg-%s-200", color), fmt.Sprintf("text-%s-800", color),
-                    }
+    <div class={ "h-[calc(100%-50px)]", "max-h-[calc(100%-50px)]", "overflow-y-scroll" }>
+        <ul id="timeline" class="list gap-4 w-full lg:w-1/2" style="scrollbar-width: none;">
+            for _, task := range tasks {
+                {{
+                    project := projects[task.ProjectID.String]
+                    color := strings.ToLower(project.Color.String())
+                }}
+                <li id={ fmt.Sprintf("task-bar-%s", task.ID) }
+                    class={ "list-row", "bg-base-200", "shadow-md" }
+                    style={ taskCardSize(task) }
                 >
-                    <scan class={"tooltip", "tooltip-right"} data-tip={ project.Name }>@components.Icon(project.Icon, 16)</scan>
-                </div>
-                <div class="p-2 w-full grid grid-cols-2 grid-rows-[1rem_1rem_auto] gap-1">
-                    <time class="italic col-1">{ utils.FormatTime(task.StartTime.Time) }</time>
-                    <time class="italic text-right col-2">{ utils.FormatDuration(task.Duration.Int32) }</time>
-                    <div class={"col-span-2"}>{ task.Title.String }</div>
-                    if task.Position.Size > 3 {
-                        <div class="col-span-2">{ task.Description.String }</div>
-                    }
-                </div>
-            </div>
-        }
+                    <div class={ "cursor-pointer", "h-full", fmt.Sprintf("text-%s-800", color) }>
+                        <scan class={ "tooltip", "tooltip-right"} data-tip={ project.Name }>@components.Icon(project.Icon, 34)</scan>
+                    </div>
+                    <div class="list-col-grow">
+                        <time class="text-xs">{ utils.FormatTime(task.StartTime.Time) }</time>
+                        <h3 class="uppercase font-semibold text-md">{ task.Title.String }</h3>
+                        if task.Position.Size > 2 {
+                            <div class="text-xs opacity-60 line-clamp-2">{ task.Description.String }</div>
+                        }
+                    </div>
+                    <div class="text-3xl font-thin opacity-30 tabular-nums oldstyle-nums">{ utils.FormatDuration(task.Duration.Int32) }</div>
+                </li>
+            }
+        </ul>
     </div>
 }
