@@ -113,7 +113,7 @@ func (tl *TaskList) Sort() {
 			return n
 		}
 
-		return cmp.Compare(a.Duration.Int32, b.Duration.Int32)
+		return 0
 	})
 }
 

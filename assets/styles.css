@@ -61,6 +61,7 @@ html {
   height: 100vh;
   overflow: hidden;
   scrollbar-width: thin;
+  scrollbar-gutter: stable;
   scrollbar-color: var(--color-gray-500) white;
 }
 

@@ -24,31 +24,31 @@ css taskClass() {
 }
 
 templ TasklistView(weekday time.Weekday, tasks *model.TaskList, projects *model.ProjectIndex) {
-	@components.DayOfWeekSelector(time.Monday, weekday)
-	@taskList(tasks, projects)
+    <div class={ "w-full", "xl:w-1/2" }>
+        @components.DayOfWeekSelector(time.Monday, weekday)
+        @taskList(tasks, projects)
+    </div>
 }
 
 templ taskList(tasks *model.TaskList, projects *model.ProjectIndex) {
     <div class={ "h-[calc(100%-50px)]", "max-h-[calc(100%-50px)]", "overflow-y-scroll" }>
-        <ul id="timeline" class="list gap-4 w-full lg:w-1/2" style="scrollbar-width: none;">
+        <ul id="timeline" class="list gap-4 w-full" style="scrollbar-width: none;">
             for task := range tasks.All() {
                 {{
                     project := projects.Get(task.ProjectID.String)
                     color := strings.ToLower(project.Color.String())
                 }}
                 <li id={ fmt.Sprintf("task-bar-%s", task.ID) }
-                    class={ "list-row", "bg-base-200", "shadow-md" }
+                    class="list-row bg-base-200 shadow-md"
                     style={ taskCardSize(task) }
                 >
                     <div class={ "cursor-pointer", "h-full", fmt.Sprintf("text-%s-800", color) }>
-                        <scan class={ "tooltip", "tooltip-right"} data-tip={ project.Name }>@components.Icon(project.Icon, 34)</scan>
+                        <scan class="tooltip tooltip-right" data-tip={ project.Name }>@components.Icon(project.Icon, 34)</scan>
                     </div>
                     <div class="list-col-grow">
                         <time class="text-xs">{ utils.FormatTime(task.StartTime.Time) }</time>
                         <h3 class="uppercase font-semibold text-md">{ task.Title.String }</h3>
-                        if task.Position.Size > 2 {
-                            <div class="text-xs opacity-60 line-clamp-2">{ task.Description.String }</div>
-                        }
+                        <div class="text-xs opacity-60 line-clamp-2">{ task.Description.String }</div>
                     </div>
                     <div class="text-3xl font-thin opacity-30 tabular-nums oldstyle-nums">{ utils.FormatDuration(task.Duration.Int32) }</div>
                 </li>
