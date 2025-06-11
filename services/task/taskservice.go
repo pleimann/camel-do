@@ -4,7 +4,6 @@ import (
 	"database/sql"
 	"fmt"
 	"log/slog"
-	"slices"
 	"time"
 
 	. "github.com/go-jet/jet/v2/sqlite"
@@ -130,7 +129,7 @@ func (t *TaskService) DeleteTask(id string) error {
 	return nil
 }
 
-func (t *TaskService) GetBacklogTasks() ([]model.Task, error) {
+func (t *TaskService) GetBacklogTasks() (*model.TaskList, error) {
 	slog.Debug("TaskService.GetBacklogTasks")
 
 	stmt := SELECT(Tasks.AllColumns).
@@ -146,12 +145,12 @@ func (t *TaskService) GetBacklogTasks() ([]model.Task, error) {
 
 	modelTasks := toModelTasks(tasks)
 
-	sortTasksByStartTime(&modelTasks)
+	modelTasks.Sort()
 
 	return modelTasks, nil
 }
 
-func (t *TaskService) GetTodaysTasks() ([]model.Task, error) {
+func (t *TaskService) GetTodaysTasks() (*model.TaskList, error) {
 	slog.Debug("TaskService.GetTodaysTasks")
 
 	year, month, day := time.Now().Date()
@@ -172,38 +171,9 @@ func (t *TaskService) GetTodaysTasks() ([]model.Task, error) {
 
 	modelTasks := toModelTasks(tasks)
 
-	sortTasksByStartTime(&modelTasks)
+	modelTasks.Sort()
 
 	return modelTasks, nil
-}
-
-func sortTasksByStartTime(tasks *[]model.Task) {
-	slices.SortFunc(*tasks, func(a, b model.Task) int {
-		if a.StartTime.Valid && b.StartTime.Valid {
-			timeCmp := a.StartTime.Time.Compare(b.StartTime.Time)
-
-			if timeCmp == 0 {
-				if a.Rank.Int32 < b.Rank.Int32 {
-					return -1
-				} else if a.Rank.Int32 > b.Rank.Int32 {
-					return 1
-				} else {
-					if a.Duration.Int32 < b.Duration.Int32 {
-						return -1
-					} else if a.Duration.Int32 > b.Duration.Int32 {
-						return 1
-					} else {
-						return 0
-					}
-				}
-
-			} else {
-				return timeCmp
-			}
-		}
-
-		return 0
-	})
 }
 
 func toTableTask(task *model.Task) m.Tasks {
@@ -224,13 +194,13 @@ func toTableTask(task *model.Task) m.Tasks {
 	return tasks
 }
 
-func toModelTasks(tasks []m.Tasks) []model.Task {
-	modelTasks := make([]model.Task, len(tasks))
-	for i, t := range tasks {
-		modelTasks[i] = toModelTask(&t)
+func toModelTasks(tasks []m.Tasks) *model.TaskList {
+	modelTaskList := model.NewTaskList()
+	for _, t := range tasks {
+		modelTaskList.Push(toModelTask(&t))
 	}
 
-	return modelTasks
+	return modelTaskList
 }
 
 func toModelTask(t *m.Tasks) model.Task {

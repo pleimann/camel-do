@@ -137,10 +137,10 @@ func (h *TaskHandler) handleScheduleTask(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusInternalServerError, "getting todays tasks", err)
 	}
 
-	timelineViewTemplate := tasklist.TasklistView(time.Now().Weekday(), todaysTasks, projectsIndex)
+    tasklistViewTemplate := tasklist.TasklistView(time.Now().Weekday(), todaysTasks, projectsIndex)
 
 	return htmx.NewResponse().
-		RenderTempl(c.Request().Context(), c.Response().Writer, timelineViewTemplate)
+		RenderTempl(c.Request().Context(), c.Response().Writer, tasklistViewTemplate)
 }
 
 func (h *TaskHandler) handleCreateTask(c echo.Context) error {

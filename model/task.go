@@ -1,7 +1,10 @@
 package model
 
 import (
+	"cmp"
 	"encoding/json"
+	"iter"
+	"slices"
 	"time"
 
 	"github.com/guregu/null/v6/zero"
@@ -81,6 +84,39 @@ func (t Task) MarshalJSON() ([]byte, error) {
 		"gTaskId":     t.GTaskID.String,
 		"position":    t.Position,
 	})
+}
+
+type TaskList struct {
+	tasks []Task
+}
+
+func (tl *TaskList) All() iter.Seq[Task] {
+	return slices.Values(tl.tasks)
+}
+
+func (tl *TaskList) Push(task Task) {
+	tl.tasks = append(tl.tasks, task)
+}
+
+func (tl *TaskList) Sort() {
+	slices.SortFunc(tl.tasks, func(a, b Task) int {
+		if n := a.StartTime.Time.Compare(b.StartTime.Time); n != 0 {
+			return n
+		}
+
+		// Times are equal order by Rank
+		if n := cmp.Compare(a.Rank.Int32, b.Rank.Int32); n != 0 {
+			return n
+		}
+
+		return cmp.Compare(a.Duration.Int32, b.Duration.Int32)
+	})
+}
+
+func NewTaskList() *TaskList {
+	return &TaskList{
+		tasks: make([]Task, 1),
+	}
 }
 
 var startHours = 6
