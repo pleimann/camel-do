@@ -68,7 +68,7 @@ func main() {
 		log.Fatalf("error creating TaskService: %s", err)
 	}
 
-	if seed {
+	if tasks, _ := taskService.GetTodaysTasks(); tasks.IsEmpty() {
 		database.Seed(20, taskService, projectService)
 	}
 

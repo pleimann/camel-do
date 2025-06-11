@@ -90,6 +90,10 @@ type TaskList struct {
 	tasks []Task
 }
 
+func (tl *TaskList) IsEmpty() bool {
+	return len(tl.tasks) == 0
+}
+
 func (tl *TaskList) All() iter.Seq[Task] {
 	return slices.Values(tl.tasks)
 }
@@ -115,7 +119,7 @@ func (tl *TaskList) Sort() {
 
 func NewTaskList() *TaskList {
 	return &TaskList{
-		tasks: make([]Task, 1),
+		tasks: make([]Task, 0),
 	}
 }
 
