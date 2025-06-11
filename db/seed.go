@@ -2,7 +2,6 @@ package db
 
 import (
 	"log"
-	"maps"
 	"math/rand"
 	"slices"
 
@@ -31,9 +30,9 @@ func Seed(count int, taskService *task.TaskService, projectService *project.Proj
 
 	projectsIndex, _ := projectService.GetProjects()
 
-	projects = slices.Collect(maps.Values(projectsIndex))
+	projects = slices.Collect(projectsIndex.Values())
 
-	for _, t := range tasks {
+	for t := range tasks.All() {
 		randProject := projects[rand.Intn(len(projects))]
 
 		t.ProjectID = zero.StringFrom(randProject.ID)

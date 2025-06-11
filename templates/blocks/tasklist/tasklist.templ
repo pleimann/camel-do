@@ -23,17 +23,17 @@ css taskClass() {
 	column-gap: calc(var(--spacing) * 2);
 }
 
-templ TasklistView(weekday time.Weekday, tasks *model.TaskList, projects model.ProjectIndex) {
+templ TasklistView(weekday time.Weekday, tasks *model.TaskList, projects *model.ProjectIndex) {
 	@components.DayOfWeekSelector(time.Monday, weekday)
 	@taskList(tasks, projects)
 }
 
-templ taskList(tasks *model.TaskList, projects model.ProjectIndex) {
+templ taskList(tasks *model.TaskList, projects *model.ProjectIndex) {
     <div class={ "h-[calc(100%-50px)]", "max-h-[calc(100%-50px)]", "overflow-y-scroll" }>
         <ul id="timeline" class="list gap-4 w-full lg:w-1/2" style="scrollbar-width: none;">
             for task := range tasks.All() {
                 {{
-                    project := projects[task.ProjectID.String]
+                    project := projects.Get(task.ProjectID.String)
                     color := strings.ToLower(project.Color.String())
                 }}
                 <li id={ fmt.Sprintf("task-bar-%s", task.ID) }

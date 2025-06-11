@@ -9,7 +9,7 @@ import (
 	"time"
 )
 
-templ Main(backlogTasks *model.TaskList, weekday time.Weekday, todaysTasks *model.TaskList, projects model.ProjectIndex) {
+templ Main(backlogTasks *model.TaskList, weekday time.Weekday, todaysTasks *model.TaskList, projects *model.ProjectIndex) {
 	<div id="app">
 		@titlebar.TitleBar()
 		<main

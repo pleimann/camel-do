@@ -2,7 +2,6 @@ package backlog
 
 import (
 	"fmt"
-	"reflect"
 	"strings"
 
 	"github.com/pleimann/camel-do/model"
@@ -11,18 +10,19 @@ import (
 
 const BacklogSelector = "#backlog"
 
-templ Backlog(tasks *model.TaskList, projects model.ProjectIndex) {
+templ Backlog(tasks *model.TaskList, projects *model.ProjectIndex) {
 	// padding being defined in Backlog component rather than parent (App) prevents drop shadows from being clipped
 	<div id="backlog" class="flex flex-col gap-2 bg-transparent">
 		for task := range tasks.All() {
 			{{
-                project := model.Project{}
+                var project *model.Project
 
-                if !reflect.ValueOf(&task.ProjectID).Elem().IsZero() {
-                    project = projects[task.ProjectID.String]
+                if !task.ProjectID.IsZero() {
+                    project = projects.Get(task.ProjectID.String)
                 }
 			}}
-			@TaskCard(task, &project)
+
+			@TaskCard(task, project)
 		}
 	</div>
 }

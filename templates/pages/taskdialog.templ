@@ -2,20 +2,13 @@ package pages
 
 import (
     "fmt"
-    "slices"
-    "maps"
     "github.com/pleimann/camel-do/model"
     "github.com/pleimann/camel-do/templates/components"
 )
 
-templ TaskDialog(projectsIndex model.ProjectIndex, task *model.Task) {
+templ TaskDialog(projectsIndex *model.ProjectIndex, task *model.Task) {
     {{ 
-        projects := slices.Collect(maps.Values(projectsIndex))
-        var project *model.Project
-        if task != nil && task.ProjectID.Valid {
-            p := projectsIndex[task.ProjectID.String]
-            project = &p
-        }
+        project := projectsIndex.Get(task.ProjectID.String)
     }}
 
     <form id="taskForm" method="dialog" class="flex flex-col items-stretch gap-4"
@@ -59,7 +52,7 @@ templ TaskDialog(projectsIndex model.ProjectIndex, task *model.Task) {
                     <i data-lucide="chevron-down" />
                 </div>
                 <ul tabindex="0" x-ref="projectDropdown" class="dropdown-content menu bg-base-200 rounded-box z-1 w-52 p-2 mt-2 shadow-sm">
-                for _, p := range projects {
+                for p := range projectsIndex.Values() {
                     <li @click={ fmt.Sprintf("projectId = '%s'; projectName = '%s'; document.activeElement.blur();", p.ID, p.Name) }>
                         <span>
                             @components.IconC(p.Icon, p.Color, 4) 

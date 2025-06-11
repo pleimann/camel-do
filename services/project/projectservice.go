@@ -51,7 +51,7 @@ func (s *ProjectService) GetProject(id string) (*model.Project, error) {
 	return &modelProject, nil
 }
 
-func (s *ProjectService) GetProjects() (model.ProjectIndex, error) {
+func (s *ProjectService) GetProjects() (*model.ProjectIndex, error) {
 	slog.Debug("ProjectService.GetProjects")
 
 	stmt := SELECT(Projects.AllColumns).
@@ -65,12 +65,12 @@ func (s *ProjectService) GetProjects() (model.ProjectIndex, error) {
 
 	modelProjects := toModelProjects(projects)
 
-	projectsMap := make(model.ProjectIndex)
+	projectsIndex := model.NewProjectIndex()
 	for _, project := range modelProjects {
-		projectsMap[project.ID] = project
+		projectsIndex.Add(project)
 	}
 
-	return projectsMap, nil
+	return projectsIndex, nil
 }
 
 func (s *ProjectService) AddProject(project model.Project) error {

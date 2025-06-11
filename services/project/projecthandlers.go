@@ -4,7 +4,6 @@ import (
 	"database/sql"
 	"errors"
 	"log/slog"
-	"maps"
 	"net/http"
 	"slices"
 
@@ -94,7 +93,7 @@ func (h *ProjectHandler) handleListProjects(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusInternalServerError, "getting projects", err)
 	}
 
-	projects := slices.Collect(maps.Values(projectsIndex))
+	projects := slices.Collect(projectsIndex.Values())
 
 	listProjectsDialogTemplate := pages.ProjectList(projects)
 

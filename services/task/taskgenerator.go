@@ -12,14 +12,14 @@ import (
 )
 
 // GenerateRandomTasks generates a slice of Task with random data.
-func GenerateRandomTasks(count int) ([]model.Task, error) {
+func GenerateRandomTasks(count int) (*model.TaskList, error) {
 	if count < 1 || count > 50 {
 		return nil, fmt.Errorf("task count must be between 1 and 50, got %d", count)
 	}
 
-	tasks := make([]model.Task, count)
+	tasks := model.NewTaskList()
 	for i := 0; i < count; i++ {
-		tasks[i] = GenerateRandomTask()
+		tasks.Push(GenerateRandomTask())
 	}
 
 	return tasks, nil

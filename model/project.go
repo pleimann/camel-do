@@ -1,6 +1,8 @@
 package model
 
 import (
+	"iter"
+	"maps"
 	"time"
 )
 
@@ -15,4 +17,29 @@ type Project struct {
 	Icon  Icon   `form:"icon,default:Unknown" jet:"column:icon"` // Icon to identify project
 }
 
-type ProjectIndex = map[string]Project
+type ProjectIndex struct {
+	projects map[string]Project
+}
+
+func NewProjectIndex() *ProjectIndex {
+	return &ProjectIndex{
+		projects: make(map[string]Project),
+	}
+}
+
+func (pi *ProjectIndex) All() iter.Seq2[string, Project] {
+	return maps.All(pi.projects)
+}
+
+func (pi *ProjectIndex) Values() iter.Seq[Project] {
+	return maps.Values(pi.projects)
+}
+
+func (pi *ProjectIndex) Add(project Project) {
+	pi.projects[project.ID] = project
+}
+
+func (pi *ProjectIndex) Get(id string) *Project {
+	p := pi.projects[id]
+	return &p
+}
