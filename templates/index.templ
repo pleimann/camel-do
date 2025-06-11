@@ -17,7 +17,7 @@ templ Layout(config Config, metaTags, bodyContent templ.Component) {
 			<meta charset="UTF-8"/>
 			<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 			<meta http-equiv="X-UA-Compatible" content="ie=edge"/>
-			<meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; script-src 'self' 'unsafe-inline' 'unsafe-eval'; connect-src 'self' ws://localhost:*; img-src 'self' data: https://images.unsplash.com;"/>
+			<meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; script-src 'self' localhost:35729 'unsafe-inline' 'unsafe-eval'; connect-src 'self' ws://localhost:*; img-src 'self' data: https://images.unsplash.com;"/>
 			<meta name="theme-color" content="#FEFEF5"/>
         <meta
             name="htmx-config"
@@ -52,11 +52,12 @@ templ Layout(config Config, metaTags, bodyContent templ.Component) {
           hx-target-4*="#warnings">
 			@bodyContent
     
-      <div id="dialog"></div>
+            <div id="dialog"></div>
 			<div id="warnings"></div>
 			<div id="errors"></div>
     
 			<script src="/static/scripts.js"></script>
+            <script src="http://localhost:35729/livereload.js"></script>
 		</body>
 	</html>
 }

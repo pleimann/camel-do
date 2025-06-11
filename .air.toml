@@ -5,8 +5,12 @@ root = "."
 tmp_dir = "tmp"
 
 [build]
-pre_cmd = ["bun run dev"]
-cmd = "go tool templ generate && go build -o ./tmp/camel-do ."
+pre_cmd = [
+  "bun run dev",
+  "go generate",
+  "go tool templ generate",
+]
+cmd = "go build -o ./tmp/camel-do ."
 bin = "tmp/camel-do"
 include_ext = ["go", "templ", "html", "json", "js", "ts", "css", "scss"]
 exclude_dir = [".parcel-cache", "bin", "dist", "node_modules", "static", "tmp", "tests", "vendor"]
