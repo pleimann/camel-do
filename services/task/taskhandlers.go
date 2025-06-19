@@ -39,6 +39,7 @@ func NewTaskHandler(
 	group.GET("/edit/:id", taskHandler.handleEditTask).Name = "edit-task"
 
 	group.PUT("/schedule/:id", taskHandler.handleScheduleTask).Name = "schedule-task"
+	group.DELETE("/schedule/:id", taskHandler.handleUnScheduleTask).Name = "unschedule-task"
 	group.POST("/", taskHandler.handleCreateTask).Name = "create-task"
 	group.PUT("/:id", taskHandler.handleTaskUpdate).Name = "update-task"
 	group.DELETE("/:id", taskHandler.handleTaskDelete).Name = "delete-task"
@@ -110,13 +111,13 @@ func (h *TaskHandler) handleScheduleTask(c echo.Context) error {
 	taskId := extractTaskId(c)
 
 	// TODO Ensure duration is at least 15
-	task := &model.Task{
+	task := model.Task{
 		ID:        taskId,
 		StartTime: zero.TimeFrom(time.Now().Truncate(15 * time.Minute).Add(15 * time.Minute)),
 	}
 
 	// TODO figure out when next open slot is
-	if err := h.taskService.UpdateTask(task); err != nil {
+	if err := h.taskService.UpdateTask(&task); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return echo.NewHTTPError(http.StatusNotFound, "scheduling task", err)
 
@@ -131,16 +132,41 @@ func (h *TaskHandler) handleScheduleTask(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusInternalServerError, "getting projects", err)
 	}
 
-	todaysTasks, err := h.taskService.GetTodaysTasks()
-
-	if err != nil {
-		return echo.NewHTTPError(http.StatusInternalServerError, "getting todays tasks", err)
-	}
-
-    tasklistViewTemplate := tasklist.TasklistView(time.Now().Weekday(), todaysTasks, projectsIndex)
+	taskViewTemplate := tasklist.TaskView(task, projectsIndex)
 
 	return htmx.NewResponse().
-		RenderTempl(c.Request().Context(), c.Response().Writer, tasklistViewTemplate)
+		RenderTempl(c.Request().Context(), c.Response().Writer, taskViewTemplate)
+}
+
+func (h *TaskHandler) handleUnScheduleTask(c echo.Context) error {
+	taskId := extractTaskId(c)
+
+	// TODO Ensure duration is at least 15
+	task := model.Task{
+		ID:        taskId,
+		StartTime: zero.Time{},
+	}
+
+	// TODO figure out when next open slot is
+	if err := h.taskService.UpdateTask(&task); err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return echo.NewHTTPError(http.StatusNotFound, "unscheduling task", err)
+
+		} else {
+			return echo.NewHTTPError(http.StatusInternalServerError, "unscheduling task", err)
+		}
+	}
+
+	projectsIndex, err := h.projectService.GetProjects()
+
+	if err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, "getting projects", err)
+	}
+
+	taskViewTemplate := tasklist.TaskView(task, projectsIndex)
+
+	return htmx.NewResponse().
+		RenderTempl(c.Request().Context(), c.Response().Writer, taskViewTemplate)
 }
 
 func (h *TaskHandler) handleCreateTask(c echo.Context) error {

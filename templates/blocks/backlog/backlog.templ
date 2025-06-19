@@ -81,7 +81,7 @@ templ TaskCard(task model.Task, project *model.Project) {
 						x-transition:leave="transition ease-in duration-200"
 						x-transition:leave-start="opacity-100 transform scale-100"
 						x-transition:leave-end="opacity-0 transform scale-95"
-						class="popover absolute bg-base-100 line-clamp-3 shadow-md rounded-lg w-52 -ml-36 md:w-64 md:-ml-48 mt-4 p-2 z-1"
+						class="popover absolute bg-base-100 line-clamp-3 shadow-md rounded-lg w-52 -ml-15 md:w-64 mt-4 p-2 z-1"
 					>
 						{ task.Description.String }
 					</div>
