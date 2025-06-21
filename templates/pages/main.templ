@@ -25,13 +25,16 @@ templ Main(backlogTasks *model.TaskList, weekday time.Weekday, todaysTasks *mode
                         </form>
                     </div>
                     <div
-                        class="overflow-y-auto overflow-x-hidden pl-4 pb-4 pr-3 h-full"
+                        class="overflow-y-auto overflow-x-hidden px-4 pb-4 h-full"
                         style="scrollbar-color: var(--color-primary) transparent;"
                     >
                         @backlog.Backlog(backlogTasks, projects)
                     </div>
                 </div>
-				<div class="grow p-4 md:p-8" id="content">
+				<div id="content"
+                    class="grow p-4 md:p-8 overflow-y-auto overflow-x-hidden p-4 md:p-8 h-full"
+                    style="scrollbar-color: var(--color-primary) transparent;"
+                >
 					@tasklist.TasklistView(weekday, todaysTasks, projects)
 				</div>
 			</div>
