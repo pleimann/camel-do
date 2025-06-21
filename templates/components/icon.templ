@@ -12,12 +12,12 @@ templ IconC(name model.Icon, color model.Color, size int, addlClasses... string)
         classes := append(addlClasses,
         fmt.Sprintf("bg-%s-200", strings.ToLower(color.String())),
         fmt.Sprintf("text-%s-800", strings.ToLower(color.String())),
-        fmt.Sprintf("size-%d", size), "rounded" )
+        "rounded" )
     }}
 
-    <i data-lucide={ strings.ToLower(name.String()) } class={ classes } />
+    @Icon(name, size, classes...)
 }
 
 templ Icon(name model.Icon, size int, classes... string) {
-    <i data-lucide={ strings.ToLower(name.String()) } class={ classes } style={ fmt.Sprintf("height: %dpx; width: %dpx;", size, size) } />
+    <i data-lucide={ strings.ToLower(name.String()) } class={ classes } style={ fmt.Sprintf("height: calc(var(--spacing) * %d); width: calc(var(--spacing) * %d);", size, size) } />
 }
