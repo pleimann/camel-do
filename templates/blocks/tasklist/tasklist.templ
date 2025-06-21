@@ -16,13 +16,6 @@ func taskCardSize(task model.Task) map[string]string {
     }
 }
 
-css taskClass() {
-	border-radius: var(--radius-xl);
-	display: flex;
-	flex-direction: row;
-	column-gap: calc(var(--spacing) * 2);
-}
-
 templ TasklistView(weekday time.Weekday, tasks *model.TaskList, projects *model.ProjectIndex) {
     <div class={ "w-full", "xl:w-1/2" } hx-swap-oob="true">
         @components.DayOfWeekSelector(time.Monday, weekday)
@@ -46,27 +39,43 @@ templ TaskView(task model.Task, projects *model.ProjectIndex) {
         color := strings.ToLower(project.Color.String())
     }}
     <li id={ fmt.Sprintf("task-bar-%s", task.ID) }
-        class="card list-row border-2 border-base-200 bg-base-100 shadow-sm"
+        class="list-row border-2 border-base-200 bg-base-100 shadow-sm grid-rows-[min-content_1fr]"
         style={ taskCardSize(task) }
         hx-swap-oob="outerHTML beforeend:#tasklist"
     >
-        <div class={ "cursor-pointer", "h-full", "w-4", fmt.Sprintf("text-%s-800", color) }>
-            <span class="tooltip tooltip-right" data-tip={ project.Name }>@components.Icon(project.Icon, 34)</span>
+        <div class={ "cursor-pointer", "row-span-2", "flex", "flex-col", "items-center", "gap-2", fmt.Sprintf("text-%s-800", color) }>
+            <span class="tooltip tooltip-right" data-tip={ project.Name }>@components.Icon(project.Icon, 10)</span>
             <button
                 class="btn btn-circle btn-ghost tooltip tooltip-right"
-                data-tip="Schedule"
+                data-tip="⬅︎ Backlog"
+                aria-label="Move task to backlog"
                 hx-del={ fmt.Sprintf("/tasks/schedule/%s", task.ID) }
-                hx-target="closest .card"
+                hx-target="closest .list-row"
                 hx-swap="delete"
             >
-                <i data-lucide="unschedule" class="size-5"></i>
+                <i data-lucide="unschedule" class="size-6"></i>
+            </button>
+            <button
+                class="btn btn-circle btn-ghost tooltip tooltip-right"
+                data-tip="Complete"
+                hx-put={ fmt.Sprintf("/tasks/%s/complete", task.ID) }
+                hx-target="closest .list-row"
+                hx-swap="outerHTML"
+            >
+                if task.Completed.Bool {
+                    <i data-lucide="circle-checked" class="size-6"></i>
+                } else {
+                    <i data-lucide="circle" class="size-6"></i>
+                }
             </button>
         </div>
         <div class="list-col-grow">
             <time class="text-xs">{ utils.FormatTime(task.StartTime.Time) }</time>
             <h3 class="uppercase font-semibold text-md">{ task.Title.String }</h3>
-            <div class="text-xs opacity-60 line-clamp-2">{ task.Description.String }</div>
         </div>
-        <div class="text-3xl font-thin opacity-30 tabular-nums oldstyle-nums">{ utils.FormatDuration(task.Duration.Int32) }</div>
+        <p class="list-col-wrap self-stretch text-xs">{ task.Description.String }</p>
+        <div class="text-3xl font-thin opacity-30 tabular-nums oldstyle-nums">
+            { utils.FormatDuration(task.Duration.Int32) }
+        </div>
     </li>
 }
