@@ -11,27 +11,27 @@
     "watch": "parcel watch ./assets/scripts.js ./assets/styles.css --dist-dir ./static --no-optimize"
   },
   "dependencies": {
-    "@alpinejs/anchor": "^3.14.9",
-    "@alpinejs/focus": "^3.14.9",
-    "@lucide/lab": "^0.1.2",
-    "alpinejs": "^3.0.0",
-    "daisyui": "^5.0.0",
-    "htmx-ext-alpine-morph": "^2.0.1",
-    "htmx-ext-debug": "^2.0.1",
-    "htmx-ext-remove-me": "^2.0.1",
-    "htmx-ext-response-targets": "^2.0.3",
-    "htmx.org": "^1.9.0",
-    "hx-drag": "^2.0.0",
-    "lucide": "^0.511.0",
+    "@alpinejs/anchor": "~3.14.9",
+    "@alpinejs/focus": "~3.14.9",
+    "@lucide/lab": "~0.1.2",
+    "alpinejs": "~3.14.0",
+    "daisyui": "~5.0.0",
+    "htmx-ext-alpine-morph": "~2.0.1",
+    "htmx-ext-debug": "~2.0.1",
+    "htmx-ext-remove-me": "~2.0.1",
+    "htmx-ext-response-targets": "~2.0.3",
+    "htmx.org": "~1.9.0",
+    "hx-drag": "~2.0.0",
+    "lucide": "~0.519.0",
     "tailwindcss": "~4.1.0"
   },
   "devDependencies": {
-    "@parcel/transformer-css": "latest",
-    "@tailwindcss/forms": "latest",
-    "@tailwindcss/postcss": "latest",
-    "@tailwindcss/typography": "latest",
-    "parcel": "latest",
-    "postcss": "latest",
-    "prettier": "latest"
+    "@parcel/transformer-css": "~2.15.0",
+    "@tailwindcss/forms": "~0.5.0",
+    "@tailwindcss/postcss": "~4.1.0",
+    "@tailwindcss/typography": "~0.5.0",
+    "parcel": "~2.15.0",
+    "postcss": "~8.5.0",
+    "prettier": "~3.5.0"
   }
 }
