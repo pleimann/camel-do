@@ -21,7 +21,7 @@ type ProjectService struct {
 	db     *sql.DB
 }
 
-func NewService(config *ProjectServiceConfig, db *sql.DB) (*ProjectService, error) {
+func NewProjectService(config *ProjectServiceConfig, db *sql.DB) (*ProjectService, error) {
 	taskService := &ProjectService{
 		config: config,
 		db:     db,

@@ -23,8 +23,8 @@ type TaskSyncService struct {
 	db          *sql.DB
 }
 
-func NewTaskSyncService(db *sql.DB) (*TaskSyncService, error) {
-	http := oauth.NewGoogleAuth().GetClient()
+func NewTaskSyncService(googleAuth *oauth.GoogleAuth, db *sql.DB) (*TaskSyncService, error) {
+	http := googleAuth.GetClient()
 
 	service, err := tasks.NewService(context.Background(), option.WithHTTPClient(http))
 

@@ -24,8 +24,8 @@ type CalendarService struct {
 	googleCalendar *calendar.Service
 }
 
-func NewCalendarService(config *CalendarServiceConfig, db *sql.DB) (*CalendarService, error) {
-	client := oauth.NewGoogleAuth().GetClient()
+func NewCalendarService(config *CalendarServiceConfig, googleAuth *oauth.GoogleAuth, db *sql.DB) (*CalendarService, error) {
+	client := googleAuth.GetClient()
 
 	ctx := context.Background()
 

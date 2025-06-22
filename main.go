@@ -11,6 +11,7 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"path"
 	"strconv"
 	"time"
 
@@ -24,10 +25,17 @@ import (
 
 	"github.com/pleimann/camel-do/services/cal"
 	"github.com/pleimann/camel-do/services/home"
+	"github.com/pleimann/camel-do/services/oauth"
 	"github.com/pleimann/camel-do/services/project"
 	"github.com/pleimann/camel-do/services/task"
 	"github.com/pleimann/camel-do/templates/components"
 )
+
+//go:embed all:static
+var static embed.FS
+
+//go:embed credentials.json
+var credentials string
 
 func main() {
 	logger := slog.New(slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{
@@ -48,17 +56,19 @@ func main() {
 
 	defer db.Close()
 
-	taskSyncService, err = task.NewTaskSyncService(db)
+	googleAuth := oauth.NewGoogleAuth(credentials)
+
+	taskSyncService, err = task.NewTaskSyncService(googleAuth, db)
 	if err != nil {
 		log.Fatalf("Failed create task sync service! %s", err)
 	}
 
-	calendarService, err = cal.NewCalendarService(&cal.CalendarServiceConfig{}, db)
+	calendarService, err = cal.NewCalendarService(&cal.CalendarServiceConfig{}, googleAuth, db)
 	if err != nil {
 		log.Fatalf("error creating CalendarService: %s", err)
 	}
 
-	projectService, err = project.NewService(&project.ProjectServiceConfig{}, db)
+	projectService, err = project.NewProjectService(&project.ProjectServiceConfig{}, db)
 	if err != nil {
 		log.Fatalf("error creating ProjectService: %s", err)
 	}
@@ -81,10 +91,7 @@ func main() {
 	os.Exit(0)
 }
 
-//go:embed all:static
-var static embed.FS
-
-const databasePath = "./camel-do.db"
+const databaseFileName = "camel-do.db"
 
 var db *sql.DB
 var taskService *task.TaskService
@@ -94,6 +101,18 @@ var projectService *project.ProjectService
 
 func createDatabase() error {
 	var err error
+
+	userConfigDir, err := os.UserConfigDir()
+
+	if err != nil {
+		return err
+	}
+
+	databasePath := path.Join(userConfigDir, "camel-do", databaseFileName)
+
+	if err = os.MkdirAll(path.Dir(databasePath), 0600); err != nil {
+		return err
+	}
 
 	if db, err = sql.Open("sqlite3", databasePath); err != nil {
 		return err

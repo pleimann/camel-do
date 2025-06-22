@@ -10,6 +10,7 @@ import (
 	"net/http"
 	"os"
 	"os/exec"
+	"path"
 	"runtime"
 	"time"
 
@@ -23,14 +24,9 @@ type GoogleAuth struct {
 	config *oauth2.Config
 }
 
-func NewGoogleAuth() *GoogleAuth {
-	b, err := os.ReadFile("credentials.json")
-	if err != nil {
-		log.Fatalf("Unable to read client secret file: %v", err)
-	}
-
+func NewGoogleAuth(credentials string) *GoogleAuth {
 	// If modifying these scopes, delete your previously saved token.json.
-	config, err := google.ConfigFromJSON(b, tasks.TasksReadonlyScope, calendar.CalendarEventsScope)
+	config, err := google.ConfigFromJSON([]byte(credentials), tasks.TasksReadonlyScope, calendar.CalendarEventsScope)
 	if err != nil {
 		log.Fatalf("Unable to parse client secret file to config: %v", err)
 	}
@@ -44,7 +40,13 @@ func NewGoogleAuth() *GoogleAuth {
 func (a *GoogleAuth) GetClient() *http.Client {
 	// The file token.json stores the user's access and refresh tokens, and is
 	// created automatically when the authorization flow completes for the first time.
-	tokFile := "token.json"
+	userCacheDir, err := os.UserCacheDir()
+	if err != nil {
+		log.Fatalf("Unable to get user cache directory: %v", err)
+	}
+
+	tokFile := path.Join(userCacheDir, "camel-do", "token.json")
+
 	tok, err := a.tokenFromFile(tokFile)
 	if err != nil {
 		tok = a.getTokenFromWeb(a.config)
@@ -53,10 +55,10 @@ func (a *GoogleAuth) GetClient() *http.Client {
 
 		a.saveToken(tokFile, tok)
 
-		slog.Info("Saved token to file")
+		slog.Info("Saved token", "file", tokFile)
 
 	} else {
-		slog.Info("Got token from file")
+		slog.Info("Got token", "file", tokFile)
 	}
 
 	return a.config.Client(context.Background(), tok)
@@ -95,7 +97,9 @@ func (a *GoogleAuth) startServer(authCodeChannel chan string) *http.Server {
 		Handler: http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
 			if req.URL.Query().Has("code") {
 				authCodeChannel <- req.URL.Query().Get("code")
-				fmt.Fprintf(w, "<html><body>This window can be closed.<scrip>window.close()</script></body></html>")
+				w.Header().Set("Location", "http://localhost:4000")
+				w.WriteHeader(http.StatusTemporaryRedirect)
+				fmt.Fprintf(w, "<html><body>Authorization successful. You can close this window now.</body></html>")
 			}
 		}),
 	}
@@ -108,7 +112,7 @@ func (a *GoogleAuth) startServer(authCodeChannel chan string) *http.Server {
 		}
 	}()
 
-	fmt.Println("Listening on http://localhost:9876...")
+	slog.Debug("Listening on http://localhost:9876...")
 
 	// returning reference so caller can call Shutdown()
 	return srv
