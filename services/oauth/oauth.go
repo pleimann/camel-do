@@ -53,6 +53,10 @@ func (a *GoogleAuth) GetClient() *http.Client {
 
 		slog.Info("Saving token from web...")
 
+		if err := os.MkdirAll(path.Dir(tokFile), 0700); err != nil {
+			log.Fatalf("Unable to create directory for token file: %v", err)
+		}
+
 		a.saveToken(tokFile, tok)
 
 		slog.Info("Saved token", "file", tokFile)

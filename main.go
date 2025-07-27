@@ -110,8 +110,8 @@ func createDatabase() error {
 
 	databasePath := path.Join(userConfigDir, "camel-do", databaseFileName)
 
-	if err = os.MkdirAll(path.Dir(databasePath), 0600); err != nil {
-		return err
+	if err := os.MkdirAll(path.Dir(databasePath), 0700); err != nil {
+		log.Fatalf("Unable to create directory for db file: %v", err)
 	}
 
 	if db, err = sql.Open("sqlite3", databasePath); err != nil {
