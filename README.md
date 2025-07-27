@@ -1,16 +1,25 @@
-# Your awesome project
+# Camel-Do
 
-Welcome to the yet another awesome project generated with the Gowebly CLI! 🎉
+A modern task management application that seamlessly integrates with Google Calendar. Organize your work into projects, track time, and keep everything synchronized across your calendar and task list.
 
-This README file contains all the necessary information about:
+## Features
+
+- **Project-based Organization**: Group tasks into customizable projects with colors and icons
+- **Time Tracking**: Schedule tasks with start times and duration tracking
+- **Google Calendar Sync**: Bi-directional synchronization with your Google Calendar
+- **Real-time Interface**: Dynamic updates using HTMX without page refreshes
+- **Drag & Drop**: Intuitive task management with drag-and-drop functionality
+- **Timeline Views**: Visualize your tasks across different time perspectives
+
+## Quick Start
+
+This README contains information about:
 
 - [Project overview](#project-overview)
-- [Folders structure](#folders-structure)
-- [Starting your project](#starting-your-project)
-- [Developing your project](#developing-your-project)
-- [Deploying your project](#deploying-your-project)
-
-And some words [about the Gowebly CLI](#about-the-gowebly-cli).
+- [Getting started](#getting-started)
+- [Development](#development)
+- [Project structure](#project-structure)
+- [Deployment](#deployment)
 
 ## Project overview
 
@@ -33,46 +42,38 @@ Tools:
 - Templ to generate HTML: ✓
 - Config for golangci-lint: ✓
 
-## Folders structure
+## Project structure
 
 ```console
 .
-├── assets
+├── main.go                    # Application entry point
+├── go.mod/go.sum             # Go dependencies
+├── package.json              # Frontend dependencies
+├── .air.toml                 # Live reload config
+├── docker-compose.yml        # Container setup
+├── services/                 # Business logic layer
+│   ├── home/                 # Dashboard handlers
+│   ├── project/              # Project management
+│   ├── task/                 # Task operations & sync
+│   ├── cal/                  # Calendar integration
+│   └── oauth/                # Authentication
+├── db/                       # Database layer
+│   ├── migrations/           # SQL migrations
+│   ├── model/               # Database entities
+│   └── table/               # Generated Jet tables
+├── model/                    # Domain models
+├── templates/                # Templ HTML templates
+│   ├── pages/               # Full page templates
+│   ├── blocks/              # UI sections
+│   └── components/          # Reusable components
+├── assets/                   # Source frontend files
 │   ├── scripts.js
-│   └── styles.scss
-├── static
-│   ├── images
-│   │   └── gowebly.svg
-│   ├── apple-touch-icon.png
-│   ├── favicon.ico
-│   ├── favicon.png
-│   ├── favicon.svg
-│   ├── manifest-desktop-screenshot.jpeg
-│   ├── manifest-mobile-screenshot.jpeg
-│   ├── manifest-touch-icon.svg
-│   └── manifest.webmanifest
-├── templates
-│   ├── pages
-│   │   └── index.templ
-│   └── main.templ
-├── .gitignore
-├── .dockerignore
-├── .prettierignore
-├── .air.toml
-├── golangci.yml
-├── Dockerfile
-├── docker-compose.yml
-├── prettier.config.js
-├── package.json
-├── go.mod
-├── go.sum
-├── handlers.go
-├── server.go
-├── main.go
-└── README.md
+│   └── styles.css
+├── static/                   # Built assets
+└── utils/                    # Shared utilities
 ```
 
-## Starting your project
+## Getting started
 
 > ❗️ Please make sure that you have installed the executable files for all the necessary tools before starting your project. Exactly:
 >
@@ -87,13 +88,32 @@ To start your project, run the **Gowebly** CLI command in your terminal:
 gowebly run
 ```
 
-## Developing your project
+## Development
 
-The backend part is located in the `*.go` files in your project folder.
+### Architecture
 
-The `./templates` folder contains Templ templates that you can use in your frontend part. Also, the `./assets` folder contains the `styles.scss` (main styles) and `scripts.js` (main scripts) files.
+Camel-Do follows a service-oriented architecture:
 
-The `./static` folder contains all the static files: icons, images, PWA (Progressive Web App) manifest and other builded/minified assets.
+- **Services Layer**: Domain-specific business logic (task, project, calendar, auth)
+- **Database Layer**: SQLite with type-safe Jet queries and migrations
+- **Template Layer**: Server-side rendered HTML using Templ
+- **Frontend**: HTMX + Alpine.js for dynamic interactions, styled with Tailwind CSS
+
+### Key Technologies
+
+- **Backend**: Go 1.24+ with Echo web framework
+- **Database**: SQLite with automatic migrations
+- **Templates**: Templ for type-safe HTML generation
+- **Frontend**: HTMX, Alpine.js, Tailwind CSS, DaisyUI
+- **Build Tools**: Air (live reload), Bun (frontend), Parcel (bundling)
+
+### Development Workflow
+
+1. **Start development server**: `gowebly run` or `air`
+2. **Watch frontend assets**: `bun run watch`
+3. **Generate templates**: `templ generate` (automatic with Air)
+4. **Run tests**: `go test ./...`
+5. **Format code**: `bun run fmt` and `golangci-lint run`
 
 ## Deploying your project
 
@@ -107,11 +127,3 @@ To deploy your project to a remote server, follow these steps:
 4. Run the `docker-compose up` command to start your project on your server.
 
 > ❗️ Don't forget to generate Go files from `*.templ` templates before run the `docker-compose up` command.
-
-## About the Gowebly CLI
-
-The [**Gowebly**](https://github.com/gowebly/gowebly) CLI is a next-generation CLI tool that makes it easy to create amazing web applications with **Go** on the backend, using **htmx**, **hyperscript** or **Alpine.js**, and the most popular **CSS frameworks** on the frontend.
-
-It's highly recommended to start exploring the Gowebly CLI with short articles "[**What is Gowebly CLI?**](https://gowebly.org/getting-started)" and "[**How does it work?**](https://gowebly.org/getting-started/how-does-it-work)" to understand the basic principle and the main components built into the **Gowebly** CLI.
-
-<a href="https://gowebly.org/" target="_blank"><img height="112px" alt="another awesome project built with the Gowebly CLI" src="https://raw.githubusercontent.com/gowebly/.github/main/images/gowebly-new-project-banner.svg"/></a>
