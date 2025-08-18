@@ -49,36 +49,17 @@ func (a *GoogleAuth) GetClient() *http.Client {
 
 	tok, err := a.tokenFromFile(tokFile)
 	if err != nil {
+		slog.Info("No existing token found, getting token from web...")
 		tok = a.getTokenFromWeb(a.config)
-
-		slog.Info("Saving token from web...")
-
-		if err := os.MkdirAll(path.Dir(tokFile), 0700); err != nil {
-			log.Fatalf("Unable to create directory for token file: %v", err)
-		}
-
-		a.saveToken(tokFile, tok)
-
-		slog.Info("Saved token", "file", tokFile)
-
+		a.saveTokenToFile(tokFile, tok)
 	} else {
 		slog.Info("Got token", "file", tokFile)
 
-		// Check if token needs refresh
-		if tok.Expiry.Before(time.Now()) && tok.RefreshToken != "" {
-			slog.Info("Token expired, refreshing...")
-			tokenSource := a.config.TokenSource(context.Background(), tok)
-			newTok, err := tokenSource.Token()
-			if err != nil {
-				slog.Error("Failed to refresh token", "error", err)
-				// Fall back to re-authentication
-				tok = a.getTokenFromWeb(a.config)
-				a.saveToken(tokFile, tok)
-			} else {
-				tok = newTok
-				a.saveToken(tokFile, tok)
-				slog.Info("Token refreshed and saved")
-			}
+		// Check if token is expired and refresh token is not available
+		if !tok.Valid() && tok.RefreshToken == "" {
+			slog.Info("Token expired and no refresh token available, getting new token from web...")
+			tok = a.getTokenFromWeb(a.config)
+			a.saveTokenToFile(tokFile, tok)
 		}
 	}
 
@@ -88,7 +69,10 @@ func (a *GoogleAuth) GetClient() *http.Client {
 // Request a token from the web, then returns the retrieved token.
 func (a *GoogleAuth) getTokenFromWeb(config *oauth2.Config) *oauth2.Token {
 	// TODO implement PKCE
-	authURL := config.AuthCodeURL("state-token", oauth2.AccessTypeOffline, oauth2.SetAuthURLParam("prompt", "consent"))
+	authURL := config.AuthCodeURL("state-token",
+		oauth2.AccessTypeOffline,
+		oauth2.ApprovalForce, // Force approval prompt to ensure refresh token
+	)
 
 	var authCodeChannel = make(chan string)
 	defer close(authCodeChannel)
@@ -104,9 +88,14 @@ func (a *GoogleAuth) getTokenFromWeb(config *oauth2.Config) *oauth2.Token {
 		log.Fatalf("Unable to retrieve token from web: %v", err)
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
+	// Log whether we got a refresh token
+	if tok.RefreshToken != "" {
+		slog.Info("Successfully obtained refresh token")
+	} else {
+		slog.Warn("No refresh token received - user may need to revoke and re-authorize")
+	}
 
+	ctx, _ := context.WithTimeout(context.Background(), 5*time.Second)
 	if err := srv.Shutdown(ctx); err != nil {
 		slog.Error("error shutting down server", "error", err)
 	}
@@ -177,11 +166,22 @@ func (a *GoogleAuth) tokenFromFile(file string) (*oauth2.Token, error) {
 
 // Saves a token to a file path.
 func (a *GoogleAuth) saveToken(path string, token *oauth2.Token) {
-	fmt.Printf("Saving credential file to: %s\n", path)
 	f, err := os.OpenFile(path, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0600)
 	if err != nil {
 		log.Fatalf("Unable to cache oauth token: %v", err)
 	}
 	defer f.Close()
 	json.NewEncoder(f).Encode(token)
+}
+
+// Helper method to save token with directory creation and logging
+func (a *GoogleAuth) saveTokenToFile(tokFile string, tok *oauth2.Token) {
+	slog.Info("Saving token...", "file", tokFile)
+
+	if err := os.MkdirAll(path.Dir(tokFile), 0700); err != nil {
+		log.Fatalf("Unable to create directory for token file: %v", err)
+	}
+
+	a.saveToken(tokFile, tok)
+	slog.Info("Saved token", "file", tokFile)
 }

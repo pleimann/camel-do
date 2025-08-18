@@ -48,7 +48,13 @@ func (t *CalendarService) GetTodaysEvents() ([]model.Event, error) {
 
 	start := time.Date(year, month, day, 0, 0, 0, 0, time.Now().Location())
 
-	return t.getUpcomingEvents(start, time.Hour*24)
+	events, err := t.getUpcomingEvents(start, time.Hour*24)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return events, nil
 }
 
 func (s *CalendarService) getUpcomingEvents(
@@ -66,13 +72,10 @@ func (s *CalendarService) getUpcomingEvents(
 		Do()
 
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("error getting events: %w", err)
 	}
 
 	modelEvents := []model.Event{}
-
-	bytes, _ := events.MarshalJSON()
-	fmt.Printf("calendar events: %v", string(bytes))
 
 	for _, event := range events.Items {
 		modelEvents = append(modelEvents, toModelEvent(event))
