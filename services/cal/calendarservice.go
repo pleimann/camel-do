@@ -4,7 +4,6 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	"log/slog"
 	"time"
 
 	"github.com/guregu/null/v6/zero"
@@ -49,15 +48,13 @@ func (t *CalendarService) GetTodaysEvents() ([]model.Event, error) {
 
 	start := time.Date(year, month, day, 0, 0, 0, 0, time.Now().Location())
 
-	events := t.getUpcomingEvents(start, time.Hour*24)
-
-	return events, nil
+	return t.getUpcomingEvents(start, time.Hour*24)
 }
 
 func (s *CalendarService) getUpcomingEvents(
 	startTime time.Time,
 	duration time.Duration,
-) []model.Event {
+) ([]model.Event, error) {
 	events, err := s.googleCalendar.Events.
 		List("primary").
 		ShowDeleted(false).
@@ -69,7 +66,7 @@ func (s *CalendarService) getUpcomingEvents(
 		Do()
 
 	if err != nil {
-		slog.Error("Unable to retrieve next ten of the user's events", "error", err)
+		return nil, err
 	}
 
 	modelEvents := []model.Event{}
@@ -81,7 +78,7 @@ func (s *CalendarService) getUpcomingEvents(
 		modelEvents = append(modelEvents, toModelEvent(event))
 	}
 
-	return modelEvents
+	return modelEvents, nil
 }
 
 func toModelEvent(event *calendar.Event) model.Event {

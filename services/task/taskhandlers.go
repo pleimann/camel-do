@@ -132,7 +132,8 @@ func (h *TaskHandler) handleScheduleTask(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusInternalServerError, "getting projects", err)
 	}
 
-	taskViewTemplate := tasklist.TaskView(task, projectsIndex)
+	project := projectsIndex.Get(task.ProjectID.String)
+	taskViewTemplate := tasklist.TaskView(task, project)
 
 	return htmx.NewResponse().
 		RenderTempl(c.Request().Context(), c.Response().Writer, taskViewTemplate)
@@ -163,7 +164,8 @@ func (h *TaskHandler) handleUnScheduleTask(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusInternalServerError, "getting projects", err)
 	}
 
-	taskViewTemplate := tasklist.TaskView(task, projectsIndex)
+	project := projectsIndex.Get(task.ProjectID.String)
+	taskViewTemplate := tasklist.TaskView(task, project)
 
 	return htmx.NewResponse().
 		RenderTempl(c.Request().Context(), c.Response().Writer, taskViewTemplate)
@@ -347,7 +349,7 @@ func (h *TaskHandler) handleTaskComplete(c echo.Context) error {
 			}
 		}
 
-		taskTemplate := backlog.TaskCard(*task, project)
+		taskTemplate := tasklist.TaskView(*task, project)
 
 		htmx.NewResponse().
 			RenderTempl(c.Request().Context(), c.Response().Writer, taskTemplate)

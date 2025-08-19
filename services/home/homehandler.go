@@ -39,8 +39,7 @@ func (h HomeHandler) ServeHTTP(c echo.Context) error {
 
 	todaysEvents, err := h.calendarService.GetTodaysEvents()
 	if err != nil {
-		msg := fmt.Sprintf("get tasks for today %s", err)
-		slog.Error(msg, "error", err)
+		msg := fmt.Sprintf("get tasks for today %s", err.Error())
 		return echo.NewHTTPError(http.StatusInternalServerError, msg)
 	}
 	slog.Debug("Today's Calendar Events", "events", todaysEvents)
@@ -48,22 +47,19 @@ func (h HomeHandler) ServeHTTP(c echo.Context) error {
 	// Get backlog and tasks scheduled for today
 	backlogTasks, err := h.taskService.GetBacklogTasks()
 	if err != nil {
-		msg := fmt.Sprintf("get backlog tasks %s", err)
-		slog.Error(msg, "error", err)
+		msg := fmt.Sprintf("get backlog tasks %s", err.Error())
 		return echo.NewHTTPError(http.StatusInternalServerError, msg)
 	}
 
 	todaysTasks, err := h.taskService.GetTodaysTasks()
 	if err != nil {
-		msg := fmt.Sprintf("get tasks for today %s", err)
-		slog.Error(msg, "error", err)
+		msg := fmt.Sprintf("get tasks for today %s", err.Error())
 		return echo.NewHTTPError(http.StatusInternalServerError, msg)
 	}
 
 	projectIndex, err := h.projectService.GetProjects()
 	if err != nil {
-		msg := fmt.Sprintf("get all projects %s", err)
-		slog.Error(msg, "error", err)
+		msg := fmt.Sprintf("get all projects %s", err.Error())
 		return echo.NewHTTPError(http.StatusInternalServerError, msg)
 	}
 

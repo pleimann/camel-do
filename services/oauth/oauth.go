@@ -63,6 +63,23 @@ func (a *GoogleAuth) GetClient() *http.Client {
 
 	} else {
 		slog.Info("Got token", "file", tokFile)
+
+		// Check if token needs refresh
+		if tok.Expiry.Before(time.Now()) && tok.RefreshToken != "" {
+			slog.Info("Token expired, refreshing...")
+			tokenSource := a.config.TokenSource(context.Background(), tok)
+			newTok, err := tokenSource.Token()
+			if err != nil {
+				slog.Error("Failed to refresh token", "error", err)
+				// Fall back to re-authentication
+				tok = a.getTokenFromWeb(a.config)
+				a.saveToken(tokFile, tok)
+			} else {
+				tok = newTok
+				a.saveToken(tokFile, tok)
+				slog.Info("Token refreshed and saved")
+			}
+		}
 	}
 
 	return a.config.Client(context.Background(), tok)
@@ -71,7 +88,7 @@ func (a *GoogleAuth) GetClient() *http.Client {
 // Request a token from the web, then returns the retrieved token.
 func (a *GoogleAuth) getTokenFromWeb(config *oauth2.Config) *oauth2.Token {
 	// TODO implement PKCE
-	authURL := config.AuthCodeURL("state-token", oauth2.AccessTypeOffline)
+	authURL := config.AuthCodeURL("state-token", oauth2.AccessTypeOffline, oauth2.SetAuthURLParam("prompt", "consent"))
 
 	var authCodeChannel = make(chan string)
 	defer close(authCodeChannel)
@@ -87,7 +104,9 @@ func (a *GoogleAuth) getTokenFromWeb(config *oauth2.Config) *oauth2.Token {
 		log.Fatalf("Unable to retrieve token from web: %v", err)
 	}
 
-	ctx, _ := context.WithTimeout(context.Background(), 5*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
 	if err := srv.Shutdown(ctx); err != nil {
 		slog.Error("error shutting down server", "error", err)
 	}

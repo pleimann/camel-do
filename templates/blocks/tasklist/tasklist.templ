@@ -27,21 +27,19 @@ templ taskList(tasks *model.TaskList, projects *model.ProjectIndex) {
     <div class={ "h-[calc(100%-50px)]", "max-h-[calc(100%-50px)]", "overflow-y-scroll" }>
         <ul id="tasklist" class="list gap-4 w-full" style="scrollbar-width: none;">
             for task := range tasks.All() {
-                @TaskView(task, projects)
+                @TaskView(task, projects.Get(task.ProjectID.String))
             }
         </ul>
     </div>
 }
 
-templ TaskView(task model.Task, projects *model.ProjectIndex) {
+templ TaskView(task model.Task, project *model.Project) {
     {{
-        project := projects.Get(task.ProjectID.String)
         color := strings.ToLower(project.Color.String())
     }}
-    <li id={ fmt.Sprintf("task-bar-%s", task.ID) }
+    <li id={ fmt.Sprintf("task-view-%s", task.ID) }
         class="list-row border-2 border-base-200 bg-base-100 shadow-sm grid-rows-[min-content_1fr]"
         style={ taskCardSize(task) }
-        hx-swap-oob="outerHTML beforeend:#tasklist"
     >
         <div class={ "cursor-pointer", "row-span-2", "flex", "flex-col", "items-center", "gap-2", fmt.Sprintf("text-%s-800", color) }>
             <span class="tooltip tooltip-right" data-tip={ project.Name }>@components.Icon(project.Icon, 10)</span>
@@ -52,6 +50,7 @@ templ TaskView(task model.Task, projects *model.ProjectIndex) {
                 hx-del={ fmt.Sprintf("/tasks/schedule/%s", task.ID) }
                 hx-target="closest .list-row"
                 hx-swap="delete"
+                hx-swap-oob="outerHTML beforeend:#tasklist"
             >
                 <i data-lucide="unschedule" class="size-6"></i>
             </button>
@@ -60,7 +59,6 @@ templ TaskView(task model.Task, projects *model.ProjectIndex) {
                 data-tip="Complete"
                 hx-put={ fmt.Sprintf("/tasks/%s/complete", task.ID) }
                 hx-target="closest .list-row"
-                hx-swap="outerHTML"
             >
                 if task.Completed.Bool {
                     <i data-lucide="circle-checked" class="size-6"></i>
