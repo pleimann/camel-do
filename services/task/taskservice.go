@@ -96,6 +96,10 @@ func (t *TaskService) UpdateTask(task *model.Task) error {
 
 	columns := detectUpdatedColumns(task)
 
+	if len(columns) == 0 {
+		return fmt.Errorf("no task fields changed")
+	}
+
 	tableTask := toTableTask(task)
 
 	updateStmt := Tasks.
@@ -103,12 +107,35 @@ func (t *TaskService) UpdateTask(task *model.Task) error {
 		MODEL(tableTask).
 		WHERE(Tasks.ID.EQ(String(task.ID)))
 
+	slog.Debug("UpdateTask SQL", "taskId", task.ID, "sql", updateStmt.DebugSql())
+
 	if _, err := updateStmt.Exec(t.db); err != nil {
 		return fmt.Errorf("TaskService.UpdateTask(%s): %w", task.ID, err)
-
-	} else {
-		return nil
 	}
+
+	return nil
+}
+
+func (t *TaskService) UnscheduleTask(task *model.Task) error {
+	slog.Debug("TaskService.UnscheduleTask", "task", task)
+
+	columns := ColumnList{}
+	columns = append(columns, Tasks.StartTime)
+
+	tableTask := toTableTask(task)
+
+	updateStmt := Tasks.
+		UPDATE(columns).
+		MODEL(tableTask).
+		WHERE(Tasks.ID.EQ(String(task.ID)))
+
+	slog.Debug("UpdateTask SQL", "taskId", task.ID, "sql", updateStmt.DebugSql())
+
+	if _, err := updateStmt.Exec(t.db); err != nil {
+		return fmt.Errorf("TaskService.UnscheduleTask(%s): %w", task.ID, err)
+	}
+
+	return nil
 }
 
 func (t *TaskService) DeleteTask(id string) error {

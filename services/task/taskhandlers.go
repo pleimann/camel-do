@@ -38,8 +38,8 @@ func NewTaskHandler(
 	group.GET("/new", taskHandler.handleNewTask).Name = "new-task"
 	group.GET("/edit/:id", taskHandler.handleEditTask).Name = "edit-task"
 
-	group.PUT("/schedule/:id", taskHandler.handleScheduleTask).Name = "schedule-task"
-	group.DELETE("/schedule/:id", taskHandler.handleUnScheduleTask).Name = "unschedule-task"
+	group.PUT("/:id/schedule", taskHandler.handleScheduleTask).Name = "schedule-task"
+	group.DELETE("/:id/schedule", taskHandler.handleUnScheduleTask).Name = "unschedule-task"
 	group.POST("/", taskHandler.handleCreateTask).Name = "create-task"
 	group.PUT("/:id", taskHandler.handleTaskUpdate).Name = "update-task"
 	group.DELETE("/:id", taskHandler.handleTaskDelete).Name = "delete-task"
@@ -100,7 +100,7 @@ func (h *TaskHandler) handleEditTask(c echo.Context) error {
 		dialogTemplate := components.Dialog(taskDialogTemplate)
 
 		if err := htmx.NewResponse().RenderTempl(c.Request().Context(), c.Response().Writer, dialogTemplate); err != nil {
-			return echo.NewHTTPError(http.StatusInternalServerError, "render template", err)
+			return fmt.Errorf("render template: %w", err)
 		}
 	}
 
@@ -110,65 +110,72 @@ func (h *TaskHandler) handleEditTask(c echo.Context) error {
 func (h *TaskHandler) handleScheduleTask(c echo.Context) error {
 	taskId := extractTaskId(c)
 
-	// TODO Ensure duration is at least 15
-	task := model.Task{
+	// TODO figure out when next open slot is
+	if err := h.taskService.UpdateTask(&model.Task{
 		ID:        taskId,
 		StartTime: zero.TimeFrom(time.Now().Truncate(15 * time.Minute).Add(15 * time.Minute)),
-	}
-
-	// TODO figure out when next open slot is
-	if err := h.taskService.UpdateTask(&task); err != nil {
+	}); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return echo.NewHTTPError(http.StatusNotFound, "scheduling task", err)
 
 		} else {
-			return echo.NewHTTPError(http.StatusInternalServerError, "scheduling task", err)
+			return fmt.Errorf("scheduling task: %w", err)
 		}
 	}
 
-	projectsIndex, err := h.projectService.GetProjects()
-
+	task, err := h.taskService.GetTask(taskId)
 	if err != nil {
-		return echo.NewHTTPError(http.StatusInternalServerError, "getting projects", err)
+		return fmt.Errorf("getting task: %w", err)
+	}
+
+	projectsIndex, err := h.projectService.GetProjects()
+	if err != nil {
+		return fmt.Errorf("getting projects: %w", err)
 	}
 
 	project := projectsIndex.Get(task.ProjectID.String)
-	taskViewTemplate := tasklist.TaskView(task, project)
 
-	return htmx.NewResponse().
-		RenderTempl(c.Request().Context(), c.Response().Writer, taskViewTemplate)
+	taskViewTemplate := components.Encapsulate("ul", "afterbegin:#tasklist", tasklist.TaskView(*task, project))
+
+	if err := htmx.NewResponse().RenderTempl(c.Request().Context(), c.Response().Writer, taskViewTemplate); err != nil {
+		return fmt.Errorf("render template: %w", err)
+	}
+
+	return nil
 }
 
 func (h *TaskHandler) handleUnScheduleTask(c echo.Context) error {
 	taskId := extractTaskId(c)
 
-	// TODO Ensure duration is at least 15
-	task := model.Task{
-		ID:        taskId,
-		StartTime: zero.Time{},
-	}
-
-	// TODO figure out when next open slot is
-	if err := h.taskService.UpdateTask(&task); err != nil {
+	if err := h.taskService.UnscheduleTask(&model.Task{ID: taskId, StartTime: zero.Time{}}); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return echo.NewHTTPError(http.StatusNotFound, "unscheduling task", err)
 
 		} else {
-			return echo.NewHTTPError(http.StatusInternalServerError, "unscheduling task", err)
+			return fmt.Errorf("unscheduling task: %w", err)
 		}
 	}
 
-	projectsIndex, err := h.projectService.GetProjects()
-
+	task, err := h.taskService.GetTask(taskId)
 	if err != nil {
-		return echo.NewHTTPError(http.StatusInternalServerError, "getting projects", err)
+		return fmt.Errorf("getting task: %w", err)
+	}
+
+	projectsIndex, err := h.projectService.GetProjects()
+	if err != nil {
+		return fmt.Errorf("getting projects: %w", err)
 	}
 
 	project := projectsIndex.Get(task.ProjectID.String)
-	taskViewTemplate := tasklist.TaskView(task, project)
 
-	return htmx.NewResponse().
-		RenderTempl(c.Request().Context(), c.Response().Writer, taskViewTemplate)
+	taskCardTemplate := components.Encapsulate("ul", "afterbegin:#backlog", backlog.TaskCard(*task, project))
+
+	if err := htmx.NewResponse().
+		RenderTempl(c.Request().Context(), c.Response().Writer, taskCardTemplate); err != nil {
+		return fmt.Errorf("rendering template: %w", err)
+	}
+
+	return nil
 }
 
 func (h *TaskHandler) handleCreateTask(c echo.Context) error {
@@ -195,31 +202,35 @@ func (h *TaskHandler) handleCreateTask(c echo.Context) error {
 				return echo.NewHTTPError(http.StatusNotFound, "getting project", err)
 
 			} else {
-				return echo.NewHTTPError(http.StatusInternalServerError, "getting project", err)
+				return fmt.Errorf("getting project: %w", err)
 			}
 		}
 	}
 
 	if task.StartTime.Valid {
 		// TODO Else it might belong on today's timeline but just close the dialog for now
-		_, err := htmx.NewResponse().
+		if _, err := htmx.NewResponse().
 			AddTrigger(htmx.Trigger("close-modal")).
 			Reswap(htmx.SwapNone).
-			RenderHTML(c.Response().Writer, template.HTML(""))
-
-		return err
+			RenderHTML(c.Response().Writer, template.HTML("")); err != nil {
+			return fmt.Errorf("task start time is invalid", err)
+		}
 
 	} else {
 		c.Logger().Debug("TaskHandler.handleTaskCreate: render AddedTaskCard", "task", task)
 
 		addedTaskTemplate := backlog.TaskCard(*task, project)
 
-		return htmx.NewResponse().
+		if err := htmx.NewResponse().
 			AddTrigger(htmx.Trigger("close-modal")).
 			Retarget(backlog.BacklogSelector).
 			Reswap(htmx.SwapAfterBegin).
-			RenderTempl(c.Request().Context(), c.Response().Writer, addedTaskTemplate)
+			RenderTempl(c.Request().Context(), c.Response().Writer, addedTaskTemplate); err != nil {
+			return fmt.Errorf("render template: w%", err)
+		}
 	}
+
+	return nil
 }
 
 func (h *TaskHandler) handleTaskUpdate(c echo.Context) error {
@@ -259,7 +270,7 @@ func (h *TaskHandler) handleTaskUpdate(c echo.Context) error {
 				return echo.NewHTTPError(http.StatusNotFound, "getting project", err)
 
 			} else {
-				return echo.NewHTTPError(http.StatusInternalServerError, "getting project", err)
+				return fmt.Errorf("getting project: %w", err)
 			}
 		}
 	}
@@ -268,24 +279,28 @@ func (h *TaskHandler) handleTaskUpdate(c echo.Context) error {
 		// TODO Else it might belong on today's timeline but just close the dialog for now
 		c.Logger().Debug("TaskHandler.handleTaskUpdate: closing task dialog", "task", task)
 
-		_, err := htmx.NewResponse().
+		if _, err := htmx.NewResponse().
 			AddTrigger(htmx.Trigger("close-modal")).
 			Reswap(htmx.SwapNone).
-			RenderHTML(c.Response().Writer, template.HTML(""))
-
-		return err
+			RenderHTML(c.Response().Writer, template.HTML("")); err != nil {
+			return fmt.Errorf("start time is invalid: %w", err)
+		}
 
 	} else {
 		c.Logger().Debug("TaskHandler.handleTaskUpdate: render TaskCard", "task", task)
 
 		taskTemplate := backlog.TaskCard(*task, project)
 
-		return htmx.NewResponse().
+		if err := htmx.NewResponse().
 			AddTrigger(htmx.Trigger("close-modal")).
 			Retarget(fmt.Sprintf("%s > #task-card-%s", backlog.BacklogSelector, task.ID)).
 			Reswap(htmx.SwapOuterHTML).
-			RenderTempl(c.Request().Context(), c.Response().Writer, taskTemplate)
+			RenderTempl(c.Request().Context(), c.Response().Writer, taskTemplate); err != nil {
+			return fmt.Errorf("render template: %w", err)
+		}
 	}
+
+	return nil
 }
 
 func (h *TaskHandler) handleTaskDelete(c echo.Context) error {
@@ -300,14 +315,16 @@ func (h *TaskHandler) handleTaskDelete(c echo.Context) error {
 			return echo.NewHTTPError(http.StatusNotFound, "deleting task", err)
 
 		} else {
-			return echo.NewHTTPError(http.StatusInternalServerError, "deleting task", err)
+			return fmt.Errorf("deleting task: %w", err)
 		}
 	}
 
-	_, err := htmx.NewResponse().
-		RenderHTML(c.Response().Writer, template.HTML(""))
+	if _, err := htmx.NewResponse().
+		RenderHTML(c.Response().Writer, template.HTML("")); err != nil {
+		return fmt.Errorf("render template: %w", err)
+	}
 
-	return err
+	return nil
 }
 
 func (h *TaskHandler) handleTaskComplete(c echo.Context) error {
@@ -322,16 +339,16 @@ func (h *TaskHandler) handleTaskComplete(c echo.Context) error {
 			return echo.NewHTTPError(http.StatusNotFound, "updating task", err)
 
 		} else {
-			return echo.NewHTTPError(http.StatusUnprocessableEntity, "updating task", err)
+			return fmt.Errorf("updating task: %w", err)
 		}
 	}
 
 	if task, err := h.taskService.GetTask(taskId); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return echo.NewHTTPError(http.StatusNotFound, "getting updated task", err)
+			return echo.NewHTTPError(http.StatusNotFound, "fetching updated task", err)
 
 		} else {
-			return echo.NewHTTPError(http.StatusUnprocessableEntity, "getting updated task", err)
+			return fmt.Errorf("fetching updated task: %w", err)
 		}
 
 	} else {
@@ -344,15 +361,17 @@ func (h *TaskHandler) handleTaskComplete(c echo.Context) error {
 					return echo.NewHTTPError(http.StatusNotFound, "getting project", err)
 
 				} else {
-					return echo.NewHTTPError(http.StatusInternalServerError, "getting project", err)
+					return fmt.Errorf("getting project: %w", err)
 				}
 			}
 		}
 
+		// TODO send back backlog.TaskCard instead of tasklist.TaskView if coming from backlod
 		taskTemplate := tasklist.TaskView(*task, project)
 
-		htmx.NewResponse().
-			RenderTempl(c.Request().Context(), c.Response().Writer, taskTemplate)
+		if err := htmx.NewResponse().RenderTempl(c.Request().Context(), c.Response().Writer, taskTemplate); err != nil {
+			return fmt.Errorf("deleting task: %w", err)
+		}
 
 		return nil
 	}

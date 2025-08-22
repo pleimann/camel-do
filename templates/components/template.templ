@@ -1,0 +1,10 @@
+package components
+
+// Used to wrap elements which are replaced out of band but can't stand on 
+// their own (tr, td, th, thead, tbody, tfoot, colgroup, caption, col & li).
+// https://htmx.org/attributes/hx-swap-oob
+templ Template(contents templ.Component) {
+    <template>
+        @contents
+    </template>
+}

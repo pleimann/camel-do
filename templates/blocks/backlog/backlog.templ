@@ -57,7 +57,9 @@ templ TaskCard(task model.Task, project *model.Project) {
 
         taskElementId := fmt.Sprintf("task-card-%s", task.ID)
 	}}
-	<div id={ taskElementId } class="card card-side card-xs bg-base-100 shadow-md text-sm select-none rounded-2xl">
+	<div id={ taskElementId } 
+        class="card card-side card-xs bg-base-100 shadow-md text-sm select-none rounded-2xl"
+    >
 		<figure class={ "w-12", "min-w-12", bgColor, txColor, bgColorDark, txColorDark }>
 			<i data-lucide={ icon } class="size-7"></i>
 		</figure>
@@ -126,7 +128,7 @@ templ TaskCard(task model.Task, project *model.Project) {
 				<button
 					class="btn btn-circle btn-ghost tooltip tooltip-left"
                     data-tip="Schedule"
-					hx-put={ fmt.Sprintf("/tasks/schedule/%s", task.ID) }
+					hx-put={ fmt.Sprintf("/tasks/%s/schedule", task.ID) }
 					hx-target="closest .card"
 					hx-swap="delete"
 				>

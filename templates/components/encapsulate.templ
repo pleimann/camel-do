@@ -1,0 +1,24 @@
+package components
+
+// Used to wrap elements which are replaced out of band but can't stand on 
+// their own (tr, td, th, thead, tbody, tfoot, colgroup, caption, col & li).
+// https://htmx.org/attributes/hx-swap-oob
+templ Encapsulate(tagName string, swap string, contents templ.Component) {
+   switch tagName {
+    case "tr":
+        <tr if len(swap) > 0 { hx-swap-oob={swap} }>@contents</tr>
+    case "thead":
+        <thead if len(swap) > 0 { hx-swap-oob={swap} }>@contents</thead>
+    case "tfoot":
+        <tfoot if len(swap) > 0 { hx-swap-oob={swap} }>@contents</tfoot>
+    case "tbody":
+        <tbody if len(swap) > 0 { hx-swap-oob={swap} }>@contents</tbody>
+    case "colgroup":
+        <colgroup if len(swap) > 0 { hx-swap-oob={swap} }>@contents</colgroup>
+    case "ul":
+        <ul if len(swap) > 0 { hx-swap-oob={swap} }>@contents</ul>
+    default:
+        // Default or error handling
+        <template if len(swap) > 0 { hx-swap-oob={swap} }>@contents</template>
+    }
+}

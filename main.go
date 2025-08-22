@@ -146,9 +146,16 @@ func runServer() error {
 		HandleError: true,
 		LogValuesFunc: func(c echo.Context, v middleware.RequestLoggerValues) error {
 			if v.Error == nil {
-				slog.Info("REQUEST", "status", v.Status, "uri", v.URI)
+				slog.LogAttrs(context.Background(), slog.LevelInfo, "REQUEST",
+					slog.String("uri", v.URI),
+					slog.Int("status", v.Status),
+				)
 			} else {
-				slog.Error("REQUEST_ERROR", "status", v.Status, "uri", v.URI, "err", v.Error.Error())
+				slog.LogAttrs(context.Background(), slog.LevelError, "REQUEST_ERROR",
+					slog.String("uri", v.URI),
+					slog.Int("status", v.Status),
+					slog.String("err", v.Error.Error()),
+				)
 			}
 			return nil
 		},
