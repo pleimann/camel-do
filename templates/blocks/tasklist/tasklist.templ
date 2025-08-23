@@ -10,22 +10,16 @@ import (
 	"github.com/pleimann/camel-do/templates/components"
 )
 
-func taskCardSize(task model.Task) map[string]string {
+func taskViewSize(task model.Task) map[string]string {
     return map[string]string{
         // "height": fmt.Sprintf("%.1frem", float32(task.Position.Size) * 2.5),
     }
 }
 
 templ TasklistView(weekday time.Weekday, tasks *model.TaskList, projects *model.ProjectIndex) {
-    <div class={ "w-full", "xl:w-1/2" } hx-swap-oob="true">
+    <div id="tasklistview" class={ "w-full", "xl:w-1/2" }>
         @components.DayOfWeekSelector(time.Monday, weekday)
-        @taskList(tasks, projects)
-    </div>
-}
-
-templ taskList(tasks *model.TaskList, projects *model.ProjectIndex) {
-    <div class={ "h-[calc(100%-50px)]", "max-h-[calc(100%-50px)]", "overflow-y-scroll" }>
-        <ul id="tasklist" class="list gap-4 w-full" style="scrollbar-width: none;">
+        <ul id="tasklist" class="list gap-4 -mr-2 w-full max-h-[calc(100vh-var(--spacing)*40)] overflow-y-scroll">
             for task := range tasks.All() {
                 @TaskView(task, projects.Get(task.ProjectID.String))
             }
@@ -39,7 +33,7 @@ templ TaskView(task model.Task, project *model.Project) {
     }}
     <li id={ fmt.Sprintf("task-view-%s", task.ID) }
         class="list-row border-2 border-base-200 bg-base-100 shadow-sm grid-rows-[min-content_1fr]"
-        style={ taskCardSize(task) }
+        style={ taskViewSize(task) }
     >
         <div class={ "cursor-pointer", "row-span-2", "flex", "flex-col", "items-center", "gap-2", fmt.Sprintf("text-%s-800", color) }>
             <span class="tooltip tooltip-right" data-tip={ project.Name }>@components.Icon(project.Icon, 10)</span>

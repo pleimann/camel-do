@@ -17,7 +17,7 @@ templ Main(backlogTasks *model.TaskList, weekday time.Weekday, todaysTasks *mode
 			x-data="{ selectedTask: null }"
 		>
 			<div class="flex flex-row h-full overflow-hidden">
-                <div class="flex flex-col w-75 min-w-65 max-w-85 bg-primary/40 dark:bg-primary-content/40">
+                <div class="flex flex-col w-75 min-w-75 max-w-75 bg-primary/40 dark:bg-primary-content/40">
                     <div class="p-4 w-full">
                         <form class="flex gap-2 items-center justify-evenly">
                             <input class="flex-1 btn btn-primary btn-outline btn-soft" type="checkbox" name="complete" aria-label="complete" checked="true"/>
@@ -25,16 +25,13 @@ templ Main(backlogTasks *model.TaskList, weekday time.Weekday, todaysTasks *mode
                         </form>
                     </div>
                     <div
-                        class="overflow-y-auto overflow-x-hidden px-4 pb-4 h-full"
-                        style="scrollbar-color: var(--color-primary) transparent;"
+                        class="overflow-y-auto overflow-x-hidden ps-4 pe-1 pb-4 h-full"
+                        style="scrollbar-color: var(--color-primary) transparent; scrollbar-gutter: stable;"
                     >
                         @backlog.Backlog(backlogTasks, projects)
                     </div>
                 </div>
-				<div id="content"
-                    class="grow p-4 md:p-8 overflow-y-auto overflow-x-hidden p-4 md:p-8 h-full"
-                    style="scrollbar-color: var(--color-primary) transparent;"
-                >
+				<div id="content" class="grow p-4 md:p-8 !pt-4 overflow-hidden h-full">
 					@tasklist.TasklistView(weekday, todaysTasks, projects)
 				</div>
 			</div>

@@ -21,7 +21,7 @@ templ ProjectList(projects []model.Project) {
 templ ProjectItem(project model.Project) {
 	<li class="list-row items-center" id="project-item">
 		<div class={ "flex", "justify-center", "items-center", "rounded-box", "-m-2", "p-2", fmt.Sprintf("bg-%s-200", strings.ToLower(project.Color.String())) }>
-			@components.IconC(project.Icon, project.Color, 24)
+			@components.IconC(project.Icon, project.Color, 8)
 		</div>
 		<div class="grow">
 			<div class="text-lg font-semibold">{ project.Name }</div>

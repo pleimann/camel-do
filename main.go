@@ -207,6 +207,8 @@ func customHTTPErrorHandler(err error, c echo.Context) {
 
 	htmx.
 		NewResponse().
+		Retarget("body").
+		Reswap("beforeend").
 		StatusCode(code).
 		RenderTempl(c.Request().Context(), c.Response().Writer, messageTemplate)
 }

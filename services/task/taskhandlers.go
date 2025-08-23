@@ -213,7 +213,7 @@ func (h *TaskHandler) handleCreateTask(c echo.Context) error {
 			AddTrigger(htmx.Trigger("close-modal")).
 			Reswap(htmx.SwapNone).
 			RenderHTML(c.Response().Writer, template.HTML("")); err != nil {
-			return fmt.Errorf("task start time is invalid", err)
+			return fmt.Errorf("task start time is invalid: %w", err)
 		}
 
 	} else {
@@ -226,7 +226,7 @@ func (h *TaskHandler) handleCreateTask(c echo.Context) error {
 			Retarget(backlog.BacklogSelector).
 			Reswap(htmx.SwapAfterBegin).
 			RenderTempl(c.Request().Context(), c.Response().Writer, addedTaskTemplate); err != nil {
-			return fmt.Errorf("render template: w%", err)
+			return fmt.Errorf("render template: %w", err)
 		}
 	}
 
