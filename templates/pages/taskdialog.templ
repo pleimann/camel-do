@@ -8,7 +8,14 @@ import (
 
 templ TaskDialog(projectsIndex *model.ProjectIndex, task *model.Task) {
     {{ 
-        project := projectsIndex.Get(task.ProjectID.String)
+        var project *model.Project
+        if task != nil {
+            project = projectsIndex.Get(task.ProjectID.String)
+
+            if project == nil {
+                return fmt.Errorf("Project with project id %s for task %s not found", task.ProjectID.String, task.Title.String)
+            }
+        }
     }}
 
     <form id="taskForm" method="dialog" class="flex flex-col items-stretch gap-4"
