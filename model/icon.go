@@ -7,12 +7,14 @@ type Icon int
 const (
 	Unknown Icon = iota
 	Bear
+	Bee
 	Bird
 	Bug
 	Butterfly
 	Cat
-	Cow
 	Crab
+	Cow
+	Dog
 	Elephant
 	Fish
 	Frog
@@ -21,13 +23,15 @@ const (
 	Lion
 	Narwhal
 	Owl
+	Panda
 	Pig
 	Rabbit
-	Shark
+	Rat
 	Snail
 	Squirrel
-	Rat
 	Turtle
 	Worm
+	Shark
+	Spider
 	Whale
 )

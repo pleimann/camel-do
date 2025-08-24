@@ -39,7 +39,7 @@ templ ProjectDialog(project *model.Project) {
             <div class="w-1/4 flex flex-col gap-2">
                 <input name="color" type="hidden" x-model="color" />
                 for _, color := range model.ColorValues() {
-                    <div class={ "btn" , "btn-soft" , "h-6" , "active:outline-2" , "active:outline-offset-2" ,
+                    <div class={ "btn" , "btn-soft" , "h-7", "active:outline-2" , "active:outline-offset-2" ,
                         fmt.Sprintf("bg-%s-%d", strings.ToLower(color.String()), LightLevel),
                         fmt.Sprintf("text-%s-%d", strings.ToLower(color.String()), DarkLevel), }
                         x-bind:class={ fmt.Sprintf("{ 'outline-2' : color=='%s' }", color) } x-on:click={

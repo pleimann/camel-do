@@ -12,6 +12,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - **Format code**: `bun run fmt` (runs Prettier)
 - **Run tests**: `go test ./...`
 - **Build binary**: `go build -o ./tmp/camel-do .`
+- **Lint code**: `golangci-lint run`
 
 ### Database Operations
 - **Run with seeded data**: `go run . -seed`
@@ -60,7 +61,8 @@ Camel-Do uses a layered service architecture with clear separation of concerns:
 
 1. **Air Configuration**: `.air.toml` handles live reloading with pre-build steps:
    - Runs `bun run dev` to build frontend assets
-   - Generates Go code from templates
+   - Runs `go generate` for code generation
+   - Runs `go tool templ generate` to generate Go code from templates
    - Excludes test files and generated files from watching
 
 2. **Frontend Development**: 
