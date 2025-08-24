@@ -85,3 +85,5 @@ Camel-Do uses a layered service architecture with clear separation of concerns:
 - **Database Path**: Local SQLite file in `./camel-do/camel-do.db`
 - **Service Initialization**: All services initialized in main.go with dependency injection
 - **Error Handling**: Custom HTMX error handler for dynamic error display
+
+- use conventional commits
