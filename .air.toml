@@ -41,6 +41,11 @@ runner = "green"
 [misc]
 clean_on_exit = false
 
+[proxy]
+enabled = true
+proxy_port = 4001
+app_port = 4000
+
 [screen]
 clear_on_rebuild = true
 keep_scroll = false
