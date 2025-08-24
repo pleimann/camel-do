@@ -8,7 +8,8 @@ import (
 	"github.com/pleimann/camel-do/utils"
 )
 
-const BacklogSelector = "#backlog"
+const Selector = "backlog"
+const TaskSelector = "task-card"
 
 templ Backlog(tasks *model.TaskList, projects *model.ProjectIndex) {
 	// padding being defined in Backlog component rather than parent (App) prevents drop shadows from being clipped
@@ -54,10 +55,8 @@ templ TaskCard(task model.Task, project *model.Project) {
         } else {
             icon = "package"
         }
-
-        taskElementId := fmt.Sprintf("task-card-%s", task.ID)
 	}}
-	<div id={ taskElementId } 
+	<div id={ fmt.Sprintf("%s-%s", TaskSelector, task.ID) } 
         class="card card-side card-xs bg-base-100 shadow-md text-sm select-none rounded-2xl"
     >
 		<figure class={ "w-12", "min-w-12", bgColor, txColor, bgColorDark, txColorDark }>

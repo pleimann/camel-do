@@ -6,8 +6,10 @@ import (
 	"fmt"
 	"html/template"
 	"net/http"
+	"strings"
 	"time"
 
+	"github.com/a-h/templ"
 	"github.com/angelofallars/htmx-go"
 	"github.com/guregu/null/v6/zero"
 	"github.com/labstack/echo/v4"
@@ -223,7 +225,7 @@ func (h *TaskHandler) handleCreateTask(c echo.Context) error {
 
 		if err := htmx.NewResponse().
 			AddTrigger(htmx.Trigger("close-modal")).
-			Retarget(backlog.BacklogSelector).
+			Retarget(backlog.Selector).
 			Reswap(htmx.SwapAfterBegin).
 			RenderTempl(c.Request().Context(), c.Response().Writer, addedTaskTemplate); err != nil {
 			return fmt.Errorf("render template: %w", err)
@@ -293,7 +295,7 @@ func (h *TaskHandler) handleTaskUpdate(c echo.Context) error {
 
 		if err := htmx.NewResponse().
 			AddTrigger(htmx.Trigger("close-modal")).
-			Retarget(fmt.Sprintf("%s > #task-card-%s", backlog.BacklogSelector, task.ID)).
+			Retarget(fmt.Sprintf("#%s > #%s-%s", backlog.Selector, backlog.TaskSelector, task.ID)).
 			Reswap(htmx.SwapOuterHTML).
 			RenderTempl(c.Request().Context(), c.Response().Writer, taskTemplate); err != nil {
 			return fmt.Errorf("render template: %w", err)
@@ -366,8 +368,15 @@ func (h *TaskHandler) handleTaskComplete(c echo.Context) error {
 			}
 		}
 
-		// TODO send back backlog.TaskCard instead of tasklist.TaskView if coming from backlod
-		taskTemplate := tasklist.TaskView(*task, project)
+		target := c.Request().Header.Get(htmx.HeaderTarget)
+
+		var taskTemplate templ.Component
+		if strings.HasPrefix(target, backlog.TaskSelector) {
+			taskTemplate = backlog.TaskCard(*task, project)
+
+		} else if strings.HasPrefix(target, tasklist.TaskSelector) {
+			taskTemplate = tasklist.TaskView(*task, project)
+		}
 
 		if err := htmx.NewResponse().RenderTempl(c.Request().Context(), c.Response().Writer, taskTemplate); err != nil {
 			return fmt.Errorf("deleting task: %w", err)

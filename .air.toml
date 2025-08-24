@@ -4,6 +4,7 @@
 root = "."
 tmp_dir = "tmp"
 
+
 [build]
 pre_cmd = [
   "bun run dev",
@@ -20,7 +21,7 @@ follow_symlink = false
 log = "build-errors-air.log"
 poll = false
 poll_interval = 500
-delay = 1000
+delay = 2000
 stop_on_error = true
 send_interrupt = false
 kill_delay = 500

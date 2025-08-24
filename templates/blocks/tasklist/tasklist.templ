@@ -10,6 +10,9 @@ import (
 	"github.com/pleimann/camel-do/templates/components"
 )
 
+const Selector = "tasklist"
+const TaskSelector = "task-view"
+
 func taskViewSize(task model.Task) map[string]string {
     return map[string]string{
         // "height": fmt.Sprintf("%.1frem", float32(task.Position.Size) * 2.5),
@@ -31,7 +34,7 @@ templ TaskView(task model.Task, project *model.Project) {
     {{
         color := strings.ToLower(project.Color.String())
     }}
-    <li id={ fmt.Sprintf("task-view-%s", task.ID) }
+    <li id={ fmt.Sprintf("%s-%s", TaskSelector, task.ID) }
         class="list-row border-2 border-base-200 bg-base-100 shadow-sm grid-rows-[min-content_1fr]"
         style={ taskViewSize(task) }
     >
@@ -42,7 +45,7 @@ templ TaskView(task model.Task, project *model.Project) {
                 data-tip="⬅︎ Backlog"
                 aria-label="Move task to backlog"
                 hx-delete={ fmt.Sprintf("/tasks/%s/schedule", task.ID) }
-                hx-target="closest li.list-row"
+                hx-target="closest .list-row"
                 hx-swap="delete"
             >
                 <i data-lucide="backlog" class="size-6"></i>

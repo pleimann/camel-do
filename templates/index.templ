@@ -66,6 +66,6 @@ templ Layout(config Config, metaTags, bodyContent templ.Component) {
 
 script BodyScripts() {
 	htmx.on("htmx:sendError", function(evt) {
-        window.alert(evt);
+        window.alert(JSON.stringify(evt));
     });
 }
