@@ -3,7 +3,6 @@ package task
 import (
 	"cmp"
 	"context"
-	"database/sql"
 	"fmt"
 	"log"
 	"log/slog"
@@ -13,6 +12,7 @@ import (
 	"github.com/guregu/null/v6/zero"
 	"github.com/pleimann/camel-do/model"
 	"github.com/pleimann/camel-do/services/oauth"
+	bolt "go.etcd.io/bbolt"
 	"google.golang.org/api/option"
 	"google.golang.org/api/tasks/v1"
 )
@@ -20,10 +20,10 @@ import (
 // TaskService is a service for managing tasks.
 type TaskSyncService struct {
 	googleTasks *tasks.Service
-	db          *sql.DB
+	db          *bolt.DB
 }
 
-func NewTaskSyncService(googleAuth *oauth.GoogleAuth, db *sql.DB) (*TaskSyncService, error) {
+func NewTaskSyncService(googleAuth *oauth.GoogleAuth, db *bolt.DB) (*TaskSyncService, error) {
 	http := googleAuth.GetClient()
 
 	service, err := tasks.NewService(context.Background(), option.WithHTTPClient(http))

@@ -1,0 +1,119 @@
+package backlog
+
+import (
+	"fmt"
+	"strings"
+
+	"github.com/pleimann/camel-do/model"
+	"github.com/pleimann/camel-do/utils"
+)
+
+const LightLevel = 200
+const DarkLevel = 800
+
+// BodyContent defines HTML content.
+templ TaskCard(task model.Task, project *model.Project) {
+	{{
+        var bgColor, txColor string
+        var bgColorDark, txColorDark string
+        if project != nil && project.Color.String() != "" {
+            bgColor = fmt.Sprintf("bg-%s-%d", strings.ToLower(project.Color.String()), LightLevel)
+            txColor = fmt.Sprintf("text-%s-%d", strings.ToLower(project.Color.String()), DarkLevel)
+            bgColorDark = fmt.Sprintf("dark:bg-%s-%d", strings.ToLower(project.Color.String()), LightLevel)
+            txColorDark = fmt.Sprintf("dark:text-%s-%d", strings.ToLower(project.Color.String()), DarkLevel)
+
+        } else {
+            bgColor = "bg-base-200"
+            txColor = "text-base-200"
+            bgColorDark = "dark:bg-base-200"
+            txColorDark = "dark:text-base-200"
+        }
+
+        var icon string
+        if project != nil && project.Icon.String() != "" {
+            icon = project.Icon.String()
+        } else {
+            icon = "package"
+        }
+	}}
+	<div id={ fmt.Sprintf("%s-%s", TaskSelector, task.ID) } 
+        class="card card-side card-xs bg-base-100 shadow-md text-sm select-none rounded-2xl"
+    >
+		<figure class={ "w-12", "min-w-12", bgColor, txColor, bgColorDark, txColorDark }>
+			<i data-lucide={ icon } class="size-7"></i>
+		</figure>
+		<div class="card-body grid grid-cols-2 justify-center items-center">
+			<div class="text-sm font-medium col-span-2">{ task.Title.String }</div>
+			<time class="italic">{ utils.FormatDuration(task.Duration.Int32) }</time>
+			if task.Description.Valid {
+				<div class="justify-self-end" x-data="{ isOpen: false }">
+					<div
+						@mouseover="isOpen = true"
+						@mouseleave="isOpen = false"
+						class="font-bold transition-colors duration-300"
+					>
+						<i data-lucide="notepad-text" class="size-4"></i>
+					</div>
+					<div
+						x-show="isOpen"
+						x-transition:enter="transition ease-out duration-300"
+						x-transition:enter-start="opacity-0 transform scale-95"
+						x-transition:enter-end="opacity-100 transform scale-100"
+						x-transition:leave="transition ease-in duration-200"
+						x-transition:leave-start="opacity-100 transform scale-100"
+						x-transition:leave-end="opacity-0 transform scale-95"
+						class="popover absolute bg-base-100 line-clamp-3 shadow-md rounded-lg w-52 -ml-15 md:w-64 mt-4 p-2 z-1"
+					>
+						{ task.Description.String }
+					</div>
+				</div>
+			}
+		</div>
+		<div class="card-actions rounded-e-2xl bg-base-200 dark:bg-base-200 p-2">
+			<div class="flex flex-col justify-between">
+				<div class="dropdown dropdown-hover dropdown-left dropdown-center">
+					<button
+						class="btn btn-circle btn-ghost tooltip tooltip-left"
+						hx-put={ fmt.Sprintf("/tasks/%s/complete", task.ID) }
+						hx-target="closest .card"
+                        hx-swap="outerHTML"
+					>
+						if task.Completed.Bool {
+							<i data-lucide="circle-checked" class="size-5"></i>
+						} else {
+							<i data-lucide="circle" class="size-5"></i>
+						}
+					</button>
+					<ul class="dropdown-content p-2 z-1 gap-2 flex flex-row-reverse rounded-s-full bg-base-200/90 bg-blend-overlay" tabIndex="0">
+						<li
+							class="btn btn-circle btn-ghost tooltip tooltip-bottom"
+							data-tip="Edit"
+							hx-get={ fmt.Sprintf("/tasks/edit/%s", task.ID) }
+							hx-target="#dialog"
+						>
+							<i data-lucide="edit" class="size-5"></i>
+						</li>
+						<li
+							class="btn btn-circle btn-ghost tooltip tooltip-bottom"
+							data-tip="Delete"
+							hx-delete={ fmt.Sprintf("/tasks/%s", task.ID) }
+							hx-target="closest .card"
+							hx-swap="delete"
+						>
+							<i data-lucide="Trash" class="size-5"></i>
+						</li>
+					</ul>
+				</div>
+				<button
+					class="btn btn-circle btn-ghost tooltip tooltip-left"
+                    data-tip="Schedule"
+					hx-put={ fmt.Sprintf("/tasks/%s/schedule", task.ID) }
+					hx-target="closest .card"
+					hx-swap="delete"
+				>
+					<i data-lucide="schedule-time" class="size-5"></i>
+				</button>
+			</div>
+		</div>
+	</div>
+}

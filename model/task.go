@@ -1,7 +1,9 @@
 package model
 
 import (
+	"bytes"
 	"cmp"
+	"encoding/gob"
 	"encoding/json"
 	"iter"
 	"slices"
@@ -21,6 +23,7 @@ type Task struct {
 	StartTime   zero.Time   `form:"startTime"`               // Start time of the task
 	Duration    zero.Int32  `form:"duration"`                // Duration of the task
 	Completed   zero.Bool   `form:"completed,default:false"` // Status of task completion
+	Hidden      zero.Bool   `form:"hidden,default:false"`    // Status of task completion
 	Rank        zero.Int32  // Sort order
 	ProjectID   zero.String `form:"projectId"` // Foreign key referencing the project associated with the task.
 	GTaskID     zero.String
@@ -36,6 +39,7 @@ func NewTask(
 	startTime zero.Time,
 	duration zero.Int32,
 	completed zero.Bool,
+	hidden zero.Bool,
 	rank zero.Int32,
 	projectID zero.String,
 	gTaskID zero.String,
@@ -49,6 +53,7 @@ func NewTask(
 		StartTime:   startTime,
 		Duration:    duration,
 		Completed:   completed,
+		Hidden:      hidden,
 		Rank:        rank,
 		ProjectID:   projectID,
 		GTaskID:     gTaskID,
@@ -79,11 +84,30 @@ func (t Task) MarshalJSON() ([]byte, error) {
 		"startTime":   t.StartTime.Time,
 		"duration":    t.Duration,
 		"completed":   t.Completed.Bool,
+		"hidden":      t.Hidden.Bool,
 		"rank":        t.Rank.Int32,
 		"projectId":   t.ProjectID.String,
 		"gTaskId":     t.GTaskID.String,
 		"position":    t.Position,
 	})
+}
+
+// Marshal serializes the Task to bytes using encoding/gob
+func (t *Task) Marshal() ([]byte, error) {
+	var buf bytes.Buffer
+	encoder := gob.NewEncoder(&buf)
+	err := encoder.Encode(t)
+	if err != nil {
+		return nil, err
+	}
+	return buf.Bytes(), nil
+}
+
+// Unmarshal deserializes bytes into the Task using encoding/gob
+func (t *Task) Unmarshal(data []byte) error {
+	buf := bytes.NewBuffer(data)
+	decoder := gob.NewDecoder(buf)
+	return decoder.Decode(t)
 }
 
 type TaskList struct {

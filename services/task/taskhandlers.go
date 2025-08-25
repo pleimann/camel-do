@@ -46,6 +46,7 @@ func NewTaskHandler(
 	group.PUT("/:id", taskHandler.handleTaskUpdate).Name = "update-task"
 	group.DELETE("/:id", taskHandler.handleTaskDelete).Name = "delete-task"
 	group.PUT("/:id/complete", taskHandler.handleTaskComplete).Name = "complete-task"
+	group.PUT("/:id/hide", taskHandler.handleTaskHide).Name = "hide-task"
 
 	return taskHandler
 }
@@ -384,4 +385,23 @@ func (h *TaskHandler) handleTaskComplete(c echo.Context) error {
 
 		return nil
 	}
+}
+
+func (h *TaskHandler) handleTaskHide(c echo.Context) error {
+	defer c.Request().Body.Close()
+
+	taskId := extractTaskId(c)
+
+	c.Logger().Debug("TaskHandler.handleTaskHide", "taskId", taskId)
+
+	if err := h.taskService.HiddenToggleTask(taskId); err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return echo.NewHTTPError(http.StatusNotFound, "updating task", err)
+
+		} else {
+			return fmt.Errorf("updating task: %w", err)
+		}
+	}
+
+	return nil
 }

@@ -2,9 +2,10 @@ package cal
 
 import (
 	"context"
-	"database/sql"
 	"fmt"
 	"time"
+
+	bolt "go.etcd.io/bbolt"
 
 	"github.com/guregu/null/v6/zero"
 	"github.com/pleimann/camel-do/model"
@@ -19,11 +20,11 @@ type CalendarServiceConfig struct {
 // TaskService is a service for managing tasks.
 type CalendarService struct {
 	config         *CalendarServiceConfig
-	db             *sql.DB
+	db             *bolt.DB
 	googleCalendar *calendar.Service
 }
 
-func NewCalendarService(config *CalendarServiceConfig, googleAuth *oauth.GoogleAuth, db *sql.DB) (*CalendarService, error) {
+func NewCalendarService(config *CalendarServiceConfig, googleAuth *oauth.GoogleAuth, db *bolt.DB) (*CalendarService, error) {
 	client := googleAuth.GetClient()
 
 	ctx := context.Background()

@@ -8,17 +8,16 @@ require (
 	github.com/a-h/templ v0.3.887
 	github.com/angelofallars/htmx-go v0.5.0
 	github.com/derektata/lorem v0.0.2
-	github.com/go-jet/jet/v2 v2.13.0
-	github.com/golang-migrate/migrate/v4 v4.18.3
 	github.com/gowebly/helpers v0.4.0
 	github.com/guregu/null/v6 v6.0.0
 	github.com/labstack/echo/v4 v4.13.4
-	github.com/mattn/go-sqlite3 v1.14.28
 	github.com/oklog/ulid/v2 v2.1.1
 	github.com/stretchr/testify v1.10.0
 	golang.org/x/oauth2 v0.30.0
 	google.golang.org/api v0.236.0
 )
+
+require go.etcd.io/bbolt v1.4.3 // indirect
 
 require (
 	cloud.google.com/go/auth v0.16.2 // indirect
@@ -121,7 +120,6 @@ require (
 tool (
 	github.com/a-h/templ/cmd/templ
 	github.com/air-verse/air
-	github.com/go-jet/jet/v2/cmd/jet
 	github.com/gowebly/gowebly/v3
 	github.com/searKing/golang/tools/go-enum
 )

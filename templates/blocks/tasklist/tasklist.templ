@@ -2,11 +2,8 @@ package tasklist
 
 import (
 	"time"
-    "strings"
-    "fmt"
 
 	"github.com/pleimann/camel-do/model"
-	"github.com/pleimann/camel-do/utils"
 	"github.com/pleimann/camel-do/templates/components"
 )
 
@@ -28,49 +25,4 @@ templ TasklistView(weekday time.Weekday, tasks *model.TaskList, projects *model.
             }
         </ul>
     </div>
-}
-
-templ TaskView(task model.Task, project *model.Project) {
-    {{
-        color := strings.ToLower(project.Color.String())
-    }}
-    <li id={ fmt.Sprintf("%s-%s", TaskSelector, task.ID) }
-        class="list-row border-2 border-base-200 bg-base-100 shadow-sm grid-rows-[min-content_1fr]"
-        style={ taskViewSize(task) }
-    >
-        <div class={ "cursor-pointer", "row-span-2", "flex", "flex-col", "items-center", "gap-2", fmt.Sprintf("text-%s-800", color) }>
-            <span class="tooltip tooltip-right" data-tip={ project.Name }>@components.Icon(project.Icon, 10)</span>
-            <button
-                class="btn btn-circle btn-ghost tooltip tooltip-right"
-                data-tip="⬅︎ Backlog"
-                aria-label="Move task to backlog"
-                hx-delete={ fmt.Sprintf("/tasks/%s/schedule", task.ID) }
-                hx-target="closest .list-row"
-                hx-swap="delete"
-            >
-                <i data-lucide="backlog" class="size-6"></i>
-            </button>
-            <button
-                class="btn btn-circle btn-ghost tooltip tooltip-right"
-                data-tip="Complete"
-                hx-put={ fmt.Sprintf("/tasks/%s/complete", task.ID) }
-                hx-target="closest .list-row"
-                hx-swap="outerHTML"
-            >
-                if task.Completed.Bool {
-                    <i data-lucide="circle-checked" class="size-6"></i>
-                } else {
-                    <i data-lucide="circle" class="size-6"></i>
-                }
-            </button>
-        </div>
-        <div class="list-col-grow">
-            <time class="text-xs">{ utils.FormatTime(task.StartTime.Time) }</time>
-            <h3 class="uppercase font-semibold text-md">{ task.Title.String }</h3>
-        </div>
-        <p class="list-col-wrap self-stretch text-xs">{ task.Description.String }</p>
-        <div class="text-3xl font-thin opacity-30 tabular-nums oldstyle-nums">
-            { utils.FormatDuration(task.Duration.Int32) }
-        </div>
-    </li>
 }

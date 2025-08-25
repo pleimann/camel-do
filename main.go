@@ -2,26 +2,27 @@ package main
 
 import (
 	"context"
-	"database/sql"
 	"embed"
 	"flag"
 	"fmt"
 	"log"
 	"log/slog"
+	"math/rand"
 	"net/http"
 	"os"
 	"os/signal"
 	"path"
+	"slices"
 	"strconv"
 	"time"
 
 	"github.com/angelofallars/htmx-go"
+	"github.com/guregu/null/v6/zero"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 
 	gowebly "github.com/gowebly/helpers"
-	_ "github.com/mattn/go-sqlite3"
-	database "github.com/pleimann/camel-do/db"
+	bolt "go.etcd.io/bbolt"
 
 	"github.com/pleimann/camel-do/services/cal"
 	"github.com/pleimann/camel-do/services/home"
@@ -48,9 +49,8 @@ func main() {
 	flag.BoolVar(&seed, "seed", false, "seed database with some data")
 	flag.Parse()
 
-	var err error
-
-	if err = createDatabase(); err != nil {
+	db, err := createDatabase()
+	if err != nil {
 		log.Fatalf("Failed to create database service! %s", err)
 	}
 
@@ -79,7 +79,7 @@ func main() {
 	}
 
 	if tasks, _ := taskService.GetTodaysTasks(); tasks.IsEmpty() {
-		database.Seed(20, taskService, projectService)
+		seedDb(20, taskService, projectService)
 	}
 
 	// Run your server.
@@ -93,19 +93,18 @@ func main() {
 
 const databaseFileName = "camel-do.db"
 
-var db *sql.DB
 var taskService *task.TaskService
 var taskSyncService *task.TaskSyncService
 var calendarService *cal.CalendarService
 var projectService *project.ProjectService
 
-func createDatabase() error {
+func createDatabase() (*bolt.DB, error) {
 	var err error
 
 	userConfigDir, err := os.UserConfigDir()
 
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	databasePath := path.Join(userConfigDir, "camel-do", databaseFileName)
@@ -114,15 +113,12 @@ func createDatabase() error {
 		log.Fatalf("Unable to create directory for db file: %v", err)
 	}
 
-	if db, err = sql.Open("sqlite3", databasePath); err != nil {
-		return err
+	db, err := bolt.Open(databasePath, 0600, nil)
+	if err != nil {
+		return nil, err
 	}
 
-	if err = database.Migrate(db); err != nil {
-		log.Fatal(err)
-	}
-
-	return nil
+	return db, nil
 }
 
 // runServer runs a new HTTP server with the loaded environment variables.
@@ -211,4 +207,37 @@ func customHTTPErrorHandler(err error, c echo.Context) {
 		Reswap("beforeend").
 		StatusCode(code).
 		RenderTempl(c.Request().Context(), c.Response().Writer, messageTemplate)
+}
+
+func seedDb(count int, taskService *task.TaskService, projectService *project.ProjectService) {
+	projects, err := project.GenerateRandomProjects(5)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	tasks, err := task.GenerateRandomTasks(count)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	for i := range projects {
+		err := projectService.AddProject(projects[i])
+		if err != nil {
+			return
+		}
+	}
+
+	projectsIndex, _ := projectService.GetProjects()
+
+	projects = slices.Collect(projectsIndex.Values())
+
+	for t := range tasks.All() {
+		randProject := projects[rand.Intn(len(projects))]
+
+		t.ProjectID = zero.StringFrom(randProject.ID)
+
+		if err := taskService.AddTask(&t); err != nil {
+			log.Fatal(err)
+		}
+	}
 }
