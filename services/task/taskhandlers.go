@@ -114,10 +114,7 @@ func (h *TaskHandler) handleScheduleTask(c echo.Context) error {
 	taskId := extractTaskId(c)
 
 	// TODO figure out when next open slot is
-	if err := h.taskService.UpdateTask(&model.Task{
-		ID:        taskId,
-		StartTime: zero.TimeFrom(time.Now().Truncate(15 * time.Minute).Add(15 * time.Minute)),
-	}); err != nil {
+	if err := h.taskService.ScheduleTask(taskId, zero.TimeFrom(time.Now().Truncate(15*time.Minute).Add(15*time.Minute))); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return echo.NewHTTPError(http.StatusNotFound, "scheduling task", err)
 
@@ -150,7 +147,7 @@ func (h *TaskHandler) handleScheduleTask(c echo.Context) error {
 func (h *TaskHandler) handleUnScheduleTask(c echo.Context) error {
 	taskId := extractTaskId(c)
 
-	if err := h.taskService.UnscheduleTask(&model.Task{ID: taskId, StartTime: zero.Time{}}); err != nil {
+	if err := h.taskService.ScheduleTask(taskId, zero.TimeFromPtr(nil)); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return echo.NewHTTPError(http.StatusNotFound, "unscheduling task", err)
 
