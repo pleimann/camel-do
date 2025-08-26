@@ -211,7 +211,7 @@ func (t *TaskService) ScheduleTask(id string, time zero.Time) error {
 			return err
 
 		} else {
-			bucket.Put([]byte(task.ID), taskBytes)
+			bucket.Put([]byte(id), taskBytes)
 		}
 
 		return nil

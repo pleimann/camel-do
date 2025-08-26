@@ -40,6 +40,7 @@ func NewTaskHandler(
 	group.GET("/new", taskHandler.handleNewTask).Name = "new-task"
 	group.GET("/edit/:id", taskHandler.handleEditTask).Name = "edit-task"
 
+	group.GET("/:id/schedule", taskHandler.handleScheduleDialog).Name = "schedule-dialog"
 	group.PUT("/:id/schedule", taskHandler.handleScheduleTask).Name = "schedule-task"
 	group.DELETE("/:id/schedule", taskHandler.handleUnScheduleTask).Name = "unschedule-task"
 	group.POST("/", taskHandler.handleCreateTask).Name = "create-task"
@@ -110,14 +111,70 @@ func (h *TaskHandler) handleEditTask(c echo.Context) error {
 	return nil
 }
 
+func (h *TaskHandler) handleScheduleDialog(c echo.Context) error {
+	taskId := extractTaskId(c)
+
+	task, err := h.taskService.GetTask(taskId)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return echo.NewHTTPError(http.StatusNotFound, "getting task", err)
+		} else {
+			return echo.NewHTTPError(http.StatusInternalServerError, "getting task", err)
+		}
+	}
+
+	scheduleDialogTemplate := components.ScheduleDialog(task)
+	dialogTemplate := components.Dialog(scheduleDialogTemplate)
+
+	if err := htmx.NewResponse().RenderTempl(c.Request().Context(), c.Response().Writer, dialogTemplate); err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, "render template", err)
+	}
+
+	return nil
+}
+
 func (h *TaskHandler) handleScheduleTask(c echo.Context) error {
 	taskId := extractTaskId(c)
 
-	// TODO figure out when next open slot is
-	if err := h.taskService.ScheduleTask(taskId, zero.TimeFrom(time.Now().Truncate(15*time.Minute).Add(15*time.Minute))); err != nil {
+	// Parse form data
+	if err := c.Request().ParseForm(); err != nil {
+		return echo.NewHTTPError(http.StatusUnprocessableEntity, "parsing form data", err)
+	}
+
+	dateStr := c.FormValue("date")
+	timeStr := c.FormValue("time")
+
+	// Parse date and time
+	var scheduledTime time.Time
+	var err error
+
+	if dateStr == "" || timeStr == "" {
+		// Fall back to default scheduling (next 15-minute slot)
+		scheduledTime = time.Now().Truncate(15 * time.Minute).Add(15 * time.Minute)
+	} else {
+		// Parse the date (YYYY-MM-DD format)
+		parsedDate, err := time.Parse("2006-01-02", dateStr)
+		if err != nil {
+			return echo.NewHTTPError(http.StatusBadRequest, "invalid date format", err)
+		}
+
+		// Parse the time (12-hour format: "03 04 PM")
+		parsedTime, err := time.Parse("03 04 PM", timeStr)
+		if err != nil {
+			return echo.NewHTTPError(http.StatusBadRequest, "invalid time format", err)
+		}
+
+		// Combine date and time
+		scheduledTime = time.Date(
+			parsedDate.Year(), parsedDate.Month(), parsedDate.Day(),
+			parsedTime.Hour(), parsedTime.Minute(), 0, 0,
+			time.Local,
+		)
+	}
+
+	if err := h.taskService.ScheduleTask(taskId, zero.TimeFrom(scheduledTime)); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return echo.NewHTTPError(http.StatusNotFound, "scheduling task", err)
-
 		} else {
 			return fmt.Errorf("scheduling task: %w", err)
 		}

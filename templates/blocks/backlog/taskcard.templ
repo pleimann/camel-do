@@ -95,11 +95,10 @@ templ TaskCard(task model.Task, project *model.Project) {
 				<button
 					class="btn btn-circle btn-ghost tooltip tooltip-left"
                     data-tip="Schedule"
-					hx-put={ fmt.Sprintf("/tasks/%s/schedule", task.ID) }
-					hx-target="closest .card"
-					hx-swap="delete"
+					hx-on:click="alert('click')"
+                    hx-put={ fmt.Sprintf("/tasks/%s/schedule", task.ID) } hx-trigger="dblclick consume" hx-target="closest .card" hx-swap="delete"
 				>
-					<i data-lucide="schedule-time" class="size-5"></i>
+					<i data-lucide="schedule-time" class="size-5" />
 				</button>
 			</div>
 		</div>

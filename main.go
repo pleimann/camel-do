@@ -165,11 +165,17 @@ func runServer() error {
 	// Serve embedded static files found at ./static
 	e.StaticFS("/static", echo.MustSubFS(static, "static")).Name = "static"
 
+	// Project routes
 	projectsGroup := e.Group("/projects")
 	project.NewProjectHandler(projectsGroup, projectService)
 
+	// Task routes
 	tasksGroup := e.Group("/tasks")
 	task.NewTaskHandler(tasksGroup, taskService, projectService)
+
+	// Component routes
+	componentsGroup := e.Group("/components")
+	home.NewComponentsService(componentsGroup)
 
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt)
 	defer stop()

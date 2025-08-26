@@ -1,0 +1,50 @@
+package components
+
+import (
+    "fmt"
+    "github.com/pleimann/camel-do/model"
+)
+
+templ ScheduleDialog(task *model.Task) {
+    <form id="scheduleForm" method="dialog" class="flex flex-col items-stretch gap-4 min-w-96"
+        hx-put={ fmt.Sprintf("/tasks/%s/schedule", task.ID) }
+        hx-target="closest .card"
+        hx-swap="delete">
+        
+        <div class="flex items-center gap-3 mb-2">
+            <i data-lucide="calendar-plus" class="size-5 text-primary" />
+            <h3 class="font-semibold text-lg">Schedule Task</h3>
+        </div>
+        
+        <div class="bg-base-200 p-3 rounded-lg">
+            <div class="font-medium">{ task.Title.String }</div>
+            if task.Description.Valid {
+                <div class="text-sm text-base-content/70 mt-1">{ task.Description.String }</div>
+            }
+        </div>
+
+        <div class="form-control">
+            <label class="label">
+                <span class="label-text">Date</span>
+            </label>
+            @DatePicker()
+        </div>
+
+        <div class="form-control">
+            <label class="label">
+                <span class="label-text">Time</span>
+            </label>
+            @TimePicker(15)
+        </div>
+
+        <div class="flex gap-2 mt-4">
+            <button type="button" class="btn btn-ghost flex-1" onclick="this.closest('dialog').close()">
+                Cancel
+            </button>
+            <button type="submit" class="btn btn-primary flex-1">
+                <i data-lucide="calendar-check" class="size-4" />
+                Schedule
+            </button>
+        </div>
+    </form>
+}

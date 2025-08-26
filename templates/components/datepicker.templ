@@ -1,0 +1,183 @@
+package components
+
+import (
+    "fmt"
+    "time"
+)
+
+type CalendarDay struct {
+    Day         int
+    IsCurrentMonth bool
+    IsToday     bool
+    IsWeekend   bool
+    Date        time.Time
+}
+
+func generateCalendarDays(year int, month time.Month) []CalendarDay {
+    var days []CalendarDay
+    
+    // Get first day of the month
+    firstDay := time.Date(year, month, 1, 0, 0, 0, 0, time.Local)
+    
+    // Get first day of calendar (might be from previous month)
+    startOfWeek := int(firstDay.Weekday())
+    calendarStart := firstDay.AddDate(0, 0, -startOfWeek)
+    
+    // Generate 42 days (6 weeks × 7 days) to fill the calendar grid
+    for i := 0; i < 42; i++ {
+        currentDate := calendarStart.AddDate(0, 0, i)
+        isCurrentMonth := currentDate.Month() == month
+        isToday := currentDate.Format("2006-01-02") == time.Now().Format("2006-01-02")
+        isWeekend := currentDate.Weekday() == time.Sunday || currentDate.Weekday() == time.Saturday
+        
+        days = append(days, CalendarDay{
+            Day:         currentDate.Day(),
+            IsCurrentMonth: isCurrentMonth,
+            IsToday:     isToday,
+            IsWeekend:   isWeekend,
+            Date:        currentDate,
+        })
+    }
+    
+    return days
+}
+
+script datePickerHandler() {
+    function selectDate(dateStr) {
+        const datePicker = document.querySelector('#datepicker-input');
+        if (datePicker) {
+            datePicker.value = dateStr;
+            // Close the popover
+            const container = document.querySelector('#datepicker-container');
+            if (container) {
+                container.hidePopover();
+            }
+        }
+    }
+    
+    function navigateMonth(direction) {
+        const monthInput = document.querySelector('#current-month');
+        const yearInput = document.querySelector('#current-year');
+        
+        if (monthInput && yearInput) {
+            let currentMonth = parseInt(monthInput.value);
+            let currentYear = parseInt(yearInput.value);
+            
+            if (direction === 'next') {
+                currentMonth++;
+                if (currentMonth > 12) {
+                    currentMonth = 1;
+                    currentYear++;
+                }
+            } else {
+                currentMonth--;
+                if (currentMonth < 1) {
+                    currentMonth = 12;
+                    currentYear--;
+                }
+            }
+            
+            monthInput.value = currentMonth;
+            yearInput.value = currentYear;
+            
+            // Trigger HTMX update
+            htmx.trigger('#datepicker-calendar', 'refresh-calendar');
+        }
+    }
+    
+    window.selectDate = selectDate;
+    window.navigateMonth = navigateMonth;
+}
+
+templ DatePicker() {
+    {{ now := time.Now() }}
+    <div id="datepicker" class="relative" x-data="{ open: false }" aria-haspopup="menu">
+        <!-- DatePicker Input with Icons -->
+        <div class="relative flex items-center">
+            <input id="datepicker-input" type="text" name="date"
+                class="w-full bg-transparent pr-8 py-2.5 input input-readonly"
+                placeholder="Select a date" readonly/>
+
+            <div id="toggleDatepicker" popovertarget="datepicker-container" 
+                type="menu"
+                class="cursor-pointer picker-button"
+                style="anchor-name: --picker-button;">
+                <i data-lucide="calendar" />
+            </div>
+        </div>
+    </div>
+
+    <div popover id="datepicker-container" 
+        class="popover-menu popover-right-top p-4 bg-base-100 border border-base-300 rounded-lg shadow-lg" 
+        style="position-anchor: --picker-button;">
+        
+        @datePickerHandler()
+        
+        <div id="datepicker-calendar" 
+            hx-get="/components/datepicker-calendar"
+            hx-trigger="refresh-calendar from:body"
+            hx-include="#current-month, #current-year">
+            
+            <!-- Hidden inputs to track current month/year -->
+            <input type="hidden" id="current-month" name="month" value={ fmt.Sprintf("%d", int(now.Month())) } />
+            <input type="hidden" id="current-year" name="year" value={ fmt.Sprintf("%d", now.Year()) } />
+            
+            @DatePickerCalendar(now.Year(), now.Month())
+        </div>
+    </div>
+}
+
+templ DatePickerCalendar(year int, month time.Month) {
+    <!-- Calendar Header -->
+    <div class="flex items-center justify-between mb-4">
+        <button type="button" 
+            class="btn btn-ghost btn-sm"
+            onclick="navigateMonth('prev')">
+            <i data-lucide="chevron-left" />
+        </button>
+        
+        <div class="font-semibold text-lg">
+            { month.String() } { fmt.Sprintf("%d", year) }
+        </div>
+        
+        <button type="button" 
+            class="btn btn-ghost btn-sm"
+            onclick="navigateMonth('next')">
+            <i data-lucide="chevron-right" />
+        </button>
+    </div>
+
+    <!-- Days of Week Header -->
+    <div class="grid grid-cols-7 gap-1 mb-2">
+        <div class="text-center text-xs font-medium p-2">Sun</div>
+        <div class="text-center text-xs font-medium p-2">Mon</div>
+        <div class="text-center text-xs font-medium p-2">Tue</div>
+        <div class="text-center text-xs font-medium p-2">Wed</div>
+        <div class="text-center text-xs font-medium p-2">Thu</div>
+        <div class="text-center text-xs font-medium p-2">Fri</div>
+        <div class="text-center text-xs font-medium p-2">Sat</div>
+    </div>
+
+    <!-- Calendar Grid -->
+    <div class="grid grid-cols-7 gap-1">
+        {{ days := generateCalendarDays(year, month) }}
+        for _, day := range days {
+            <button type="button"
+                class={ 
+                    "p-2 text-sm rounded cursor-pointer",
+                    templ.KV("text-base-content/50", !day.IsCurrentMonth),
+                    templ.KV("text-base-content", day.IsCurrentMonth),
+                    templ.KV("bg-primary text-primary-content font-semibold", day.IsToday),
+                    templ.KV("text-error", day.IsWeekend && day.IsCurrentMonth && !day.IsToday),
+                    templ.KV("hover:bg-base-200", day.IsCurrentMonth && !day.IsToday),
+                    templ.KV("cursor-default", !day.IsCurrentMonth),
+                }
+                if day.IsCurrentMonth {
+                    onclick="selectDate(this.dataset.date)"
+                    data-date={ day.Date.Format("2006-01-02") }
+                }>
+                { fmt.Sprintf("%d", day.Day) }
+            </button>
+        }
+    </div>
+}
