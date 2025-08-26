@@ -40,6 +40,10 @@ func (t *TaskService) AddTask(task *model.Task) error {
 			return err
 		}
 
+		if bucket == nil {
+			return fmt.Errorf("tasks bucket does not exist")
+		}
+
 		taskBytes, err := task.Marshal()
 
 		if err != nil {
@@ -65,6 +69,10 @@ func (t *TaskService) GetTask(id string) (*model.Task, error) {
 	err := t.db.View(func(tx *bolt.Tx) error {
 		bucket := tx.Bucket([]byte("tasks"))
 
+		if bucket == nil {
+			return fmt.Errorf("tasks bucket does not exist")
+		}
+
 		taskBytes := bucket.Get([]byte(id))
 
 		if err := task.Unmarshal(taskBytes); err != nil {
@@ -86,6 +94,10 @@ func (t *TaskService) CompleteToggleTask(id string) error {
 
 	err := t.db.Update(func(tx *bolt.Tx) error {
 		bucket := tx.Bucket([]byte("tasks"))
+
+		if bucket == nil {
+			return fmt.Errorf("tasks bucket does not exist")
+		}
 
 		taskBytes := bucket.Get([]byte(id))
 
@@ -120,6 +132,10 @@ func (t *TaskService) HiddenToggleTask(id string) error {
 	err := t.db.Update(func(tx *bolt.Tx) error {
 		bucket := tx.Bucket([]byte("tasks"))
 
+		if bucket == nil {
+			return fmt.Errorf("tasks bucket does not exist")
+		}
+
 		taskBytes := bucket.Get([]byte(id))
 
 		task := model.Task{}
@@ -151,9 +167,10 @@ func (t *TaskService) UpdateTask(task *model.Task) error {
 	slog.Debug("TaskService.UpdateTask", "task", task)
 
 	err := t.db.Update(func(tx *bolt.Tx) error {
-		bucket, err := tx.CreateBucketIfNotExists([]byte("tasks"))
-		if err != nil {
-			return err
+		bucket := tx.Bucket([]byte("tasks"))
+
+		if bucket == nil {
+			return fmt.Errorf("tasks bucket does not exist")
 		}
 
 		taskBytes, err := task.Marshal()
@@ -174,13 +191,13 @@ func (t *TaskService) UpdateTask(task *model.Task) error {
 	return nil
 }
 
-func (t *TaskService) UnscheduleTask(task *model.Task) error {
-	slog.Debug("TaskService.UnscheduleTask", "task", task)
+func (t *TaskService) ScheduleTask(id string, time zero.Time) error {
+	slog.Debug("TaskService.ScheduleTask", "taskId", id)
 
 	err := t.db.Update(func(tx *bolt.Tx) error {
 		bucket := tx.Bucket([]byte("tasks"))
 
-		taskBytes := bucket.Get([]byte(task.ID))
+		taskBytes := bucket.Get([]byte(id))
 
 		task := model.Task{}
 
@@ -188,7 +205,7 @@ func (t *TaskService) UnscheduleTask(task *model.Task) error {
 			return err
 		}
 
-		task.StartTime = zero.TimeFromPtr(nil)
+		task.StartTime = time
 
 		if taskBytes, err := task.Marshal(); err != nil {
 			return err
@@ -201,7 +218,7 @@ func (t *TaskService) UnscheduleTask(task *model.Task) error {
 	})
 
 	if err != nil {
-		return fmt.Errorf("TaskService.UnscheduleTask(%s): %w", task.ID, err)
+		return fmt.Errorf("TaskService.ScheduleTask(%s): %w", id, err)
 	}
 
 	return nil
@@ -276,13 +293,13 @@ func (t *TaskService) GetTodaysTasks() (*model.TaskList, error) {
 	taskList := model.NewTaskList()
 
 	err := t.db.View(func(tx *bolt.Tx) error {
-		bucket, err := tx.CreateBucketIfNotExists([]byte("tasks"))
+		bucket := tx.Bucket([]byte("tasks"))
 
-		if err != nil {
-			return err
+		if bucket == nil {
+			return fmt.Errorf("tasks bucket does not exist")
 		}
 
-		err = bucket.ForEach(func(taskID, taskBytes []byte) error {
+		err := bucket.ForEach(func(taskID, taskBytes []byte) error {
 			task := model.Task{}
 
 			if err := task.Unmarshal(taskBytes); err != nil {
