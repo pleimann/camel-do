@@ -66,3 +66,4 @@ camel-do
 camel-do.db
 static/scripts.js*
 static/styles.css*
+docs/architecture/generated

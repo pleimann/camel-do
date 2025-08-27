@@ -1,0 +1,51 @@
+{
+  "theme": "default",
+  "themeVariables": {
+    "primaryColor": "#e1f5fe",
+    "primaryTextColor": "#1a1a1a",
+    "primaryBorderColor": "#0288d1",
+    "lineColor": "#424242",
+    "sectionBkgColor": "#f5f5f5",
+    "altSectionBkgColor": "#fafafa",
+    "gridColor": "#e0e0e0",
+    "c0": "#e8f5e8",
+    "c1": "#fff3e0",
+    "c2": "#fce4ec",
+    "c3": "#e3f2fd",
+    "c4": "#f1f8e9"
+  },
+  "flowchart": {
+    "useMaxWidth": true,
+    "htmlLabels": true
+  },
+  "sequence": {
+    "useMaxWidth": true,
+    "wrap": true,
+    "width": 150,
+    "height": 65
+  },
+  "gantt": {
+    "useMaxWidth": true
+  },
+  "journey": {
+    "useMaxWidth": true
+  },
+  "class": {
+    "useMaxWidth": true
+  },
+  "state": {
+    "useMaxWidth": true
+  },
+  "er": {
+    "useMaxWidth": true
+  },
+  "pie": {
+    "useMaxWidth": true
+  },
+  "requirement": {
+    "useMaxWidth": true
+  },
+  "gitGraph": {
+    "useMaxWidth": true
+  }
+}
