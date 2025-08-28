@@ -207,6 +207,9 @@ func (h *TaskHandler) handleScheduleTask(c echo.Context) error {
 			if err != nil {
 				return echo.NewHTTPError(http.StatusBadRequest, "invalid time format", err)
 			}
+		} else {
+			// Set to nearest 15-minute increment in the future
+			parsedTime = time.Now().Truncate(15 * time.Minute).Add(15 * time.Minute)
 		}
 
 		// Combine date and time
