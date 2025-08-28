@@ -420,8 +420,7 @@ func (h *TaskHandler) handleTaskDelete(c echo.Context) error {
 		}
 	}
 
-	if _, err := htmx.NewResponse().
-		RenderHTML(c.Response().Writer, template.HTML("")); err != nil {
+	if err := c.NoContent(http.StatusNoContent); err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, "rendering template", err)
 	}
 

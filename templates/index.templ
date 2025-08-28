@@ -71,4 +71,13 @@ script BodyScripts() {
 	htmx.on("htmx:targetError", function(evt) {
         console.error(evt);
     });
+
+    htmx.on("htmx:beforeSwap", function(evt) {
+        // On delete requests that return 204 
+        // swap so that hx-swap="delete" works
+        if(evt.detail.xhr.status === 204){
+            evt.detail.shouldSwap = true;
+            evt.detail.isError = false;
+        }
+    });
 }
