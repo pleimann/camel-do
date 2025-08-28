@@ -16,9 +16,9 @@ func taskViewSize(task model.Task) map[string]string {
     }
 }
 
-templ TasklistView(weekday time.Weekday, tasks *model.TaskList, projects *model.ProjectIndex) {
+templ TasklistView(date time.Time, tasks *model.TaskList, projects *model.ProjectIndex) {
     <div id="tasklistview" class={ "w-full", "xl:w-1/2" }>
-        @components.DayOfWeekSelector(time.Monday, weekday)
+        @components.DayOfWeekSelector(time.Monday, date, "#tasklistview")
         <ul id="tasklist" class="list gap-4 -mr-2 w-full max-h-[calc(100vh-var(--spacing)*40)] overflow-y-scroll">
             for task := range tasks.All() {
                 @TaskView(task, projects.Get(task.ProjectID.String))

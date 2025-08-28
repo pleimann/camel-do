@@ -43,10 +43,15 @@ func generateCalendarDays(year int, month time.Month) []CalendarDay {
 }
 
 script datePickerHandler() {
-    function selectDate(dateStr) {
+    function selectDate(dateStr, data) {
         const datePicker = document.querySelector('#datepicker-input');
         if (datePicker) {
             datePicker.value = dateStr;
+            // Update global selectedDate using Alpine.js
+            if (data) {
+                data.selectedDate = dateStr;
+            }
+            
             // Close the popover
             const container = document.querySelector('#datepicker-container');
             if (container) {
@@ -96,7 +101,9 @@ templ DatePicker() {
         <div class="relative flex items-center">
             <input id="datepicker-input" type="text" name="date"
                 class="w-full bg-transparent pr-8 py-2.5 input input-readonly"
-                placeholder="Select a date" readonly/>
+                placeholder="Select a date" readonly
+                x-init="$el.value = $data.selectedDate || ''"
+                :value="$data.selectedDate"/>
 
             <div id="toggleDatepicker" popovertarget="datepicker-container" 
                 type="menu"
@@ -173,7 +180,7 @@ templ DatePickerCalendar(year int, month time.Month) {
                     templ.KV("cursor-default", !day.IsCurrentMonth),
                 }
                 if day.IsCurrentMonth {
-                    onclick="selectDate(this.dataset.date)"
+                    @click="selectDate(this.dataset.date, $data)"
                     data-date={ day.Date.Format("2006-01-02") }
                 }>
                 { fmt.Sprintf("%d", day.Day) }

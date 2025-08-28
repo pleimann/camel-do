@@ -114,6 +114,10 @@ type TaskList struct {
 	tasks []Task
 }
 
+func (tl *TaskList) Len() int {
+	return len(tl.tasks)
+}
+
 func (tl *TaskList) IsEmpty() bool {
 	return len(tl.tasks) == 0
 }

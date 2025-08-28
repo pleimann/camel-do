@@ -63,9 +63,9 @@ func (h HomeHandler) ServeHTTP(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusInternalServerError, msg)
 	}
 
-	weekday := time.Now().Weekday()
+	today := time.Now()
 
-	main := pages.Main(backlogTasks, weekday, todaysTasks, projectIndex)
+	main := pages.Main(backlogTasks, today, todaysTasks, projectIndex)
 
 	// Define template layout for index page.
 	indexTemplate := templates.Layout(

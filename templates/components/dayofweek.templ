@@ -7,16 +7,43 @@ func shiftWeekday(w time.Weekday, startWeekday time.Weekday) time.Weekday {
     return time.Weekday((int(w)+7-int(startWeekday))%7 + 1)
 }
 
-templ DayOfWeekSelector(startWeekday time.Weekday, weekday time.Weekday) {
-	<div id="dayOfWeekSelector" class="static w-full mb-4 flex flex-row gap-4 justify-center" hx-swap-oob="true">
+templ DayOfWeekSelector(startWeekday time.Weekday, date time.Time, target string) {
+	<div id="dayOfWeekSelector" class="static w-full mb-4 flex flex-row gap-4 justify-center">
 		{{ currentWeekday := time.Now().Weekday() }}
 		for i := startWeekday; i < 7+startWeekday; i++ {
 			{{
                 w := time.Weekday(i % 7)
                 
+                // Calculate the date for this day of the week within the current week
+                today := time.Now()
+                
+                // Find the start of the current week (based on startWeekday)
+                daysFromStartOfWeek := int(today.Weekday()) - int(startWeekday)
+                if daysFromStartOfWeek < 0 {
+                    daysFromStartOfWeek += 7
+                }
+                startOfWeek := today.AddDate(0, 0, -daysFromStartOfWeek)
+                
+                // Calculate days from start of week to this weekday
+                daysFromStart := int(w) - int(startWeekday)
+                if daysFromStart < 0 {
+                    daysFromStart += 7
+                }
+
                 isFuture := shiftWeekday(currentWeekday, startWeekday) < shiftWeekday(w, startWeekday)
+                
+                buttonDate := startOfWeek.AddDate(0, 0, daysFromStart)
 			}}
-			<button class={ "btn", "btn-circle", templ.KV("btn-dash", isFuture), templ.KV("btn-accent", weekday==w) }>{ w.String()[0:2] }</button>
+			<button 
+				class={ "btn", "btn-circle", templ.KV("btn-dash", isFuture), templ.KV("btn-accent", date.Weekday()==w) }
+				hx-get="/tasks" 
+                hx-vals={ `{ "date": "` + buttonDate.Format("20060102") + `" }` }
+                hx-swap="outerHTML"
+                hx-target={ target }
+                @click={ "$data.selectedDate = '" + buttonDate.Format("20060102") + "'" }
+			>
+				{ w.String()[0:2] }
+			</button>
 		}
 	</div>
 }

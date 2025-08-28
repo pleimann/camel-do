@@ -9,12 +9,12 @@ import (
 	"time"
 )
 
-templ Main(backlogTasks *model.TaskList, weekday time.Weekday, todaysTasks *model.TaskList, projects *model.ProjectIndex) {
+templ Main(backlogTasks *model.TaskList, date time.Time, todaysTasks *model.TaskList, projects *model.ProjectIndex) {
 	<div id="app">
-		@titlebar.TitleBar()
+		@titlebar.TitleBar() 
 		<main
 			class="h-[calc(100vh-(var(--spacing)*16))] max-h-[calc(100vh-(var(--spacing)*16))] w-full overflow-hidden"
-			x-data="{ selectedTask: null }"
+			x-data={ "{ selectedTask: null, selectedDate: '" + date.Format("20060102") + "' }" }
 		>
 			<div class="flex flex-row h-full overflow-hidden">
                 <div class="flex flex-col w-75 min-w-75 max-w-75 bg-primary/40 dark:bg-primary-content/40">
@@ -32,7 +32,7 @@ templ Main(backlogTasks *model.TaskList, weekday time.Weekday, todaysTasks *mode
                     </div>
                 </div>
 				<div id="content" class="grow p-4 md:p-8 !pt-4 overflow-hidden h-full">
-					@tasklist.TasklistView(weekday, todaysTasks, projects)
+					@tasklist.TasklistView(date, todaysTasks, projects)
 				</div>
 			</div>
 			<div class="fixed bottom-4 right-4">

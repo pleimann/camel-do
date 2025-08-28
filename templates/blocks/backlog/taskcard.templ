@@ -92,14 +92,16 @@ templ TaskCard(task model.Task, project *model.Project) {
 						</li>
 					</ul>
 				</div>
-				<button
-					class="btn btn-circle btn-ghost tooltip tooltip-left"
+                <button
+                    class="btn btn-circle btn-ghost tooltip tooltip-left"
                     data-tip="Schedule"
-					hx-on:click="alert('click')"
-                    hx-put={ fmt.Sprintf("/tasks/%s/schedule", task.ID) } hx-trigger="dblclick consume" hx-target="closest .card" hx-swap="delete"
-				>
-					<i data-lucide="schedule-time" class="size-5" />
-				</button>
+                    hx-put={ fmt.Sprintf("/tasks/%s/schedule", task.ID) } 
+                    hx-target="closest .card" 
+                    hx-swap="delete"
+                    hx-vals={`js:{ date: alpine.data("selectedDate") }`}
+                >
+                    <i data-lucide="schedule-time" class="size-5" />
+                </button>
 			</div>
 		</div>
 	</div>

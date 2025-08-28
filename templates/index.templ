@@ -59,13 +59,16 @@ templ Layout(config Config, metaTags, bodyContent templ.Component) {
 			<div id="errors"></div>
     
 			<script src="/static/scripts.js"></script>
-            <script src="http://localhost:35729/livereload.js"></script>4
 		</body>
 	</html>
 }
 
 script BodyScripts() {
 	htmx.on("htmx:sendError", function(evt) {
-        window.alert(JSON.stringify(evt));
+        console.error(evt);
+    });
+
+	htmx.on("htmx:targetError", function(evt) {
+        console.error(evt);
     });
 }

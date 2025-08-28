@@ -37,17 +37,19 @@ func NewTaskHandler(
 		projectService: projectsService,
 	}
 
+	group.GET("", taskHandler.handleTasksOnDate).Name = "get-tasks"
+	group.POST("", taskHandler.handleCreateTask).Name = "create-task"
+
 	group.GET("/new", taskHandler.handleNewTask).Name = "new-task"
 	group.GET("/edit/:id", taskHandler.handleEditTask).Name = "edit-task"
 
-	group.GET("/:id/schedule", taskHandler.handleScheduleDialog).Name = "schedule-dialog"
-	group.PUT("/:id/schedule", taskHandler.handleScheduleTask).Name = "schedule-task"
-	group.DELETE("/:id/schedule", taskHandler.handleUnScheduleTask).Name = "unschedule-task"
-	group.POST("/", taskHandler.handleCreateTask).Name = "create-task"
 	group.PUT("/:id", taskHandler.handleTaskUpdate).Name = "update-task"
 	group.DELETE("/:id", taskHandler.handleTaskDelete).Name = "delete-task"
 	group.PUT("/:id/complete", taskHandler.handleTaskComplete).Name = "complete-task"
 	group.PUT("/:id/hide", taskHandler.handleTaskHide).Name = "hide-task"
+	group.GET("/:id/schedule", taskHandler.handleScheduleDialog).Name = "schedule-dialog"
+	group.PUT("/:id/schedule", taskHandler.handleScheduleTask).Name = "schedule-task"
+	group.DELETE("/:id/schedule", taskHandler.handleUnScheduleTask).Name = "unschedule-task"
 
 	return taskHandler
 }
@@ -61,6 +63,40 @@ func extractTaskId(c echo.Context) string {
 	}
 
 	return idString
+}
+
+func (h *TaskHandler) handleTasksOnDate(c echo.Context) error {
+	var date time.Time = time.Now()
+	if c.QueryParams().Has("date") {
+		dateString := c.QueryParam("date")
+
+		if d, err := time.ParseInLocation("20060102", dateString, time.Local); err != nil {
+			return c.String(http.StatusBadRequest, "invalid date `"+dateString+"`")
+
+		} else {
+			date = d
+		}
+	}
+
+	tasks, err := h.taskService.GetTasksScheduledOnDate(date)
+
+	if err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, "getting tasks", err)
+	}
+
+	projectsIndex, err := h.projectService.GetProjects()
+
+	if err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, "getting projects", err)
+	}
+
+	tasklistViewTemplate := tasklist.TasklistView(date, tasks, projectsIndex)
+
+	if err := htmx.NewResponse().RenderTempl(c.Request().Context(), c.Response().Writer, tasklistViewTemplate); err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, "render template", err)
+	}
+
+	return nil
 }
 
 func (h *TaskHandler) handleNewTask(c echo.Context) error {
@@ -84,7 +120,8 @@ func (h *TaskHandler) handleNewTask(c echo.Context) error {
 func (h *TaskHandler) handleEditTask(c echo.Context) error {
 	taskId := extractTaskId(c)
 
-	if task, err := h.taskService.GetTask(taskId); err != nil {
+	task, err := h.taskService.GetTask(taskId)
+	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return echo.NewHTTPError(http.StatusNotFound, "getting task", err)
 
@@ -92,20 +129,20 @@ func (h *TaskHandler) handleEditTask(c echo.Context) error {
 			return echo.NewHTTPError(http.StatusInternalServerError, "getting task", err)
 		}
 
-	} else {
-		projectsIndex, err := h.projectService.GetProjects()
+	}
 
-		if err != nil {
-			return echo.NewHTTPError(http.StatusInternalServerError, "getting projects", err)
-		}
+	projectsIndex, err := h.projectService.GetProjects()
 
-		taskDialogTemplate := pages.TaskDialog(projectsIndex, task)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, "getting projects", err)
+	}
 
-		dialogTemplate := components.Dialog(taskDialogTemplate)
+	taskDialogTemplate := pages.TaskDialog(projectsIndex, task)
 
-		if err := htmx.NewResponse().RenderTempl(c.Request().Context(), c.Response().Writer, dialogTemplate); err != nil {
-			return fmt.Errorf("render template: %w", err)
-		}
+	dialogTemplate := components.Dialog(taskDialogTemplate)
+
+	if err := htmx.NewResponse().RenderTempl(c.Request().Context(), c.Response().Writer, dialogTemplate); err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, "render template", err)
 	}
 
 	return nil
@@ -148,20 +185,28 @@ func (h *TaskHandler) handleScheduleTask(c echo.Context) error {
 	var scheduledTime time.Time
 	var err error
 
-	if dateStr == "" || timeStr == "" {
+	if dateStr == "" && timeStr == "" {
 		// Fall back to default scheduling (next 15-minute slot)
 		scheduledTime = time.Now().Truncate(15 * time.Minute).Add(15 * time.Minute)
+
 	} else {
-		// Parse the date (YYYY-MM-DD format)
-		parsedDate, err := time.Parse("2006-01-02", dateStr)
-		if err != nil {
-			return echo.NewHTTPError(http.StatusBadRequest, "invalid date format", err)
+		var parsedDate time.Time
+
+		if dateStr != "" {
+			// Parse the date (YYYYMMDD format)
+			parsedDate, err = time.Parse("20060102", dateStr)
+			if err != nil {
+				return echo.NewHTTPError(http.StatusBadRequest, "invalid date format", err)
+			}
 		}
 
-		// Parse the time (12-hour format: "03 04 PM")
-		parsedTime, err := time.Parse("03 04 PM", timeStr)
-		if err != nil {
-			return echo.NewHTTPError(http.StatusBadRequest, "invalid time format", err)
+		var parsedTime time.Time
+		if timeStr != "" {
+			// Parse the time (12-hour format: "03 04 PM")
+			parsedTime, err = time.Parse("03 04 PM", timeStr)
+			if err != nil {
+				return echo.NewHTTPError(http.StatusBadRequest, "invalid time format", err)
+			}
 		}
 
 		// Combine date and time
@@ -176,7 +221,7 @@ func (h *TaskHandler) handleScheduleTask(c echo.Context) error {
 		if errors.Is(err, sql.ErrNoRows) {
 			return echo.NewHTTPError(http.StatusNotFound, "scheduling task", err)
 		} else {
-			return fmt.Errorf("scheduling task: %w", err)
+			return echo.NewHTTPError(http.StatusInternalServerError, "scheduling task", err)
 		}
 	}
 
@@ -195,7 +240,7 @@ func (h *TaskHandler) handleScheduleTask(c echo.Context) error {
 	taskViewTemplate := components.Encapsulate("ul", "afterbegin:#tasklist", tasklist.TaskView(*task, project))
 
 	if err := htmx.NewResponse().RenderTempl(c.Request().Context(), c.Response().Writer, taskViewTemplate); err != nil {
-		return fmt.Errorf("render template: %w", err)
+		return echo.NewHTTPError(http.StatusInternalServerError, "scheduling task", err)
 	}
 
 	return nil
@@ -227,9 +272,8 @@ func (h *TaskHandler) handleUnScheduleTask(c echo.Context) error {
 
 	taskCardTemplate := components.Encapsulate("ul", "afterbegin:#backlog", backlog.TaskCard(*task, project))
 
-	if err := htmx.NewResponse().
-		RenderTempl(c.Request().Context(), c.Response().Writer, taskCardTemplate); err != nil {
-		return fmt.Errorf("rendering template: %w", err)
+	if err := htmx.NewResponse().RenderTempl(c.Request().Context(), c.Response().Writer, taskCardTemplate); err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, "scheduling task", err)
 	}
 
 	return nil
@@ -259,7 +303,7 @@ func (h *TaskHandler) handleCreateTask(c echo.Context) error {
 				return echo.NewHTTPError(http.StatusNotFound, "getting project", err)
 
 			} else {
-				return fmt.Errorf("getting project: %w", err)
+				return echo.NewHTTPError(http.StatusInternalServerError, "getting project", err)
 			}
 		}
 	}
@@ -283,7 +327,7 @@ func (h *TaskHandler) handleCreateTask(c echo.Context) error {
 			Retarget(backlog.Selector).
 			Reswap(htmx.SwapAfterBegin).
 			RenderTempl(c.Request().Context(), c.Response().Writer, addedTaskTemplate); err != nil {
-			return fmt.Errorf("render template: %w", err)
+			return echo.NewHTTPError(http.StatusInternalServerError, "getting project", err)
 		}
 	}
 
@@ -353,7 +397,7 @@ func (h *TaskHandler) handleTaskUpdate(c echo.Context) error {
 			Retarget(fmt.Sprintf("#%s > #%s-%s", backlog.Selector, backlog.TaskSelector, task.ID)).
 			Reswap(htmx.SwapOuterHTML).
 			RenderTempl(c.Request().Context(), c.Response().Writer, taskTemplate); err != nil {
-			return fmt.Errorf("render template: %w", err)
+			return echo.NewHTTPError(http.StatusInternalServerError, "getting project", err)
 		}
 	}
 
@@ -378,7 +422,7 @@ func (h *TaskHandler) handleTaskDelete(c echo.Context) error {
 
 	if _, err := htmx.NewResponse().
 		RenderHTML(c.Response().Writer, template.HTML("")); err != nil {
-		return fmt.Errorf("render template: %w", err)
+		return echo.NewHTTPError(http.StatusInternalServerError, "rendering template", err)
 	}
 
 	return nil
@@ -434,7 +478,7 @@ func (h *TaskHandler) handleTaskComplete(c echo.Context) error {
 		}
 
 		if err := htmx.NewResponse().RenderTempl(c.Request().Context(), c.Response().Writer, taskTemplate); err != nil {
-			return fmt.Errorf("deleting task: %w", err)
+			return echo.NewHTTPError(http.StatusInternalServerError, "rendering template", err)
 		}
 
 		return nil

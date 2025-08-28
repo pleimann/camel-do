@@ -252,6 +252,10 @@ func (t *TaskService) GetBacklogTasks() (*model.TaskList, error) {
 	err := t.db.View(func(tx *bolt.Tx) error {
 		bucket := tx.Bucket([]byte("tasks"))
 
+		if bucket == nil {
+			return nil
+		}
+
 		err := bucket.ForEach(func(taskID, taskBytes []byte) error {
 			task := model.Task{}
 
@@ -287,16 +291,29 @@ func (t *TaskService) GetTodaysTasks() (*model.TaskList, error) {
 
 	year, month, day := time.Now().Date()
 
-	start := time.Date(year, month, day, 0, 0, 0, 0, time.Now().Location())
-	end := start.Add(time.Hour * 24)
+	date := time.Date(year, month, day, 0, 0, 0, 0, time.Now().Location())
+
+	return t.GetTasksScheduledOnDate(date)
+}
+
+func (t *TaskService) GetTasksScheduledOnDate(date time.Time) (*model.TaskList, error) {
+	slog.Debug("TaskService.GetTasksScheduledOnDate")
+
+	year, month, day := date.Date()
+
+	beginningOfDay := time.Date(year, month, day, 0, 0, 0, 0, time.Local)
+
+	endOfDay := beginningOfDay.Add(time.Hour * 24)
 
 	taskList := model.NewTaskList()
+
+	slog.Debug("finding tasks between", "start", beginningOfDay, "end", endOfDay)
 
 	err := t.db.View(func(tx *bolt.Tx) error {
 		bucket := tx.Bucket([]byte("tasks"))
 
 		if bucket == nil {
-			return fmt.Errorf("tasks bucket does not exist")
+			return nil
 		}
 
 		err := bucket.ForEach(func(taskID, taskBytes []byte) error {
@@ -306,7 +323,11 @@ func (t *TaskService) GetTodaysTasks() (*model.TaskList, error) {
 				return err
 			}
 
-			if (task.StartTime.Time.After(start) || task.StartTime.Time.Equal(start)) && task.StartTime.Time.Before(end) {
+			if task.StartTime.Valid &&
+				task.StartTime.Time.Equal(beginningOfDay) ||
+				(task.StartTime.Time.After(beginningOfDay) &&
+					task.StartTime.Time.Before(endOfDay)) {
+				slog.Debug("task", "id", task.ID, "startTime", task.StartTime, "start", beginningOfDay, "end", endOfDay)
 				taskList.Push(task)
 			}
 
@@ -321,8 +342,10 @@ func (t *TaskService) GetTodaysTasks() (*model.TaskList, error) {
 	})
 
 	if err != nil {
-		return nil, fmt.Errorf("TaskService.GetTodaysTasks (%s - %s): %w", start, end, err)
+		return nil, fmt.Errorf("TaskService.GetTasksScheduledOnDate (%s - %s): %w", beginningOfDay, endOfDay, err)
 	}
+
+	slog.Debug("found tasks", "count", taskList.Len(), "start", beginningOfDay, "end", endOfDay)
 
 	return taskList, nil
 }

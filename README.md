@@ -1,15 +1,38 @@
 # Camel-Do
 
-A modern task management application that seamlessly integrates with Google Calendar. Organize your work into projects, track time, and keep everything synchronized across your calendar and task list.
+A comprehensive task management application built with Go that seamlessly integrates with Google Calendar. Camel-Do provides a modern, responsive interface for organizing projects, scheduling tasks, and maintaining productivity workflows with real-time synchronization across platforms.
 
 ## Features
 
-- **Project-based Organization**: Group tasks into customizable projects with colors and icons
-- **Time Tracking**: Schedule tasks with start times and duration tracking
-- **Google Calendar Sync**: Bi-directional synchronization with your Google Calendar
-- **Real-time Interface**: Dynamic updates using HTMX without page refreshes
-- **Drag & Drop**: Intuitive task management with drag-and-drop functionality
-- **Timeline Views**: Visualize your tasks across different time perspectives
+### Core Task Management
+- **Task Creation & Editing**: Rich task forms with title, description, duration, and completion tracking
+- **Task Scheduling**: Interactive date/time picker with calendar interface for precise scheduling
+- **Task Status Management**: Mark tasks as completed, hidden, or prioritized with ranking system
+- **Task Views**: Multiple display modes including backlog cards and structured task lists
+
+### Project Organization
+- **Project-based Grouping**: Organize tasks into customizable projects with unique identifiers
+- **Visual Customization**: Choose from predefined colors (Zinc, Red, Orange, Amber, Yellow, Lime, Green, Emerald, Teal, Cyan, Sky, Blue, Indigo, Violet, Purple, Fuchsia, Pink, Rose, Stone, Neutral, Slate, Gray) and icons for project identification
+- **Project Management**: Full CRUD operations for creating, editing, and deleting projects
+
+### Google Integration
+- **OAuth2 Authentication**: Secure Google account integration with automatic token management
+- **Calendar Synchronization**: Bi-directional sync between tasks and Google Calendar events
+- **Event Management**: Create, update, and sync calendar events from scheduled tasks
+- **Google Tasks Integration**: Connect with Google Tasks API for cross-platform compatibility
+
+### User Interface & Experience
+- **Real-time Updates**: Dynamic interface powered by HTMX without full page refreshes
+- **Responsive Design**: Modern UI built with Tailwind CSS and DaisyUI components
+- **Interactive Components**: Custom date pickers, time selectors, and dialog modals
+- **Timeline Visualization**: Visual representation of tasks across time periods
+- **Dashboard Overview**: Comprehensive view of today's tasks and project status
+
+### Data Management
+- **Local Storage**: Embedded BoltDB for fast, reliable local data persistence
+- **Automatic Migrations**: Database schema updates handled automatically
+- **Data Seeding**: Optional test data generation for development and demonstration
+- **Backup & Sync**: Tasks synchronized with Google services for data redundancy
 
 ## Quick Start
 

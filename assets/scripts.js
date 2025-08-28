@@ -18,3 +18,20 @@ window.Alpine = Alpine
 Alpine.plugin(focus)
 Alpine.plugin(anchor)
 Alpine.start()
+
+// Global function to access Alpine.js $data from any element
+window.alpine = {
+    data: (field) => {
+        const element = document.querySelector('main[x-data]');
+        if (element && element._x_dataStack && element._x_dataStack.length > 0) {
+            if (field) {
+                return element._x_dataStack[0][field];
+
+            } else {
+                return element._x_dataStack[0];
+            }
+        }
+
+        return null;
+    }
+};

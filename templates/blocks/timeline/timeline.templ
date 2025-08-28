@@ -65,9 +65,11 @@ css slotClass() {
 	font-variant-numeric: tabular-nums;
 }
 
-templ TimelineView(weekday time.Weekday, tasks []model.Task, projects *model.ProjectIndex) {
-	@components.DayOfWeekSelector(time.Monday, weekday)
-	@timeline(tasks, projects)
+templ TimelineView(date time.Time, tasks []model.Task, projects *model.ProjectIndex) {
+    <div id="timelineview" class="w-full lg:w-1/2">
+        @components.DayOfWeekSelector(time.Monday, date, "#timelineview")
+        @timeline(tasks, projects)
+    </div>
 }
 
 templ timeline(tasks []model.Task, projects *model.ProjectIndex) {

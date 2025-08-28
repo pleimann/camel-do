@@ -78,8 +78,9 @@ func main() {
 		log.Fatalf("error creating TaskService: %s", err)
 	}
 
-	if tasks, err := taskService.GetTodaysTasks(); err == nil && tasks.IsEmpty() {
-		seedDb(20, taskService, projectService)
+	if tasks, err := taskService.GetTodaysTasks(); err == nil && (tasks.IsEmpty() || seed) {
+		slog.Debug("seeding database", "taskCount", tasks.Len(), "empty", tasks.IsEmpty(), "seedFlag", seed)
+		seedDb(10, taskService, projectService)
 	}
 
 	// Run your server.
