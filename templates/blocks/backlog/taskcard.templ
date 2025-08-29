@@ -37,14 +37,15 @@ templ TaskCard(task model.Task, project *model.Project) {
         }
 	}}
 	<div id={ fmt.Sprintf("%s-%s", TaskSelector, task.ID) } 
-        class="card card-side card-xs bg-base-100 shadow-md text-sm select-none rounded-2xl"
+        class="card card-side card-xs bg-base-100 h-20 text-sm select-none rounded-2xl hover:shadow-xl transition-shadow duration-200"
     >
-		<figure class={ "w-12", "min-w-12", bgColor, txColor, bgColorDark, txColorDark }>
+		<figure class={ "w-12", "min-w-12", "h-full", "flex", "items-center", "justify-center", bgColor, txColor, bgColorDark, txColorDark }>
 			<i data-lucide={ icon } class="size-7"></i>
 		</figure>
-		<div class="card-body grid grid-cols-2 grid-rows-[2fr_1fr] justify-center items-start">
-			<div class="text-sm font-medium col-span-2 line-clamp-2 hover:line-clamp-none">{ task.Title.String }</div>
-			<time class="italic self-end">{ utils.FormatDuration(task.Duration.Int32) }</time>
+
+		<div class="card-body grid grid-cols-2 grid-rows-[2fr_1fr] justify-center items-start h-full">
+			<div class="text-sm font-medium col-span-2 line-clamp-2 overflow-hidden">{ task.Title.String }</div>
+			<time class="italic self-end text-xs">{ utils.FormatDuration(task.Duration.Int32) }</time>
 			if task.Description.Valid {
 				<div class="justify-self-end" x-data="{ isOpen: false }">
 					<div
@@ -64,23 +65,23 @@ templ TaskCard(task model.Task, project *model.Project) {
 						x-transition:leave-end="opacity-0 transform scale-95"
 						class="popover absolute right-0 bg-base-100 shadow-md rounded-xl py-2 px-3 w-full z-1"
 					>
-                        <span class="line-clamp-4">{ task.Description.String }</span>
+						<span class="line-clamp-4">{ task.Description.String }</span>
 					</div>
 				</div>
 			}
 		</div>
-		<div class="card-actions rounded-e-2xl bg-base-200 dark:bg-base-200 p-2">
-			<div class="flex flex-col justify-between">
+		<div class="card-actions rounded-e-2xl bg-base-200 dark:bg-base-200 p-2 h-full">
+			<div class="flex flex-col justify-between h-full">
 				<div class="dropdown dropdown-hover dropdown-left dropdown-center">
-                    <button
-                        class="btn btn-circle btn-ghost tooltip tooltip-bottom"
-                        data-tip="Edit"
-                        hx-get={ fmt.Sprintf("/tasks/edit/%s", task.ID) }
-                        hx-target="#dialog"
-                    >
-                        <i data-lucide="edit" class="size-5"></i>
-                    </button>
-                    <ul class="dropdown-content p-2 z-1 gap-2 flex flex-row-reverse rounded-s-full bg-base-200/90 bg-blend-overlay" tabIndex="0">
+					<button
+						class="btn btn-circle btn-ghost tooltip tooltip-bottom"
+						data-tip="Edit"
+						hx-get={ fmt.Sprintf("/tasks/edit/%s", task.ID) }
+						hx-target="#dialog"
+					>
+						<i data-lucide="edit" class="size-5"></i>
+					</button>
+					<ul class="dropdown-content p-2 z-1 gap-2 flex flex-row-reverse rounded-s-full bg-base-200/90 bg-blend-overlay" tabIndex="0">
 						<li
 							class="btn btn-circle btn-ghost tooltip tooltip-bottom"
 							data-tip="Delete"
@@ -92,16 +93,16 @@ templ TaskCard(task model.Task, project *model.Project) {
 						</li>
 					</ul>
 				</div>
-                <button
-                    class="btn btn-circle btn-ghost tooltip tooltip-left"
-                    data-tip="Schedule"
-                    hx-put={ fmt.Sprintf("/tasks/%s/schedule", task.ID) } 
-                    hx-target="closest .card" 
-                    hx-swap="delete"
-                    hx-vals={`js:{ date: alpine.data("selectedDate") }`}
-                >
-                    <i data-lucide="schedule-time" class="size-5" />
-                </button>
+				<button
+					class="btn btn-circle btn-ghost tooltip tooltip-left"
+					data-tip="Schedule"
+					hx-put={ fmt.Sprintf("/tasks/%s/schedule", task.ID) } 
+					hx-target="closest .card" 
+					hx-swap="delete"
+					hx-vals={`js:{ date: alpine.data("selectedDate") }`}
+				>
+					<i data-lucide="schedule-time" class="size-5" />
+				</button>
 			</div>
 		</div>
 	</div>
