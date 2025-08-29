@@ -33,7 +33,7 @@ templ Main(date time.Time, backlogTasks *model.TaskList, todaysTasks *model.Task
                 </div>
                 <div id="content" class="grow p-4 md:p-8 !pt-4 overflow-hidden h-full">
                     // @tasklist.TasklistView(date, todaysTasks, projects)
-                    @timeline.TimelineView(date, todaysTasks, todaysEvents, projects)
+                    @timeline.TimelineView(date, todaysTasks, todaysEvents, projects, nil)
                 </div>
             </div>
             <div class="fixed bottom-4 right-4">
