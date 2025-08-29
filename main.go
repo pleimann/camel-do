@@ -17,6 +17,7 @@ import (
 	"time"
 
 	"github.com/angelofallars/htmx-go"
+	"github.com/google/uuid"
 	"github.com/guregu/null/v6/zero"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
@@ -39,15 +40,24 @@ var static embed.FS
 var credentials string
 
 func main() {
+	var debug, seed bool
+	flag.BoolVar(&seed, "seed", false, "seed database with some data")
+	flag.BoolVar(&debug, "debug", false, "debug logging mode")
+	flag.Parse()
+
+	var logLevel slog.Level
+
+	if debug {
+		logLevel = slog.LevelDebug
+	} else {
+		logLevel = slog.LevelWarn
+	}
+
 	logger := slog.New(slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{
-		Level: slog.LevelDebug,
+		Level: logLevel,
 	}))
 
 	slog.SetDefault(logger)
-
-	var seed bool
-	flag.BoolVar(&seed, "seed", false, "seed database with some data")
-	flag.Parse()
 
 	db, err := createDatabase()
 	if err != nil {
@@ -78,7 +88,7 @@ func main() {
 		log.Fatalf("error creating TaskService: %s", err)
 	}
 
-	if tasks, err := taskService.GetTodaysTasks(); err == nil && (tasks.IsEmpty() || seed) {
+	if tasks, err := taskService.GetTodaysTasks(); err == nil && seed {
 		slog.Debug("seeding database", "taskCount", tasks.Len(), "empty", tasks.IsEmpty(), "seedFlag", seed)
 		seedDb(10, taskService, projectService)
 	}
@@ -162,6 +172,9 @@ func runServer() error {
 	// Handle index page view.
 	indexViewHandler := home.NewHomeHandler(taskService, calendarService, projectService)
 	e.GET("/", indexViewHandler.ServeHTTP).Name = "root"
+
+	// Handle the specific /.well-known/appspecific/com.chrome.devtools.json route
+	e.GET("/.well-known/appspecific/com.chrome.devtools.json", handleChromeDevTools).Name = "dev-tools"
 
 	// Serve embedded static files found at ./static
 	e.StaticFS("/static", echo.MustSubFS(static, "static")).Name = "static"
@@ -247,4 +260,28 @@ func seedDb(count int, taskService *task.TaskService, projectService *project.Pr
 			log.Fatal(err)
 		}
 	}
+}
+
+func handleChromeDevTools(c echo.Context) error {
+	// Dynamically generate a UUID for the workspace
+	workspaceUUID := uuid.New().String()
+
+	// Get the current working directory as the project root
+	projectRoot, err := os.Getwd()
+	if err != nil {
+		slog.Error("Failed to get current working directory", "error", err)
+		return c.JSON(http.StatusInternalServerError, map[string]string{
+			"error": "Failed to get current working directory",
+		})
+	}
+
+	devToolsJSON := map[string]interface{}{
+		"workspace": map[string]string{
+			"uuid": workspaceUUID,
+			"root": projectRoot,
+		},
+	}
+
+	// Return the JSON response
+	return c.JSON(http.StatusOK, devToolsJSON)
 }

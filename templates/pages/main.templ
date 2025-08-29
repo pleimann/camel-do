@@ -9,7 +9,7 @@ import (
 	"time"
 )
 
-templ Main(backlogTasks *model.TaskList, date time.Time, todaysTasks *model.TaskList, projects *model.ProjectIndex) {
+templ Main(date time.Time, backlogTasks *model.TaskList, todaysTasks *model.TaskList, todaysEvents *model.EventList, projects *model.ProjectIndex) {
 	<div id="app">
 		@titlebar.TitleBar() 
 		<main
@@ -25,7 +25,7 @@ templ Main(backlogTasks *model.TaskList, date time.Time, todaysTasks *model.Task
                         </form>
                     </div>
                     <div
-                        class="overflow-y-auto overflow-x-hidden ps-4 pe-1 pb-4 h-full"
+                        class="overflow-y-auto overflow-x-hidden px-4 pb-4 h-full"
                         style="scrollbar-color: var(--color-primary) transparent; scrollbar-gutter: stable;"
                     >
                         @backlog.Backlog(backlogTasks, projects)

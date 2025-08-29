@@ -2,7 +2,6 @@ package home
 
 import (
 	"fmt"
-	"log/slog"
 	"net/http"
 	"time"
 
@@ -42,7 +41,6 @@ func (h HomeHandler) ServeHTTP(c echo.Context) error {
 		msg := fmt.Sprintf("get tasks for today %s", err.Error())
 		return echo.NewHTTPError(http.StatusInternalServerError, msg)
 	}
-	slog.Debug("Today's Calendar Events", "events", todaysEvents)
 
 	// Get backlog and tasks scheduled for today
 	backlogTasks, err := h.taskService.GetBacklogTasks()
@@ -65,7 +63,7 @@ func (h HomeHandler) ServeHTTP(c echo.Context) error {
 
 	today := time.Now()
 
-	main := pages.Main(backlogTasks, today, todaysTasks, projectIndex)
+	main := pages.Main(today, backlogTasks, todaysTasks, todaysEvents, projectIndex)
 
 	// Define template layout for index page.
 	indexTemplate := templates.Layout(

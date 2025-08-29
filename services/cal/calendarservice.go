@@ -3,6 +3,7 @@ package cal
 import (
 	"context"
 	"fmt"
+	"log/slog"
 	"time"
 
 	bolt "go.etcd.io/bbolt"
@@ -44,24 +45,27 @@ func NewCalendarService(config *CalendarServiceConfig, googleAuth *oauth.GoogleA
 	return calendarService, nil
 }
 
-func (t *CalendarService) GetTodaysEvents() ([]model.Event, error) {
+func (t *CalendarService) GetTodaysEvents() (*model.EventList, error) {
 	year, month, day := time.Now().Date()
-
 	start := time.Date(year, month, day, 0, 0, 0, 0, time.Now().Location())
 
-	events, err := t.getUpcomingEvents(start, time.Hour*24)
+	slog.Debug("CalendarService.GetTodaysEvents", "start", start)
+
+	eventList, err := t.getUpcomingEvents(start, time.Hour*24)
 
 	if err != nil {
 		return nil, err
 	}
 
-	return events, nil
+	return eventList, nil
 }
 
 func (s *CalendarService) getUpcomingEvents(
 	startTime time.Time,
 	duration time.Duration,
-) ([]model.Event, error) {
+) (*model.EventList, error) {
+	slog.Debug("CalendarService.getUpcomingEvents", "startTime", startTime, "duration", duration)
+
 	events, err := s.googleCalendar.Events.
 		List("primary").
 		ShowDeleted(false).
@@ -76,13 +80,12 @@ func (s *CalendarService) getUpcomingEvents(
 		return nil, fmt.Errorf("error getting events: %w", err)
 	}
 
-	modelEvents := []model.Event{}
-
+	eventList := model.NewEventList()
 	for _, event := range events.Items {
-		modelEvents = append(modelEvents, toModelEvent(event))
+		eventList.Push(toModelEvent(event))
 	}
 
-	return modelEvents, nil
+	return eventList, nil
 }
 
 func toModelEvent(event *calendar.Event) model.Event {
