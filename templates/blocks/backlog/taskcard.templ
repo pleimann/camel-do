@@ -43,7 +43,7 @@ templ TaskCard(task model.Task, project *model.Project) {
 			<i data-lucide={ icon } class="size-7"></i>
 		</figure>
 		<div class="card-body grid grid-cols-2 justify-center items-center">
-			<div class="text-sm font-medium col-span-2">{ task.Title.String }</div>
+			<div class="text-sm font-medium col-span-2 line-clamp-2 hover:line-clamp-none" title={task.Title.String}>{ task.Title.String }</div>
 			<time class="italic">{ utils.FormatDuration(task.Duration.Int32) }</time>
 			if task.Description.Valid {
 				<div class="justify-self-end" x-data="{ isOpen: false }">
@@ -56,15 +56,15 @@ templ TaskCard(task model.Task, project *model.Project) {
 					</div>
 					<div
 						x-show="isOpen"
-						x-transition:enter="transition ease-out duration-300"
+						x-transition:enter="transition ease-out duration-100"
 						x-transition:enter-start="opacity-0 transform scale-95"
 						x-transition:enter-end="opacity-100 transform scale-100"
-						x-transition:leave="transition ease-in duration-200"
+						x-transition:leave="transition ease-in duration-100"
 						x-transition:leave-start="opacity-100 transform scale-100"
 						x-transition:leave-end="opacity-0 transform scale-95"
-						class="popover absolute bg-base-100 line-clamp-3 shadow-md rounded-lg w-52 -ml-15 md:w-64 mt-4 p-2 z-1"
+						class="popover absolute right-0 bg-base-100 shadow-md rounded-xl py-2 px-3 w-full z-1"
 					>
-						{ task.Description.String }
+                        <span class="line-clamp-4">{ task.Description.String }</span>
 					</div>
 				</div>
 			}

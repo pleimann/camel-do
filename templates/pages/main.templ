@@ -17,7 +17,7 @@ templ Main(date time.Time, backlogTasks *model.TaskList, todaysTasks *model.Task
 			x-data={ "{ selectedTask: null, selectedDate: '" + date.Format("20060102") + "' }" }
 		>
 			<div class="flex flex-row h-full overflow-hidden">
-                <div class="flex flex-col w-75 min-w-75 max-w-75 bg-primary/40 dark:bg-primary-content/40">
+                <div class="flex flex-col w-65 md:w-75 min-w-65 max-w-75 bg-primary/40 dark:bg-primary-content/40">
                     <div class="p-4 w-full">
                         <form class="flex gap-2 items-center justify-evenly">
                             <input class="flex-1 btn btn-primary btn-outline btn-soft" type="checkbox" name="complete" aria-label="complete" checked="true"/>
