@@ -4,7 +4,7 @@ import (
     "github.com/pleimann/camel-do/model"
     "github.com/pleimann/camel-do/templates/blocks"
     "github.com/pleimann/camel-do/templates/blocks/backlog"
-    "github.com/pleimann/camel-do/templates/blocks/tasklist"
+    "github.com/pleimann/camel-do/templates/blocks/timeline"
     "github.com/pleimann/camel-do/templates/blocks/titlebar"
     "time"
 )
@@ -32,8 +32,8 @@ templ Main(date time.Time, backlogTasks *model.TaskList, todaysTasks *model.Task
                     </div>
                 </div>
                 <div id="content" class="grow p-4 md:p-8 !pt-4 overflow-hidden h-full">
-                    @tasklist.TasklistView(date, todaysTasks, projects)
-                    // @timeline.TimelineView(date, todaysTasks, todaysEvents, projects)
+                    // @tasklist.TasklistView(date, todaysTasks, projects)
+                    @timeline.TimelineView(date, todaysTasks, todaysEvents, projects)
                 </div>
             </div>
             <div class="fixed bottom-4 right-4">

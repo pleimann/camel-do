@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"github.com/pleimann/camel-do/model"
 	"github.com/pleimann/camel-do/templates/components"
+	"math"
+	"slices"
 	"strings"
 	"time"
 )
@@ -12,15 +14,153 @@ var startHours = 6
 var endHours = 24
 var slotMinutes = 15
 
-func taskPosition(task model.Task) map[string]string {
-	row := task.Position.Slot
-	spanRows := task.Position.Size
+// TimelineConfig holds configuration for timeline display
+type TimelineConfig struct {
+	StartHour   int
+	EndHour     int
+	SlotMinutes int
+	ZoomLevel   float64
+}
 
-	return map[string]string{
-		"grid-row":    fmt.Sprintf(" %d / span %d", row, spanRows),
-		"grid-column": fmt.Sprintf(" %d", 3),
-		"max-height":  fmt.Sprintf(" %drem", 3*spanRows),
+// DefaultTimelineConfig returns default timeline configuration
+func DefaultTimelineConfig() TimelineConfig {
+	return TimelineConfig{
+		StartHour:   6,
+		EndHour:     24,
+		SlotMinutes: 15,
+		ZoomLevel:   1.0,
 	}
+}
+
+// calculateTimePosition calculates precise grid position for a task/event
+func calculateTimePosition(startTime time.Time, duration int32, config TimelineConfig) (slot int, span int) {
+	startHour := config.StartHour
+	slotMins := config.SlotMinutes
+
+	// Calculate total minutes from timeline start
+	startMinutes := (startTime.Hour()-startHour)*60 + startTime.Minute()
+
+	// Calculate slot position (1-based for CSS grid)
+	slot = (startMinutes / slotMins) + 1
+
+	// Calculate span based on duration
+	durationMins := int(duration)
+	if durationMins < slotMins {
+		durationMins = slotMins // Minimum span of 1 slot
+	}
+	span = int(math.Ceil(float64(durationMins) / float64(slotMins)))
+
+	return slot, span
+}
+
+// calculateEndTime calculates the end time of a task/event
+func calculateEndTime(startTime time.Time, duration int32) time.Time {
+	return startTime.Add(time.Duration(duration) * time.Minute)
+}
+
+// formatTimeRange formats start and end time for display
+func formatTimeRange(startTime time.Time, duration int32) string {
+	endTime := calculateEndTime(startTime, duration)
+	return fmt.Sprintf("%s - %s",
+		startTime.Format("15:04"),
+		endTime.Format("15:04"))
+}
+
+// formatDuration formats duration in human-readable format
+func formatDuration(duration int32) string {
+	if duration < 60 {
+		return fmt.Sprintf("%dm", duration)
+	}
+	hours := duration / 60
+	minutes := duration % 60
+	if minutes == 0 {
+		return fmt.Sprintf("%dh", hours)
+	}
+	return fmt.Sprintf("%dh %dm", hours, minutes)
+}
+
+// detectOverlaps finds overlapping tasks/events and assigns column positions
+func detectOverlaps(items []TimelineItem) []TimelineItem {
+	if len(items) == 0 {
+		return items
+	}
+
+	// Sort by start time
+	slices.SortFunc(items, func(a, b TimelineItem) int {
+		return a.StartTime.Compare(b.StartTime)
+	})
+
+	// Track active items and assign columns
+	var active []TimelineItem
+	maxColumn := 0
+
+	for i := range items {
+		item := &items[i]
+
+		// Remove items that have ended
+		active = slices.DeleteFunc(active, func(activeItem TimelineItem) bool {
+			return activeItem.EndTime.Before(item.StartTime) ||
+				   activeItem.EndTime.Equal(item.StartTime)
+		})
+
+		// Find available column
+		item.Column = 0
+		for col := 0; col <= maxColumn+1; col++ {
+			available := true
+			for _, activeItem := range active {
+				if activeItem.Column == col {
+					available = false
+					break
+				}
+			}
+			if available {
+				item.Column = col
+				break
+			}
+		}
+
+		if item.Column > maxColumn {
+			maxColumn = item.Column
+		}
+
+		active = append(active, *item)
+	}
+
+	return items
+}
+
+// TimelineItem represents a task or event with positioning info
+type TimelineItem struct {
+	ID          string
+	Title       string
+	StartTime   time.Time
+	EndTime     time.Time
+	Duration    int32
+	ProjectID   string
+	Column      int
+	Type        string // "task" or "event"
+}
+
+// validateTimeConflicts checks for scheduling conflicts
+func validateTimeConflicts(items []TimelineItem) []string {
+	var conflicts []string
+
+	for i, item1 := range items {
+		for j, item2 := range items {
+			if i >= j {
+				continue
+			}
+
+			// Check for time overlap
+			if (item1.StartTime.Before(item2.EndTime) && item1.EndTime.After(item2.StartTime)) ||
+			   (item2.StartTime.Before(item1.EndTime) && item2.EndTime.After(item1.StartTime)) {
+				conflicts = append(conflicts, fmt.Sprintf("Conflict: %s (%s) overlaps with %s (%s)",
+					item1.Title, item1.Type, item2.Title, item2.Type))
+			}
+		}
+	}
+
+	return conflicts
 }
 
 func meridian(h24 int) string {
@@ -32,30 +172,50 @@ func meridian(h24 int) string {
 }
 
 css taskBarClass() {
-	border-radius: var(--radius-xl);
+	border-radius: var(--radius-lg);
 	display: flex;
 	flex-direction: row;
-	column-gap: calc(var(--spacing) * 2);
+	column-gap: calc(var(--spacing) * 1);
+	transition: all 0.2s ease;
+	position: relative;
+	min-height: 2.5rem;
+}
+
+css eventBarClass() {
+	border-radius: var(--radius-lg);
+	display: flex;
+	flex-direction: row;
+	column-gap: calc(var(--spacing) * 1);
+	transition: all 0.2s ease;
+	position: relative;
+	min-height: 2.5rem;
+	border-left: 3px solid;
 }
 
 css timeClass() {
 	grid-column-start: 1;
 	grid-row: span 4;
 	font-variant-numeric: tabular-nums;
-	padding: 3px 5px;
+	padding: 4px 8px;
 	border-width: 1px 1px 0 0;
 	border-style: solid;
-	border-color: lightgray;
-	font-size: var(--text-xs);
+	border-color: hsl(var(--b2));
+	font-size: var(--text-sm);
+	font-weight: 600;
 	user-select: none;
 	cursor: default;
 	text-align: center;
+	background: hsl(var(--b1));
+	color: hsl(var(--bc));
+	white-space: nowrap;
 }
 
 css tickClass() {
 	grid-column-start: 2;
-	border-top: 1px solid lightgray;
-	min-height: 2em;
+	border-top: 1px solid hsl(var(--b3));
+	min-height: 2.5rem;
+	background: hsl(var(--b2));
+	transition: background-color 0.2s ease;
 }
 
 css slotClass() {
@@ -63,67 +223,247 @@ css slotClass() {
 	user-select: none;
 	font-size: var(--text-xs);
 	font-variant-numeric: tabular-nums;
+	min-height: 2.5rem;
+	background: hsl(var(--b1));
+	border: 1px solid hsl(var(--b3));
+	border-left: none;
+	border-bottom: none;
+	transition: background-color 0.2s ease;
 }
 
-templ TimelineView(date time.Time, tasks []model.Task, projects *model.ProjectIndex) {
+
+templ TimelineView(date time.Time, tasks *model.TaskList, events *model.EventList, projects *model.ProjectIndex) {
     <div id="timelineview" class="w-full lg:w-1/2">
-        @components.DayOfWeekSelector(time.Monday, date, "#timelineview")
-        @timeline(tasks, projects)
+        <!-- Timeline Controls -->
+        <div class="flex items-center justify-between mb-4 p-2 bg-base-200 rounded-lg">
+            @components.DayOfWeekSelector(time.Monday, date, "#timelineview")
+
+            <!-- Zoom Controls -->
+            <div class="flex items-center gap-2">
+                <span class="text-sm font-medium">Zoom:</span>
+                <button
+                    class="btn btn-sm btn-outline"
+                    hx-post="/timeline/zoom"
+                    hx-vals='{"level": "out"}'
+                    hx-target="#timeline"
+                    title="Zoom Out"
+                >
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4"></path>
+                    </svg>
+                </button>
+                <span class="text-sm px-2" id="zoom-level">100%</span>
+                <button
+                    class="btn btn-sm btn-outline"
+                    hx-post="/timeline/zoom"
+                    hx-vals='{"level": "in"}'
+                    hx-target="#timeline"
+                    title="Zoom In"
+                >
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                    </svg>
+                </button>
+            </div>
+
+            <!-- Export Controls -->
+            <div class="flex items-center gap-2">
+                <span class="text-sm font-medium">Export:</span>
+                <button
+                    class="btn btn-sm btn-outline"
+                    onclick="exportTimeline('pdf')"
+                    title="Export as PDF"
+                >
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                    </svg>
+                    PDF
+                </button>
+                <button
+                    class="btn btn-sm btn-outline"
+                    onclick="exportTimeline('png')"
+                    title="Export as Image"
+                >
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                    </svg>
+                    PNG
+                </button>
+            </div>
+        </div>
+
+        @timeline(tasks, events, projects)
     </div>
+
+    <!-- Export JavaScript -->
+    <script>
+        function exportTimeline(format) {
+            const timeline = document.getElementById('timeline');
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+
+            // Simple export implementation - in production, you'd use a proper library
+            if (format === 'png') {
+                // Use html2canvas or similar library for proper rendering
+                alert('PNG export would be implemented with html2canvas library');
+            } else if (format === 'pdf') {
+                // Use jsPDF or similar library for PDF generation
+                alert('PDF export would be implemented with jsPDF library');
+            }
+        }
+    </script>
 }
 
-templ timeline(tasks []model.Task, projects *model.ProjectIndex) {
+templ timeline(tasks *model.TaskList, events *model.EventList, projects *model.ProjectIndex) {
+	{{
+		// Convert tasks and events to TimelineItems for overlap detection
+		var allItems []TimelineItem
+		for task := range tasks.All() {
+			allItems = append(allItems, TimelineItem{
+				ID:        task.ID,
+				Title:     task.Title.String,
+				StartTime: task.StartTime.Time,
+				EndTime:   calculateEndTime(task.StartTime.Time, task.Duration.Int32),
+				Duration:  task.Duration.Int32,
+				ProjectID: task.ProjectID.String,
+				Type:      "task",
+			})
+		}
+		for event := range events.All() {
+			allItems = append(allItems, TimelineItem{
+				ID:        event.ID,
+				Title:     event.Title.String,
+				StartTime: event.StartTime.Time,
+				EndTime:   calculateEndTime(event.StartTime.Time, event.Duration.Int32),
+				Duration:  event.Duration.Int32,
+				ProjectID: event.ProjectID.String,
+				Type:      "event",
+			})
+		}
+
+		// Detect overlaps and assign columns
+		allItems = detectOverlaps(allItems)
+
+		// Validate for conflicts
+		conflicts := validateTimeConflicts(allItems)
+
+		// Group items by type for rendering
+		var taskItems []TimelineItem
+		var eventItems []TimelineItem
+		for _, item := range allItems {
+			if item.Type == "task" {
+				taskItems = append(taskItems, item)
+			} else {
+				eventItems = append(eventItems, item)
+			}
+		}
+	}}
+
+	<!-- Conflict Warnings -->
+	if len(conflicts) > 0 {
+		<div class="alert alert-warning mb-4">
+			<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+				<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
+			</svg>
+			<div>
+				<h3 class="font-bold">Schedule Conflicts Detected!</h3>
+				<div class="text-sm">
+					for _, conflict := range conflicts {
+						<div>{ conflict }</div>
+					}
+				</div>
+			</div>
+		</div>
+	}
+
 	<div
 		id="timeline"
-		class="w-full lg:w-1/2 max-h-[calc(100%-50px)] overflow-y-scroll"
-		style="scrollbar-width: none;"
+		class="w-full max-h-[calc(100vh-200px)] overflow-y-auto overflow-x-auto"
+		style="scrollbar-width: thin;"
 		hx-swap-oob="true"
 		hx-ext="drag"
 	>
-		<div x-sort.ghost="handleDrag" class="w-full grid grid-flow-col-dense grid-rows-52 grid-cols-[40px_10px_1fr]" style="column-gap: calc(var(--spacing) * 2)">
+		<!-- Timeline Grid Container -->
+		<div class="min-w-[800px] grid grid-flow-col-dense grid-rows-52 grid-cols-[60px_10px_1fr_1fr_1fr_1fr_1fr] gap-1 p-2"
+		     x-sort.ghost="handleDrag"
+		     style="column-gap: calc(var(--spacing) * 1)">
+
+			<!-- Time Labels Column -->
 			for h24 := startHours; h24 < endHours; h24++ {
 				{{
                     h := h24
                     if h24 > 12 {
                         h = h24 - 12
                     }
+                    if h == 0 {
+                        h = 12
+                    }
 				}}
-				<span id={ fmt.Sprintf("tick-%d", h24) } class={ timeClass() }>{ fmt.Sprintf("%02d %s", h, meridian(h24)) }</span>
+				<span id={ fmt.Sprintf("tick-%d", h24) } class={ timeClass(), "font-semibold", "text-base" }>
+					{ fmt.Sprintf("%d %s", h, meridian(h24)) }
+				</span>
+
+				<!-- Hour markers -->
 				for m := 0; m < 60; m += slotMinutes {
 					{{ s := ((h24 - startHours) * (60 / slotMinutes)) + (m / slotMinutes) }}
 					<span
 						id={ fmt.Sprintf("tick-%d-%d", h24, m) }
 						x-data={ fmt.Sprintf("{hour: %d, minute: %d, slot: %d}", h, m, s) }
-						class={ "tick", tickClass() }
+						class={ tickClass(), "bg-base-300" }
 					></span>
-					<span id={ fmt.Sprintf("slot-%d-%d", h24, m) } class={ slotClass() }>
-						// { fmt.Sprintf("%d:%d", h24, m) }
-					</span>
+					<span id={ fmt.Sprintf("slot-%d-%d", h24, m) } class={ slotClass() }></span>
 				}
 			}
-			for _, task := range tasks {
-				@timelineTaskCard(task, projects)
+
+			<!-- Task Cards -->
+			for _, taskItem := range taskItems {
+				// Find original task for additional data
+				for task := range tasks.All() {
+					if task.ID == taskItem.ID {
+						@timelineTaskCard(task, projects, taskItem.Column)
+						break
+					}
+				}
+			}
+
+			<!-- Event Cards -->
+			for _, eventItem := range eventItems {
+				// Find original event for additional data
+				for event := range events.All() {
+					if event.ID == eventItem.ID {
+						@timelineEventCard(event, projects, eventItem.Column)
+						break
+					}
+				}
 			}
 		</div>
 	</div>
 }
 
-templ timelineTaskCard(task model.Task, projects *model.ProjectIndex) {
+templ timelineTaskCard(task model.Task, projects *model.ProjectIndex, column int) {
 	{{
-        project := projects.Get(task.ProjectID.String)
-        color := strings.ToLower(project.Color.String())
-        position := taskPosition(task)
+	       project := projects.Get(task.ProjectID.String)
+	       color := strings.ToLower(project.Color.String())
+	       config := DefaultTimelineConfig()
+	       slot, span := calculateTimePosition(task.StartTime.Time, task.Duration.Int32, config)
+
+	       position := map[string]string{
+	           "grid-row":    fmt.Sprintf("%d / span %d", slot, span),
+	           "grid-column": fmt.Sprintf("%d", 3+column),
+	           "max-height":  fmt.Sprintf("%.1frem", 3*float64(span)*config.ZoomLevel),
+	       }
 	}}
-    
-    // Use a DaisyUI stack component for tasks at the same time
+
+    // Enhanced task card with detailed time information
 	<div
 		id={ fmt.Sprintf("task-bar-%s", task.ID) }
 		hx-drag={ fmt.Sprintf("{ taskId: 'task-bar-%s' }", task.ID) }
 		class={ taskBarClass(),
             fmt.Sprintf("bg-%s-50", color),
             fmt.Sprintf("dark:bg-%s-900", color),
-            fmt.Sprintf("border-%s-100", color),
-            "border", "shadow-sm", "text-sm" 
+            fmt.Sprintf("border-%s-200", color),
+            "border", "shadow-sm", "text-sm", "hover:shadow-md", "transition-shadow",
+            "relative", "overflow-hidden"
         }
 		style={ position }
 	>
@@ -131,14 +471,80 @@ templ timelineTaskCard(task model.Task, projects *model.ProjectIndex) {
 			class={
 				"cursor-pointer", "tooltip", "tooltip-top", "h-full", "p-2", "rounded-s-xl",
 				fmt.Sprintf("bg-%s-200", color), fmt.Sprintf("text-%s-800", color),
+				"flex", "items-center", "gap-2"
 			}
-			data-tip={ project.Name }
+			data-tip={ fmt.Sprintf("%s\n%s\nDuration: %s",
+				project.Name,
+				formatTimeRange(task.StartTime.Time, task.Duration.Int32),
+				formatDuration(task.Duration.Int32)) }
 		>
 			@components.Icon(project.Icon, 16)
+			<div class="flex-1 min-w-0">
+				<div class="font-medium truncate">{ task.Title.String }</div>
+				<div class="text-xs opacity-75">
+					{ fmt.Sprintf("%s (%s)", task.StartTime.Time.Format("15:04"), formatDuration(task.Duration.Int32)) }
+				</div>
+			</div>
 		</div>
-		<div class="p-2">
-			{ task.Title.String }
-			<span class="italic">{ fmt.Sprintf("%02d:%02d", task.StartTime.Time.Hour(), task.StartTime.Time.Minute()) }</span>
+
+		<!-- Duration indicator -->
+		<div class={ "absolute", "bottom-0", "left-0", "right-0", "h-1",
+			fmt.Sprintf("bg-%s-400", color), "opacity-50" }></div>
+	</div>
+}
+
+
+templ timelineEventCard(event model.Event, projects *model.ProjectIndex, column int) {
+	{{
+        project := projects.Get(event.ProjectID.String)
+        color := strings.ToLower(project.Color.String())
+        config := DefaultTimelineConfig()
+        slot, span := calculateTimePosition(event.StartTime.Time, event.Duration.Int32, config)
+
+        position := map[string]string{
+            "grid-row":    fmt.Sprintf("%d / span %d", slot, span),
+            "grid-column": fmt.Sprintf("%d", 3+column),
+            "max-height":  fmt.Sprintf("%.1frem", 3*float64(span)*config.ZoomLevel),
+        }
+	}}
+
+    // Enhanced event card with detailed time information
+	<div
+		id={ fmt.Sprintf("event-bar-%s", event.ID) }
+		class={ taskBarClass(),
+            fmt.Sprintf("bg-%s-50", color),
+            fmt.Sprintf("dark:bg-%s-900", color),
+            fmt.Sprintf("border-%s-200", color),
+            "border", "shadow-sm", "text-sm", "hover:shadow-md", "transition-shadow",
+            "relative", "overflow-hidden", "ring-2", "ring-offset-1",
+            fmt.Sprintf("ring-%s-300", color)
+        }
+		style={ position }
+	>
+		<div
+			class={
+				"cursor-pointer", "tooltip", "tooltip-top", "h-full", "p-2", "rounded-s-xl",
+				fmt.Sprintf("bg-%s-200", color), fmt.Sprintf("text-%s-800", color),
+				"flex", "items-center", "gap-2"
+			}
+			data-tip={ fmt.Sprintf("%s (Event)\n%s\nDuration: %s",
+				project.Name,
+				formatTimeRange(event.StartTime.Time, event.Duration.Int32),
+				formatDuration(event.Duration.Int32)) }
+		>
+			@components.Icon(project.Icon, 16)
+			<div class="flex-1 min-w-0">
+				<div class="font-medium truncate">{ event.Title.String }</div>
+				<div class="text-xs opacity-75">
+					{ fmt.Sprintf("%s (%s)", event.StartTime.Time.Format("15:04"), formatDuration(event.Duration.Int32)) }
+				</div>
+			</div>
 		</div>
+
+		<!-- Event indicator (subtle difference from tasks) -->
+		<div class={ "absolute", "top-0", "left-0", "right-0", "h-0.5",
+			fmt.Sprintf("bg-%s-500", color) }></div>
+		<div class={ "absolute", "bottom-0", "left-0", "right-0", "h-1",
+			fmt.Sprintf("bg-%s-400", color), "opacity-30" }></div>
 	</div>
 }
