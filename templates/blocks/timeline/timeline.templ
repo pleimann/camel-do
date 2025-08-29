@@ -164,7 +164,7 @@ func validateTimeConflicts(items []TimelineItem) []string {
 }
 
 func meridian(h24 int) string {
-	if h24 > 12 {
+	if h24 >= 12 {
 		return "PM"
 	} else {
 		return "AM"
