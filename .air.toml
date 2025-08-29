@@ -20,13 +20,13 @@ exclude_unchanged = false
 follow_symlink = false
 log = "build-errors-air.log"
 poll = false
-poll_interval = 500
-delay = 2000
+poll_interval = 1000
+delay = 3000
 stop_on_error = true
 send_interrupt = false
-kill_delay = 500
+kill_delay = 1000
 rerun = false
-rerun_delay = 500
+rerun_delay = 1500
 
 [log]
 time = true
