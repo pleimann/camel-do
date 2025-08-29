@@ -33,8 +33,11 @@ func calculateTimePosition(startTime time.Time, duration int32, config *Timeline
 	startHour := config.StartHour
 	slotMins := config.SlotMinutes
 
+	// Convert to local timezone for display
+	localTime := startTime.Local()
+	
 	// Calculate total minutes from timeline start
-	startMinutes := (startTime.Hour()-startHour)*60 + startTime.Minute()
+	startMinutes := (localTime.Hour()-startHour)*60 + localTime.Minute()
 
 	// Calculate slot position (1-based for CSS grid)
 	slot = (startMinutes / slotMins) + 1
@@ -57,10 +60,14 @@ func calculateEndTime(startTime time.Time, duration int32) time.Time {
 // formatTimeRange formats start and end time for display
 func formatTimeRange(startTime time.Time, duration int32) string {
 	endTime := calculateEndTime(startTime, duration)
+	
+	// Convert to local timezone for display
+	localStartTime := startTime.Local()
+	localEndTime := endTime.Local()
 
 	return fmt.Sprintf("%s - %s",
-		startTime.Format("15:04"),
-		endTime.Format("15:04"))
+		localStartTime.Format("15:04"),
+		localEndTime.Format("15:04"))
 }
 
 // formatDuration formats duration in human-readable format
@@ -383,16 +390,18 @@ templ timelineTaskCard(task model.Task, taskItem TimelineItem, projects *model.P
     <div
         id={ fmt.Sprintf("task-bar-%s", task.ID) }
         class={
-            "h-full", "p-2", "flex", "items-start", "gap-2", "rounded-xl", "cursor-pointer", "border",
+            "h-full", "flex", "items-start", "rounded-xl", "cursor-pointer", "border",
             fmt.Sprintf("bg-%s-200", color), fmt.Sprintf("text-%s-800", color), fmt.Sprintf("border-%s-200", color),
         }
         style={ position }
     >
-        @components.Icon(project.Icon, 8)
-        <div class="flex-1 min-w-0">
+        <div class="p-2">
+            @components.Icon(project.Icon, 8)
+        </div>
+        <div class="p-1 grow">
             <div class="font-medium truncate">{ task.Title.String }</div>
             <div class="text-xs opacity-75">
-                { fmt.Sprintf("%s (%s)", task.StartTime.Time.Format("15:04"), formatDuration(task.Duration.Int32)) }
+                { fmt.Sprintf("%s (%s)", task.StartTime.Time.Local().Format("15:04"), formatDuration(task.Duration.Int32)) }
             </div>
         </div>
     </div>
@@ -415,16 +424,18 @@ templ timelineEventCard(event model.Event, eventItem TimelineItem, projects *mod
     <div
         id={ fmt.Sprintf("event-bar-%s", event.ID) }
         class={
-            "h-full", "p-2", "flex", "items-start", "gap-2", "rounded-xl", "cursor-pointer", "border",
+            "h-full", "flex", "items-start", "rounded-xl", "cursor-pointer", "border",
             fmt.Sprintf("bg-%s-200", color), fmt.Sprintf("text-%s-800", color), fmt.Sprintf("border-%s-200", color),
         }
         style={ position }
     >
-        @components.Icon(project.Icon, 8)
-        <div class="flex-1 min-w-0">
+        <div class="p-2">
+            @components.Icon(project.Icon, 8)
+        </div>
+        <div class="p-1 grow">
             <div class="font-medium truncate">{ event.Title.String }</div>
             <div class="text-xs opacity-75">
-                { fmt.Sprintf("%s (%s)", event.StartTime.Time.Format("15:04"), formatDuration(event.Duration.Int32)) }
+                { fmt.Sprintf("%s (%s)", event.StartTime.Time.Local().Format("15:04"), formatDuration(event.Duration.Int32)) }
             </div>
         </div>
     </div>
