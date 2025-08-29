@@ -391,7 +391,7 @@ templ timelineTaskCard(task model.Task, taskItem TimelineItem, projects *model.P
         id={ fmt.Sprintf("task-bar-%s", task.ID) }
         class={
             "h-full", "flex", "items-start", "rounded-xl", "cursor-pointer", "border",
-            fmt.Sprintf("bg-%s-200", color), fmt.Sprintf("text-%s-800", color), fmt.Sprintf("border-%s-200", color),
+            fmt.Sprintf("bg-%s-200", color), fmt.Sprintf("text-%s-800", color), fmt.Sprintf("border-%s-800", color),
         }
         style={ position }
     >
@@ -425,7 +425,7 @@ templ timelineEventCard(event model.Event, eventItem TimelineItem, projects *mod
         id={ fmt.Sprintf("event-bar-%s", event.ID) }
         class={
             "h-full", "flex", "items-start", "rounded-xl", "cursor-pointer", "border",
-            fmt.Sprintf("bg-%s-200", color), fmt.Sprintf("text-%s-800", color), fmt.Sprintf("border-%s-200", color),
+            fmt.Sprintf("bg-%s-200", color), fmt.Sprintf("text-%s-800", color), fmt.Sprintf("border-%s-800", color),
         }
         style={ position }
     >
