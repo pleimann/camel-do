@@ -18,9 +18,11 @@ templ TitleBar() {
             <button class="btn shadow-none btn-circle" @click="window.location.reload(true);">
                 <i data-lucide="refresh" class="size-6" />
             </button>
-            <button class="btn shadow-none btn-circle" id="theme-switcher" title="Switch theme">
-                <i data-lucide="sun" class="size-6" id="theme-icon" />
-            </button>
+            <label class="btn shadow-none btn-circle swap swap-rotate" title="Switch theme">
+                <input type="checkbox" class="theme-controller" value="dark" />
+                <i data-lucide="sun" class="swap-off size-6" />
+                <i data-lucide="moon" class="swap-on size-6" />
+            </label>
             <div class="avatar avatar-placeholder cursor-pointer">
                 <div class="bg-neutral text-neutral-content w-8 rounded-full">
                     <span>MP</span>
