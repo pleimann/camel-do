@@ -56,15 +56,6 @@
   --noise: 0;
 }
 
-html {
-  width: 100vw;
-  height: 100vh;
-  overflow: hidden;
-  scrollbar-width: thin;
-  scrollbar-gutter: stable;
-  scrollbar-color: var(--color-gray-500) white;
-}
-
 body {
   overflow: hidden;
   scrollbar-gutter: stable;
