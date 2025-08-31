@@ -25,7 +25,7 @@ templ Main(date time.Time, backlogTasks *model.TaskList, todaysTasks *model.Task
                         </form>
                     </div>
                     <div
-                        class="overflow-y-auto overflow-x-hidden px-4 pb-4 h-full"
+                        class="overflow-y-auto overflow-x-hidden p-4 pb-4 pr-1 h-full"
                         style="scrollbar-color: var(--color-primary) transparent; scrollbar-gutter: stable;"
                     >
                         @backlog.Backlog(backlogTasks, projects)
