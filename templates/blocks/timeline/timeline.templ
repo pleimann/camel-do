@@ -399,17 +399,50 @@ templ timelineTaskCard(task model.Task, taskItem TimelineItem, projects *model.P
         }
 	}}
 
-    // Enhanced task card with detailed time information
+    // Enhanced task card with detailed time information and context menu
     <div
         id={ fmt.Sprintf("task-bar-%s", task.ID) }
         class={
-            "h-full", "flex", "items-start", "rounded-xl", "cursor-pointer", "border",
+            "h-full", "flex", "items-start", "rounded-xl", "cursor-pointer", "border", "relative",
             fmt.Sprintf("bg-%s-200", color), fmt.Sprintf("text-%s-800", color), fmt.Sprintf("border-%s-800", color),
         }
         style={ position }
+        x-data="{ showContextMenu: false }"
+        @click.away="showContextMenu = false"
     >
-        <div class="p-2">
+        <div 
+            class="p-2 relative"
+            @contextmenu.prevent="showContextMenu = !showContextMenu"
+        >
             @components.Icon(project.Icon, 8)
+            
+            <!-- Context Menu -->
+            <div 
+                x-show="showContextMenu"
+                x-transition:enter="transition ease-out duration-100"
+                x-transition:enter-start="transform opacity-0 scale-95"
+                x-transition:enter-end="transform opacity-100 scale-100"
+                x-transition:leave="transition ease-in duration-75"
+                x-transition:leave-start="transform opacity-100 scale-100"
+                x-transition:leave-end="transform opacity-0 scale-95"
+                class="absolute left-0 top-8 mt-1 w-32 bg-base-100 rounded-md shadow-lg border border-base-300 z-50"
+                @click.stop
+            >
+                <div class="py-1">
+                    <button
+                        class="w-full text-left px-3 py-2 text-sm text-base-content hover:bg-base-200 flex items-center gap-2"
+                        hx-delete={ fmt.Sprintf("/api/task/%s/schedule", task.ID) }
+                        hx-target="closest #timelineview"
+                        hx-swap="outerHTML"
+                        @click="showContextMenu = false"
+                    >
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        Unschedule
+                    </button>
+                </div>
+            </div>
         </div>
         <div class="p-1 grow">
             <div class="font-medium truncate">{ task.Title.String }</div>
@@ -433,17 +466,48 @@ templ timelineEventCard(event model.Event, eventItem TimelineItem, projects *mod
         }
 	}}
 
-    // Enhanced event card with detailed time information
+    // Enhanced event card with detailed time information and context menu
     <div
         id={ fmt.Sprintf("event-bar-%s", event.ID) }
         class={
-            "h-full", "flex", "items-start", "rounded-xl", "cursor-pointer", "border",
+            "h-full", "flex", "items-start", "rounded-xl", "cursor-pointer", "border", "relative",
             fmt.Sprintf("bg-%s-200", color), fmt.Sprintf("text-%s-800", color), fmt.Sprintf("border-%s-800", color),
         }
         style={ position }
+        x-data="{ showContextMenu: false }"
+        @click.away="showContextMenu = false"
     >
-        <div class="p-2">
+        <div 
+            class="p-2 relative"
+            @contextmenu.prevent="showContextMenu = !showContextMenu"
+        >
             @components.Icon(project.Icon, 8)
+            
+            <!-- Context Menu -->
+            <div 
+                x-show="showContextMenu"
+                x-transition:enter="transition ease-out duration-100"
+                x-transition:enter-start="transform opacity-0 scale-95"
+                x-transition:enter-end="transform opacity-100 scale-100"
+                x-transition:leave="transition ease-in duration-75"
+                x-transition:leave-start="transform opacity-100 scale-100"
+                x-transition:leave-end="transform opacity-0 scale-95"
+                class="absolute left-0 top-8 mt-1 w-36 bg-base-100 rounded-md shadow-lg border border-base-300 z-50"
+                @click.stop
+            >
+                <div class="py-1">
+                    <button
+                        class="w-full text-left px-3 py-2 text-sm text-base-content/50 flex items-center gap-2 cursor-not-allowed"
+                        disabled
+                        title="Calendar events cannot be unscheduled"
+                    >
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        Unschedule
+                    </button>
+                </div>
+            </div>
         </div>
         <div class="p-1 grow">
             <div class="font-medium truncate">{ event.Title.String }</div>
