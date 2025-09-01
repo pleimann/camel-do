@@ -1,8 +1,6 @@
 package project
 
 import (
-	"database/sql"
-	"errors"
 	"log/slog"
 	"net/http"
 	"slices"
@@ -13,6 +11,7 @@ import (
 	"github.com/pleimann/camel-do/model"
 	"github.com/pleimann/camel-do/templates/components"
 	"github.com/pleimann/camel-do/templates/pages"
+	"github.com/pleimann/camel-do/utils"
 )
 
 type ProjectHandler struct {
@@ -66,7 +65,7 @@ func (h *ProjectHandler) handleEditProject(c echo.Context) error {
 	slog.Debug("ProjectHandler.handleEditProject", "projectId", id)
 
 	if project, err := h.projectService.GetProject(id); err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
+		if utils.IsNotFoundError(err) {
 			return echo.NewHTTPError(http.StatusNotFound, "getting project", err)
 
 		} else {
@@ -132,7 +131,7 @@ func (h *ProjectHandler) handleProjectDelete(c echo.Context) error {
 	// TODO: remove projectID from linked tasks
 
 	if err := h.projectService.DeleteProject(id); err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
+		if utils.IsNotFoundError(err) {
 			return echo.NewHTTPError(http.StatusNotFound, "deleting project", err)
 
 		} else {

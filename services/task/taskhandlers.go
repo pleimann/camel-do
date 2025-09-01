@@ -1,8 +1,6 @@
 package task
 
 import (
-	"database/sql"
-	"errors"
 	"fmt"
 	"html/template"
 	"net/http"
@@ -20,6 +18,7 @@ import (
 	"github.com/pleimann/camel-do/templates/blocks/tasklist"
 	"github.com/pleimann/camel-do/templates/components"
 	"github.com/pleimann/camel-do/templates/pages"
+	"github.com/pleimann/camel-do/utils"
 )
 
 type TaskHandler struct {
@@ -37,7 +36,6 @@ func NewTaskHandler(
 		projectService: projectsService,
 	}
 
-	group.GET("", taskHandler.handleTasksOnDate).Name = "get-tasks"
 	group.POST("", taskHandler.handleCreateTask).Name = "create-task"
 
 	group.GET("/new", taskHandler.handleNewTask).Name = "new-task"
@@ -65,40 +63,6 @@ func extractTaskId(c echo.Context) string {
 	return idString
 }
 
-func (h *TaskHandler) handleTasksOnDate(c echo.Context) error {
-	var date time.Time = time.Now()
-	if c.QueryParams().Has("date") {
-		dateString := c.QueryParam("date")
-
-		if d, err := time.ParseInLocation("20060102", dateString, time.Local); err != nil {
-			return c.String(http.StatusBadRequest, "invalid date `"+dateString+"`")
-
-		} else {
-			date = d
-		}
-	}
-
-	tasks, err := h.taskService.GetTasksScheduledOnDate(date)
-
-	if err != nil {
-		return echo.NewHTTPError(http.StatusInternalServerError, "getting tasks", err)
-	}
-
-	projectsIndex, err := h.projectService.GetProjects()
-
-	if err != nil {
-		return echo.NewHTTPError(http.StatusInternalServerError, "getting projects", err)
-	}
-
-	tasklistViewTemplate := tasklist.TasklistView(date, tasks, projectsIndex)
-
-	if err := htmx.NewResponse().RenderTempl(c.Request().Context(), c.Response().Writer, tasklistViewTemplate); err != nil {
-		return echo.NewHTTPError(http.StatusInternalServerError, "render template", err)
-	}
-
-	return nil
-}
-
 func (h *TaskHandler) handleNewTask(c echo.Context) error {
 	projectsIndex, err := h.projectService.GetProjects()
 
@@ -122,7 +86,7 @@ func (h *TaskHandler) handleEditTask(c echo.Context) error {
 
 	task, err := h.taskService.GetTask(taskId)
 	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
+		if utils.IsNotFoundError(err) {
 			return echo.NewHTTPError(http.StatusNotFound, "getting task", err)
 
 		} else {
@@ -153,7 +117,7 @@ func (h *TaskHandler) handleScheduleDialog(c echo.Context) error {
 
 	task, err := h.taskService.GetTask(taskId)
 	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
+		if utils.IsNotFoundError(err) {
 			return echo.NewHTTPError(http.StatusNotFound, "getting task", err)
 		} else {
 			return echo.NewHTTPError(http.StatusInternalServerError, "getting task", err)
@@ -221,7 +185,7 @@ func (h *TaskHandler) handleScheduleTask(c echo.Context) error {
 	}
 
 	if err := h.taskService.ScheduleTask(taskId, zero.TimeFrom(scheduledTime)); err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
+		if utils.IsNotFoundError(err) {
 			return echo.NewHTTPError(http.StatusNotFound, "scheduling task", err)
 		} else {
 			return echo.NewHTTPError(http.StatusInternalServerError, "scheduling task", err)
@@ -253,7 +217,7 @@ func (h *TaskHandler) handleUnScheduleTask(c echo.Context) error {
 	taskId := extractTaskId(c)
 
 	if err := h.taskService.ScheduleTask(taskId, zero.TimeFromPtr(nil)); err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
+		if utils.IsNotFoundError(err) {
 			return echo.NewHTTPError(http.StatusNotFound, "unscheduling task", err)
 
 		} else {
@@ -302,7 +266,7 @@ func (h *TaskHandler) handleCreateTask(c echo.Context) error {
 		project, err = h.projectService.GetProject(task.ProjectID.ValueOrZero())
 
 		if err != nil {
-			if errors.Is(err, sql.ErrNoRows) {
+			if utils.IsNotFoundError(err) {
 				return echo.NewHTTPError(http.StatusNotFound, "getting project", err)
 
 			} else {
@@ -370,7 +334,7 @@ func (h *TaskHandler) handleTaskUpdate(c echo.Context) error {
 		project, err = h.projectService.GetProject(task.ProjectID.ValueOrZero())
 
 		if err != nil {
-			if errors.Is(err, sql.ErrNoRows) {
+			if utils.IsNotFoundError(err) {
 				return echo.NewHTTPError(http.StatusNotFound, "getting project", err)
 
 			} else {
@@ -415,7 +379,7 @@ func (h *TaskHandler) handleTaskDelete(c echo.Context) error {
 	c.Logger().Debug("TaskHandler.handleTaskDelete", "taskId", taskId)
 
 	if err := h.taskService.DeleteTask(taskId); err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
+		if utils.IsNotFoundError(err) {
 			return echo.NewHTTPError(http.StatusNotFound, "deleting task", err)
 
 		} else {
@@ -438,7 +402,7 @@ func (h *TaskHandler) handleTaskComplete(c echo.Context) error {
 	c.Logger().Debug("TaskHandler.handleTaskComplete", "taskId", taskId)
 
 	if err := h.taskService.CompleteToggleTask(taskId); err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
+		if utils.IsNotFoundError(err) {
 			return echo.NewHTTPError(http.StatusNotFound, "updating task", err)
 
 		} else {
@@ -447,7 +411,7 @@ func (h *TaskHandler) handleTaskComplete(c echo.Context) error {
 	}
 
 	if task, err := h.taskService.GetTask(taskId); err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
+		if utils.IsNotFoundError(err) {
 			return echo.NewHTTPError(http.StatusNotFound, "fetching updated task", err)
 
 		} else {
@@ -460,7 +424,7 @@ func (h *TaskHandler) handleTaskComplete(c echo.Context) error {
 			project, err = h.projectService.GetProject(task.ProjectID.ValueOrZero())
 
 			if err != nil {
-				if errors.Is(err, sql.ErrNoRows) {
+				if utils.IsNotFoundError(err) {
 					return echo.NewHTTPError(http.StatusNotFound, "getting project", err)
 
 				} else {
@@ -495,7 +459,7 @@ func (h *TaskHandler) handleTaskHide(c echo.Context) error {
 	c.Logger().Debug("TaskHandler.handleTaskHide", "taskId", taskId)
 
 	if err := h.taskService.HiddenToggleTask(taskId); err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
+		if utils.IsNotFoundError(err) {
 			return echo.NewHTTPError(http.StatusNotFound, "updating task", err)
 
 		} else {

@@ -7,6 +7,7 @@ import (
 
 	"github.com/oklog/ulid/v2"
 	"github.com/pleimann/camel-do/model"
+	"github.com/pleimann/camel-do/utils"
 	bolt "go.etcd.io/bbolt"
 )
 
@@ -38,6 +39,10 @@ func (s *ProjectService) GetProject(id string) (*model.Project, error) {
 		bucket := tx.Bucket([]byte("projects"))
 
 		projectBytes := bucket.Get([]byte(id))
+
+		if projectBytes == nil {
+			return utils.NewNotFoundError("project", id)
+		}
 
 		if err := project.Unmarshal(projectBytes); err != nil {
 			return err
@@ -137,13 +142,22 @@ func (s *ProjectService) UpdateProject(id string, project model.Project) error {
 func (s *ProjectService) DeleteProject(id string) error {
 	slog.Debug("ProjectService.DeleteProject", "id", id)
 
-	s.db.Update(func(tx *bolt.Tx) error {
+	err := s.db.Update(func(tx *bolt.Tx) error {
 		bucket := tx.Bucket([]byte("projects"))
+
+		projectBytes := bucket.Get([]byte(id))
+		if projectBytes == nil {
+			return utils.NewNotFoundError("project", id)
+		}
 
 		bucket.Delete([]byte(id))
 
 		return nil
 	})
+
+	if err != nil {
+		return fmt.Errorf("ProjectService.DeleteProject (%s): %w", id, err)
+	}
 
 	return nil
 }

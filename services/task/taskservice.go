@@ -8,6 +8,7 @@ import (
 	"github.com/guregu/null/v6/zero"
 	"github.com/oklog/ulid/v2"
 	"github.com/pleimann/camel-do/model"
+	"github.com/pleimann/camel-do/utils"
 	bolt "go.etcd.io/bbolt"
 )
 
@@ -75,6 +76,10 @@ func (t *TaskService) GetTask(id string) (*model.Task, error) {
 
 		taskBytes := bucket.Get([]byte(id))
 
+		if taskBytes == nil {
+			return utils.NewNotFoundError("task", id)
+		}
+
 		if err := task.Unmarshal(taskBytes); err != nil {
 			return fmt.Errorf(" %w", err)
 		}
@@ -100,6 +105,10 @@ func (t *TaskService) CompleteToggleTask(id string) error {
 		}
 
 		taskBytes := bucket.Get([]byte(id))
+
+		if taskBytes == nil {
+			return utils.NewNotFoundError("task", id)
+		}
 
 		task := model.Task{}
 
@@ -137,6 +146,10 @@ func (t *TaskService) HiddenToggleTask(id string) error {
 		}
 
 		taskBytes := bucket.Get([]byte(id))
+
+		if taskBytes == nil {
+			return utils.NewNotFoundError("task", id)
+		}
 
 		task := model.Task{}
 
@@ -199,6 +212,10 @@ func (t *TaskService) ScheduleTask(id string, time zero.Time) error {
 
 		taskBytes := bucket.Get([]byte(id))
 
+		if taskBytes == nil {
+			return utils.NewNotFoundError("task", id)
+		}
+
 		task := model.Task{}
 
 		if err := task.Unmarshal(taskBytes); err != nil {
@@ -229,6 +246,11 @@ func (t *TaskService) DeleteTask(id string) error {
 
 	err := t.db.Update(func(tx *bolt.Tx) error {
 		bucket := tx.Bucket([]byte("tasks"))
+
+		taskBytes := bucket.Get([]byte(id))
+		if taskBytes == nil {
+			return utils.NewNotFoundError("task", id)
+		}
 
 		if err := bucket.Delete([]byte(id)); err != nil {
 			return err
