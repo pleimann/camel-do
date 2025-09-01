@@ -89,7 +89,7 @@ func slotCount(config *TimelineConfig) int {
     return (config.EndHour - config.StartHour) * (60 / config.SlotMinutes) - 1
 }
 
-const TIMELINE_COLUMNS = 4
+const TIMELINE_COLUMNS = 2
 
 // detectOverlaps finds overlapping tasks/events and assigns column positions and spans
 func detectOverlaps(items []TimelineItem) []TimelineItem {
@@ -179,9 +179,10 @@ func detectOverlaps(items []TimelineItem) []TimelineItem {
 			item.Span = columnsPerItem
 			
 			// Ensure we don't exceed available space
-			if item.Column + item.Span > 5 {
+			if item.Column + item.Span > TIMELINE_COLUMNS {
 				item.Span = TIMELINE_COLUMNS - item.Column
 			}
+            
 			if item.Span < 1 {
 				item.Span = 1
 			}
@@ -288,18 +289,30 @@ templ TimelineView(date time.Time, tasks *model.TaskList, events *model.EventLis
             }
         }}
 
-        <!-- Conflict Warnings -->
+        <!-- Conflict Toast Trigger -->
         if len(conflicts) > 0 {
-            <div class="alert alert-warning mb-4">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
-                </svg>
-                <div>
-                    <h3 class="font-bold">Schedule Conflicts Detected!</h3>
-                    <div class="text-sm">
-                        for _, conflict := range conflicts {
-                            <div>{ conflict }</div>
-                        }
+            <div 
+                x-data="{ showToast: false }"
+                x-init="
+                    showToast = true;
+                    setTimeout(() => showToast = false, 10000);
+                "
+            >
+                <!-- Toast Container -->
+                <div class="toast toast-top toast-end z-50" x-show="showToast" x-transition>
+                    <div class="alert alert-warning max-w-md shadow-lg">
+                        <svg class="w-6 h-6 stroke-current shrink-0" fill="none" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                        </svg>
+                        <div class="flex-1">
+                            <h3 class="font-bold">Schedule Conflicts Detected!</h3>
+                            <div class="text-sm mt-1 space-y-1">
+                                for _, conflict := range conflicts {
+                                    <div class="text-xs">{ conflict }</div>
+                                }
+                            </div>
+                        </div>
+                        <button class="btn btn-sm btn-ghost" @click="showToast = false">×</button>
                     </div>
                 </div>
             </div>
