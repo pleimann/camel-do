@@ -30,6 +30,7 @@ import (
 	"github.com/pleimann/camel-do/services/oauth"
 	"github.com/pleimann/camel-do/services/project"
 	"github.com/pleimann/camel-do/services/task"
+	"github.com/pleimann/camel-do/services/timeline"
 	"github.com/pleimann/camel-do/templates/components"
 )
 
@@ -186,6 +187,10 @@ func runServer() error {
 	// Task routes
 	tasksGroup := e.Group("/tasks")
 	task.NewTaskHandler(tasksGroup, taskService, projectService)
+
+	// Timeline routes
+	timelineGroup := e.Group("/timeline")
+	timeline.NewTaskHandler(timelineGroup, taskService, calendarService, projectService)
 
 	// Component routes
 	componentsGroup := e.Group("/components")

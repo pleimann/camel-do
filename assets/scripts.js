@@ -3,6 +3,7 @@ import "./htmx"
 import 'htmx-ext-response-targets'; 
 import 'htmx-ext-remove-me'; 
 import 'htmx-ext-debug';
+import 'htmx-ext-sse';
 import 'hx-drag';
 
 import './icons'
