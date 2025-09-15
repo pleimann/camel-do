@@ -114,8 +114,8 @@ templ timelineTaskCard(task model.Task, taskItem TimelineItem, projects *model.P
                     <button
                         class="w-full text-left px-3 py-2 text-sm text-base-content hover:bg-base-200 flex items-center gap-2"
                         hx-delete={ fmt.Sprintf("/tasks/%s/schedule", task.ID) }
-                        hx-target={ fmt.Sprintf("#%s", taskBarId) }
-                        hx-swap="delete"
+                        hx-target="body"
+                        hx-swap="none"
                         @click="showContextMenu = false"
                     >
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

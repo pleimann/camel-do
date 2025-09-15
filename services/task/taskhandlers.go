@@ -250,6 +250,14 @@ func (h *TaskHandler) handleScheduleTask(c echo.Context) error {
 func (h *TaskHandler) handleUnScheduleTask(c echo.Context) error {
 	taskId := extractTaskId(c)
 
+	// Get the task before unscheduling to determine timeline date
+	taskBeforeUnschedule, err := h.taskService.GetTask(taskId)
+	if err != nil {
+		return fmt.Errorf("getting task before unschedule: %w", err)
+	}
+
+	timelineDate := taskBeforeUnschedule.StartTime.Time.Truncate(24 * time.Hour)
+
 	if err := h.taskService.ScheduleTask(taskId, zero.TimeFromPtr(nil)); err != nil {
 		if utils.IsNotFoundError(err) {
 			return echo.NewHTTPError(http.StatusNotFound, "unscheduling task", err)
@@ -271,10 +279,35 @@ func (h *TaskHandler) handleUnScheduleTask(c echo.Context) error {
 
 	project := projectsIndex.Get(task.ProjectID.String)
 
-	taskCardTemplate := components.Encapsulate("ul", "afterbegin:#backlog", backlog.TaskCard(*task, project))
+	// Get updated timeline data after task removal
+	timelineTasks, err := h.taskService.GetTasksScheduledOnDate(timelineDate)
+	if err != nil {
+		return fmt.Errorf("getting timeline tasks: %w", err)
+	}
 
-	if err := htmx.NewResponse().RenderTempl(c.Request().Context(), c.Response().Writer, taskCardTemplate); err != nil {
-		return echo.NewHTTPError(http.StatusInternalServerError, "scheduling task", err)
+	timelineEvents, err := h.calendarService.GetTodaysEvents()
+	if err != nil {
+		return fmt.Errorf("getting timeline events: %w", err)
+	}
+
+	// Create multi-response: add task to backlog + refresh timeline grid
+	taskCardTemplate := components.Encapsulate("ul", "afterbegin:#backlog", backlog.TaskCard(*task, project))
+	timelineGridTemplate := timeline.TimelineGridContent(timelineDate, timelineTasks, timelineEvents, projectsIndex, nil)
+
+	// Create out-of-band template for timeline grid refresh
+	timelineOOBTemplate := templ.Raw(`<div hx-swap-oob="innerHTML:#timeline-grid">`)
+	timelineOOBTemplateEnd := templ.Raw(`</div>`)
+
+	// Create multi-response
+	multiResponse := components.MultiResponse(
+		taskCardTemplate,
+		timelineOOBTemplate,
+		timelineGridTemplate,
+		timelineOOBTemplateEnd,
+	)
+
+	if err := htmx.NewResponse().RenderTempl(c.Request().Context(), c.Response().Writer, multiResponse); err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, "unscheduling task", err)
 	}
 
 	return nil
