@@ -31,7 +31,7 @@ func slotCount(config *TimelineConfig) int {
     return (config.EndHour - config.StartHour) * (60 / config.SlotMinutes) - 1
 }
 
-const TIMELINE_COLUMNS = 2
+const TIMELINE_COLUMNS = 1
 
 // detectOverlaps finds overlapping tasks/events and assigns column positions and spans
 func detectOverlaps(items []TimelineItem) []TimelineItem {
@@ -181,7 +181,7 @@ templ TimelineView(date time.Time, tasks *model.TaskList, events *model.EventLis
     {{
         if config == nil {
             config = DefaultTimelineConfig()
-        }  
+        }
     }}
 
     <div id="timelineview" class="w-full">
@@ -266,7 +266,7 @@ templ TimelineView(date time.Time, tasks *model.TaskList, events *model.EventLis
             hx-ext="drag"
         >
             <!-- Timeline Grid Container -->
-            <div id="timeline-grid" class={ "grid place-items-stretch grid-flow-col-dense gap-x-1 p-2"}
+            <div id="timeline-grid" class={ "grid place-items-stretch grid-flow-col auto-cols-fr gap-x-1 p-2"}
                 style={
                     fmt.Sprintf("grid-template-rows: %d;", slotCount(config)),
                     fmt.Sprintf("grid-template-columns: 2rem 8px repeat(%d, 1fr);", TIMELINE_COLUMNS)

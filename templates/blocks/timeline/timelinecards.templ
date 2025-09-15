@@ -74,7 +74,8 @@ templ timelineTaskCard(task model.Task, taskItem TimelineItem, projects *model.P
 
         position := map[string]string{
             "grid-row":    fmt.Sprintf("%d / span %d", slot, span),
-            "grid-column": fmt.Sprintf("%d / span %d", 3+taskItem.Column, taskItem.Span),
+            // "grid-column": "3 / span 5",
+            // "grid-column": fmt.Sprintf("%d / span %d", 3+taskItem.Column, taskItem.Span),
             "max-height":  fmt.Sprintf("%.1frem", 3 * float64(span) * config.ZoomLevel),
         }
 
@@ -85,7 +86,7 @@ templ timelineTaskCard(task model.Task, taskItem TimelineItem, projects *model.P
     <div
         id={ taskBarId }
         class={
-            "h-full", "flex", "items-start", "rounded-xl", "cursor-pointer", "border", "relative",
+            "w-full", "flex", "items-start", "rounded-xl", "cursor-pointer", "border", 
             fmt.Sprintf("bg-%s-200", color), fmt.Sprintf("text-%s-800", color), fmt.Sprintf("border-%s-800", color),
         }
         style={ position }
