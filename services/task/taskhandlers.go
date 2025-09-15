@@ -16,6 +16,7 @@ import (
 	"github.com/pleimann/camel-do/services/project"
 	"github.com/pleimann/camel-do/templates/blocks/backlog"
 	"github.com/pleimann/camel-do/templates/blocks/tasklist"
+	"github.com/pleimann/camel-do/templates/blocks/timeline"
 	"github.com/pleimann/camel-do/templates/components"
 	"github.com/pleimann/camel-do/templates/pages"
 	"github.com/pleimann/camel-do/utils"
@@ -23,17 +24,24 @@ import (
 
 type TaskHandler struct {
 	*echo.Group
-	taskService    *TaskService
-	projectService *project.ProjectService
+	taskService     *TaskService
+	projectService  *project.ProjectService
+	calendarService CalendarService
+}
+
+// CalendarService interface to avoid circular dependencies
+type CalendarService interface {
+	GetTodaysEvents() (*model.EventList, error)
 }
 
 func NewTaskHandler(
-	group *echo.Group, taskService *TaskService, projectsService *project.ProjectService,
+	group *echo.Group, taskService *TaskService, projectsService *project.ProjectService, calendarService CalendarService,
 ) *TaskHandler {
 	taskHandler := &TaskHandler{
-		Group:          group,
-		taskService:    taskService,
-		projectService: projectsService,
+		Group:           group,
+		taskService:     taskService,
+		projectService:  projectsService,
+		calendarService: calendarService,
 	}
 
 	group.POST("", taskHandler.handleCreateTask).Name = "create-task"
@@ -204,9 +212,35 @@ func (h *TaskHandler) handleScheduleTask(c echo.Context) error {
 
 	project := projectsIndex.Get(task.ProjectID.String)
 
-	taskViewTemplate := components.Encapsulate("ul", "afterbegin:#tasklist", tasklist.TaskView(*task, project))
+	// Get timeline data for out-of-band update
+	timelineDate := scheduledTime.Truncate(24 * time.Hour)
+	timelineTasks, err := h.taskService.GetTasksScheduledOnDate(timelineDate)
+	if err != nil {
+		return fmt.Errorf("getting timeline tasks: %w", err)
+	}
 
-	if err := htmx.NewResponse().RenderTempl(c.Request().Context(), c.Response().Writer, taskViewTemplate); err != nil {
+	timelineEvents, err := h.calendarService.GetTodaysEvents()
+	if err != nil {
+		return fmt.Errorf("getting timeline events: %w", err)
+	}
+
+	// Create templates for both updates
+	taskViewTemplate := components.Encapsulate("ul", "afterbegin:#tasklist", tasklist.TaskView(*task, project))
+	timelineGridTemplate := timeline.TimelineGridContent(timelineDate, timelineTasks, timelineEvents, projectsIndex, nil)
+
+	// Create out-of-band template for timeline grid with hx-swap-oob attribute
+	timelineOOBTemplate := templ.Raw(`<div hx-swap-oob="innerHTML:#timeline-grid">`)
+	timelineOOBTemplateEnd := templ.Raw(`</div>`)
+
+	// Create multi-response
+	multiResponse := components.MultiResponse(
+		taskViewTemplate,
+		timelineOOBTemplate,
+		timelineGridTemplate,
+		timelineOOBTemplateEnd,
+	)
+
+	if err := htmx.NewResponse().RenderTempl(c.Request().Context(), c.Response().Writer, multiResponse); err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, "scheduling task", err)
 	}
 

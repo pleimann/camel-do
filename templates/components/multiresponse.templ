@@ -1,0 +1,8 @@
+package components
+
+// MultiResponse renders multiple components in sequence for HTMX out-of-band swaps
+templ MultiResponse(components ...templ.Component) {
+	for _, comp := range components {
+		@comp
+	}
+}

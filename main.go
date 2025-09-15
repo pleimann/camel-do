@@ -186,7 +186,7 @@ func runServer() error {
 
 	// Task routes
 	tasksGroup := e.Group("/tasks")
-	task.NewTaskHandler(tasksGroup, taskService, projectService)
+	task.NewTaskHandler(tasksGroup, taskService, projectService, calendarService)
 
 	// Timeline routes
 	timelineGroup := e.Group("/timeline")

@@ -111,7 +111,7 @@ templ timelineTaskCard(task model.Task, taskItem TimelineItem, projects *model.P
                 <div class="py-1">
                     <button
                         class="w-full text-left px-3 py-2 text-sm text-base-content hover:bg-base-200 flex items-center gap-2"
-                        hx-delete={ fmt.Sprintf("/api/task/%s/schedule", task.ID) }
+                        hx-delete={ fmt.Sprintf("/tasks/%s/schedule", task.ID) }
                         hx-target="closest #timelineview"
                         hx-swap="outerHTML"
                         @click="showContextMenu = false"

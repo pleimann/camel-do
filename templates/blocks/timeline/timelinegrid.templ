@@ -1,0 +1,106 @@
+package timeline
+
+import (
+	"fmt"
+	"github.com/pleimann/camel-do/model"
+	"time"
+)
+
+// TimelineGridContent renders just the grid content (time labels + cards) for HTMX updates
+templ TimelineGridContent(date time.Time, tasks *model.TaskList, events *model.EventList, projects *model.ProjectIndex, config *TimelineConfig) {
+    {{
+        if config == nil {
+            config = DefaultTimelineConfig()
+        }
+
+        // Convert tasks and events to TimelineItems for overlap detection
+        var allItems []TimelineItem
+        for task := range tasks.All() {
+            allItems = append(allItems, TimelineItem{
+                ID:        task.ID,
+                Title:     task.Title.String,
+                StartTime: task.StartTime.Time,
+                EndTime:   calculateEndTime(task.StartTime.Time, task.Duration.Int32),
+                Duration:  task.Duration.Int32,
+                ProjectID: task.ProjectID.String,
+                Type:      "task",
+            })
+        }
+        for event := range events.All() {
+            allItems = append(allItems, TimelineItem{
+                ID:        event.ID,
+                Title:     event.Title.String,
+                StartTime: event.StartTime.Time,
+                EndTime:   calculateEndTime(event.StartTime.Time, event.Duration.Int32),
+                Duration:  event.Duration.Int32,
+                ProjectID: event.ProjectID.String,
+                Type:      "event",
+            })
+        }
+
+        // Detect overlaps and assign columns
+        allItems = detectOverlaps(allItems)
+
+        // Group items by type for rendering
+        var taskItems []TimelineItem
+        var eventItems []TimelineItem
+        for _, item := range allItems {
+            if item.Type == "task" {
+                taskItems = append(taskItems, item)
+            } else {
+                eventItems = append(eventItems, item)
+            }
+        }
+    }}
+
+    <!-- Time Labels Column -->
+    for h24 := config.StartHour; h24 < config.EndHour; h24++ {
+        {{
+            h := h24
+            if h24 > 12 {
+                h = h24 - 12
+            }
+            if h == 0 {
+                h = 12
+            }
+        }}
+
+        <!-- Hour marker -->
+        <div id={ fmt.Sprintf("tick-%d", h24) }
+            class="col-start-1 row-span-4 p-1 border-e border-t tabular-nums flex flex-col items-center"
+        >
+            <p class="text-xl font-bold block">{h}</p>
+            <p class="text-xs">{ meridian(h24) }</p>
+        </div>
+
+        <!-- Hour ticks -->
+        for m := 0; m < 60; m += config.SlotMinutes {
+            {{ s := ((h24 - config.StartHour) * (60 / config.SlotMinutes)) + (m / config.SlotMinutes) }}
+            <div
+                id={ fmt.Sprintf("tick-%d-%d", h24, m) }
+                x-data={ fmt.Sprintf("{hour: %d, minute: %d, slot: %d}", h, m, s) }
+                class="border-t min-h-12"
+            ></div>
+        }
+    }
+
+    <!-- Task Cards -->
+    for _, taskItem := range taskItems {
+        // Find original task for additional data
+        for task := range tasks.All() {
+            if task.ID == taskItem.ID {
+                @timelineTaskCard(task, taskItem, projects, config)
+            }
+        }
+    }
+
+    <!-- Event Cards -->
+    for _, eventItem := range eventItems {
+        // Find original event for additional data
+        for event := range events.All() {
+            if event.ID == eventItem.ID {
+                @timelineEventCard(event, eventItem, projects, config)
+            }
+        }
+    }
+}
