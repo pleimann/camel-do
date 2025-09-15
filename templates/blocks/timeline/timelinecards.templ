@@ -77,11 +77,13 @@ templ timelineTaskCard(task model.Task, taskItem TimelineItem, projects *model.P
             "grid-column": fmt.Sprintf("%d / span %d", 3+taskItem.Column, taskItem.Span),
             "max-height":  fmt.Sprintf("%.1frem", 3 * float64(span) * config.ZoomLevel),
         }
+
+        taskBarId := fmt.Sprintf("task-bar-%s", task.ID)
 	}}
 
     // Enhanced task card with detailed time information and context menu
     <div
-        id={ fmt.Sprintf("task-bar-%s", task.ID) }
+        id={ taskBarId }
         class={
             "h-full", "flex", "items-start", "rounded-xl", "cursor-pointer", "border", "relative",
             fmt.Sprintf("bg-%s-200", color), fmt.Sprintf("text-%s-800", color), fmt.Sprintf("border-%s-800", color),
@@ -112,8 +114,8 @@ templ timelineTaskCard(task model.Task, taskItem TimelineItem, projects *model.P
                     <button
                         class="w-full text-left px-3 py-2 text-sm text-base-content hover:bg-base-200 flex items-center gap-2"
                         hx-delete={ fmt.Sprintf("/tasks/%s/schedule", task.ID) }
-                        hx-target="closest #timelineview"
-                        hx-swap="outerHTML"
+                        hx-target={ fmt.Sprintf("#%s", taskBarId) }
+                        hx-swap="delete"
                         @click="showContextMenu = false"
                     >
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

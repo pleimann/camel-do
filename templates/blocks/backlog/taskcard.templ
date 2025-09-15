@@ -97,7 +97,7 @@ templ TaskCard(task model.Task, project *model.Project) {
 					class="btn btn-circle btn-ghost tooltip tooltip-left"
 					data-tip="Schedule"
 					hx-put={ fmt.Sprintf("/tasks/%s/schedule", task.ID) } 
-					hx-target="closest .card" 
+					hx-target="closest .card"
 					hx-swap="delete"
 					hx-vals={`js:{ date: alpine.data("selectedDate") }`}
 				>
