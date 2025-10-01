@@ -16,7 +16,6 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ### Database Operations
 - **Run with seeded data**: `go run . -seed`
-- **Database migrations**: Automatically applied on startup via `database.Migrate(db)`
 
 ## Architecture Overview
 
@@ -30,10 +29,11 @@ Camel-Do uses a layered service architecture with clear separation of concerns:
   - `cal/`: Google Calendar integration
   - `oauth/`: Authentication and OAuth flows
 
-- **Database Layer** (`/db/`): Data persistence with type-safe queries
-  - SQLite database with automatic migrations
-  - Jet ORM for type-safe SQL generation
-  - Separate model structs in `/db/model/` and domain models in `/model/`
+- **Database Layer**: BoltDB embedded database with direct bucket operations
+  - Uses BoltDB (embedded key-value store) with bucket-based storage
+  - Tasks stored in "tasks" bucket with gob encoding/decoding
+  - No separate ORM or migration system - manual bucket management
+  - Domain models in `/model/` directory
 
 - **Template Layer** (`/templates/`): Server-side rendered HTML
   - `pages/`: Full page templates
@@ -41,7 +41,7 @@ Camel-Do uses a layered service architecture with clear separation of concerns:
   - `components/`: Reusable UI components
 
 ### Key Technologies
-- **Backend**: Go 1.24+ with Echo web framework, SQLite database
+- **Backend**: Go 1.25+ with Echo web framework, BoltDB embedded database
 - **Frontend**: HTMX + Alpine.js for reactivity, Tailwind CSS + DaisyUI for styling
 - **Templates**: Templ for type-safe HTML generation
 - **Build**: Air for live reload, Bun for frontend bundling, Parcel for asset processing
@@ -52,10 +52,11 @@ Camel-Do uses a layered service architecture with clear separation of concerns:
 - Task sync service handles creating/updating calendar events from tasks
 
 ### Database Schema
-- Tasks table with Google Calendar event IDs for sync
-- Projects table for task organization
-- Database migrations in `/db/migrations/`
-- Jet-generated table definitions in `/db/table/`
+- Tasks stored in BoltDB buckets (embedded key-value store)
+- Task model includes Google Calendar event IDs for sync (GTaskID field)
+- Projects stored separately for task organization
+- Data marshaled/unmarshaled using gob encoding
+- Model definitions in `/model/` (task.go, project.go, event.go, etc.)
 
 ## Development Workflow
 
@@ -75,15 +76,18 @@ Camel-Do uses a layered service architecture with clear separation of concerns:
    - Templates are type-safe and compiled into Go code
 
 4. **Testing**:
-   - Unit tests use testify for assertions
-   - Example test structure in `services/task/taskservice_test.go`
+   - Unit tests use standard Go testing
+   - Example test structure in `templates/components/timepicker_templ_test.go`
 
 ## Project Structure Notes
 
-- **Embedded Assets**: Static files and credentials are embedded in the binary
-- **Configuration**: Uses environment variables with sensible defaults (PORT=4000)
-- **Database Path**: Local SQLite file in `./camel-do/camel-do.db`
-- **Service Initialization**: All services initialized in main.go with dependency injection
-- **Error Handling**: Custom HTMX error handler for dynamic error display
-
-- use conventional commits
+- **Embedded Assets**: Static files and credentials are embedded in the binary (`//go:embed` directives in main.go)
+- **Configuration**: Uses environment variables with sensible defaults (PORT=4000, proxy on 4001)
+- **Database Path**: BoltDB file stored in user config directory at `~/.config/camel-do/camel-do.db` (or equivalent on Windows/macOS)
+- **Service Initialization**: All services initialized in main.go with dependency injection pattern
+- **Error Handling**: Custom HTMX error handler (`customHTTPErrorHandler`) for dynamic error display
+- **Routing Structure**:
+  - Main routes in main.go
+  - Service-specific routes registered via handler groups (`/projects`, `/tasks`, `/timeline`, `/components`)
+- **Model Enums**: Auto-generated enums for colors and icons using go-enum tool
+- **Commit Convention**: Use conventional commits
