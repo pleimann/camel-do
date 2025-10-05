@@ -14,9 +14,9 @@
         "htmx-ext-remove-me": "~2.0.1",
         "htmx-ext-response-targets": "~2.0.3",
         "htmx-ext-sse": "^2.2.3",
-        "htmx.org": "~1.9.0",
+        "htmx.org": "^2.0.7",
         "hx-drag": "~2.0.0",
-        "lucide": "~0.519.0",
+        "lucide": "~0.544.0",
         "tailwindcss": "~4.1.0",
       },
       "devDependencies": {
@@ -369,7 +369,7 @@
 
     "htmx-ext-sse": ["htmx-ext-sse@2.2.3", "", { "dependencies": { "htmx.org": "^2.0.2" } }, "sha512-DDahTngA+XSUeX4/EFAzAGDkvY8pdr/FmelHzag0FvZpUOh41G08P1fwp+jfFZCQphkA7/z06l90FN4iyD6O2w=="],
 
-    "htmx.org": ["htmx.org@1.9.12", "", {}, "sha512-VZAohXyF7xPGS52IM8d1T1283y+X4D+Owf3qY1NZ9RuBypyu9l8cGsxUMAG5fEAb/DhT7rDoJ9Hpu5/HxFD3cw=="],
+    "htmx.org": ["htmx.org@2.0.7", "", {}, "sha512-YiJqF3U5KyO28VC5mPfehKJPF+n1Gni+cupK+D69TF0nm7wY6AXn3a4mPWIikfAXtl1u1F1+ZhSCS7KT8pVmqA=="],
 
     "hx-drag": ["hx-drag@2.0.0", "", {}, "sha512-PFemvfRr4h3SPXF8vQkhaiFlMTCwMtMy+GYdB6YqktizfctmrKijjLS4KKLaittSlboY8e5CzSl5EeUYFvpQOg=="],
 
@@ -413,7 +413,7 @@
 
     "lodash.merge": ["lodash.merge@4.6.2", "", {}, "sha512-0KpjqXRVvrYyCsX1swR/XTK0va6VQkQM6MNo7PqW77ByjAhoARA8EfrP1N4+KlKj8YS0ZUCtRT/YUuhyYDujIQ=="],
 
-    "lucide": ["lucide@0.519.0", "", {}, "sha512-4yFKXSzFIVGqmtfZjyI7C4VSPN7NqRq9q3CEbEbmjkHVAAFzFfvJODku+6Aeqd3wpJdNQUrTRvouhM46O5cMSg=="],
+    "lucide": ["lucide@0.544.0", "", {}, "sha512-U5ORwr5z9Sx7bNTDFaW55RbjVdQEnAcT3vws9uz3vRT1G4XXJUDAhRZdxhFoIyHEvjmTkzzlEhjSLYM5n4mb5w=="],
 
     "magic-string": ["magic-string@0.30.17", "", { "dependencies": { "@jridgewell/sourcemap-codec": "^1.5.0" } }, "sha512-sNPKHvyjVf7gyjwS4xGTaW/mCnF8wnjtifKBEhxfZ7E/S8tQ0rssrwGNn6q8JH/ohItJfSQp9mBtQYuTlH5QnA=="],
 

@@ -36,7 +36,7 @@ templ DayOfWeekSelector(startWeekday time.Weekday, date time.Time, target string
 			}}
 			<button 
 				class={ "btn", "btn-circle", templ.KV("btn-dash", isFuture), templ.KV("btn-accent", date.Weekday()==w) }
-				hx-get="/tasks" 
+				hx-get="/timeline" 
                 hx-vals={ `{ "date": "` + buttonDate.Format("20060102") + `" }` }
                 hx-swap="outerHTML"
                 hx-target={ target }
